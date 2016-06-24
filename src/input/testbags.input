@@ -1,0 +1,85 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "testbags"
+
+default_list ==> [-1, -2, -3]
+
+testcaseNoClear "Stack"
+
+test_stack x ==>
+    tmp := parts x
+    testEquals("top x", "first tmp")
+
+    tmp := copy parts x
+    testEquals("pop! x", "first tmp")
+    testEquals("parts x", "rest tmp")
+
+    tmp := copy parts x
+    testEquals("push!(5, x)", "5")
+    testEquals("parts x", "cons(5, tmp)")
+
+x := stack default_list
+test_stack x
+
+testcaseNoClear "ArrayStack"
+
+x := arrayStack default_list
+test_stack x
+
+testcaseNoClear "Queue"
+
+test_queue x ==>
+    tmp := parts x
+    testEquals("front x", "first tmp")
+    testEquals("back x", "last tmp")
+
+    tmp := copy parts x
+    testEquals("enqueue!(6, x)", "6")
+    testEquals("parts x", "append(tmp, [6])")
+
+    tmp := copy parts x
+    testEquals("dequeue! x", "first tmp")
+    testEquals("parts x", "rest tmp")
+
+    tmp := copy parts x
+    testEquals("x := rotate! x; parts x", "append(rest tmp, [first tmp])")
+
+x := queue default_list
+test_queue x
+
+testcaseNoClear "Dequeue"
+
+test_dequeue x ==>
+   tmp := parts x
+   testEquals("bottom x", "last tmp")
+
+   tmp := copy parts x
+   testEquals("insertTop!(7, x)", "7")
+   testEquals("parts x", "cons(7, tmp)")
+
+   tmp := copy parts x
+   testEquals("insertBottom!(8, x)", "8")
+   testEquals("parts x", "append(tmp, [8])")
+
+   tmp := copy parts x
+   testEquals("extractTop! x", "first tmp")
+   testEquals("parts x", "rest tmp")
+
+   tmp := copy parts x
+   testEquals("extractBottom! x", "last tmp")
+   testEquals("parts x", "delete(tmp, #tmp)")
+
+   tmp := copy parts x
+   testEquals("x := reverse! x; parts x", "reverse tmp")
+
+x := dequeue default_list
+test_dequeue x
+x := dequeue default_list
+test_queue x
+x := dequeue default_list
+test_stack x
+
+
+)set output algebra on
+statistics()
