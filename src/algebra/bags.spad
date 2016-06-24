@@ -109,32 +109,58 @@ ArrayStack(S : SetCategory) : StackAggregate(S) with
 ++ References:
 ++ Description:
 
-++ Linked List implementation of a Queue
---% Dequeue and Heap data types
-
 Queue(S : SetCategory) : QueueAggregate S with
     queue : List S -> %
       ++ queue([x, y, ..., z]) creates a queue with first (top)
       ++ element x, second element y, ..., and last (bottom) element z.
-  == Stack S add
-    Rep := Reference List S
-    lastTail==> LAST$Lisp
+  == add
+    Rep := Record(front: List S, rear: List S)
+
+    queue q == construct q
+    construct q == [q, []]
+    empty() == [[], []]
+    empty? q == empty? q.front and empty? q.rear
+    copy q == [copy q.front, copy q.rear]
+    map(f, q) ==
+        [map(f, q.front), reverse! map!(f, reverse q.rear)]
+    map!(f, q) ==
+        q.front := map!(f, q.front)
+        q.rear := reverse! map!(f, reverse! q.rear)
+        q
+    # q == # q.front + # q.rear
+    parts q == append(q.front, reverse q.rear)
+    hashUpdate!(st, q) == hashUpdate!(st, parts q)
+
+    -- QueueAggregate's exclusive operations
     enqueue!(e, q) ==
-        if null deref q then setref(q, list e)
-        else lastTail.(deref q).rest := list e
+        q.rear := cons(e, q.rear)
         e
-    insert!(e, q) == (enqueue!(e, q);q)
+
     dequeue! q ==
-        empty? q => error "empty queue"
-        e := first deref q
-        setref(q, rest deref q)
+        if empty? q.front then
+            empty? q.rear => error "empty queue"
+            q.front := reverse! q.rear
+            q.rear := []
+        e := first q.front
+        q.front := rest q.front
         e
+
+    front q ==
+        empty? q.front =>
+            empty? q.rear => error "empty queue"
+            last q.rear
+        first q.front
+
+    back q ==
+        empty? q.rear =>
+            empty? q.front => error "empty queue"
+            last q.front
+        first q.rear
+
+    -- BagAggregate's exclusive operations
+    insert!(e, q) == (enqueue!(e, q); q)
     extract! q == dequeue! q
-    rotate! q == if empty? q then q else (enqueue!(dequeue! q, q); q)
-    front q == if empty? q then error "empty queue" else first deref q
     inspect q == front q
-    back q == if empty? q then error "empty queue" else last deref q
-    queue q == construct(q)
 
 )abbrev domain DEQUEUE Dequeue
 ++ Author: Michael Monagan and Stephen Watt
@@ -148,44 +174,95 @@ Queue(S : SetCategory) : QueueAggregate S with
 ++ References:
 ++ Description:
 
-++ Linked list implementation of a Dequeue
---% Dequeue and Heap data types
-
 Dequeue(S : SetCategory) : DequeueAggregate S with
      dequeue : List S -> %
        ++ dequeue([x, y, ..., z]) creates a dequeue with first (top or front)
        ++ element x, second element y, ..., and last (bottom or back) element z.
   == Queue S add
-    Rep := Reference List S
-    bottom d ==
-         if empty? d then error "empty dequeue" else last deref d
-    dequeue d == construct(d)
-    extractBottom! d ==
-        if empty? d then error "empty dequeue"
-        p := deref d
-        n := maxIndex p
-        n = 1 =>
-           r := first p
-           setref(d, [])
-           r
-        q := rest(p, (n-2)::NonNegativeInteger)
-        r := first rest q
-        q.rest := []
-        r
+    Rep := Record(front: List S, rear: List S)
+
+    -- empty, empty? copy, map, map!, #, parts, hashUpdate! are provided by Queue S
+    dequeue d == [copy d, []]
+    construct d == dequeue d
+
+    -- if front or rear is empty, try to balance the dequeue
+    -- balance! try to ensure front non-empty, unless the dequeue is empty
+    balance!(d : %) : % ==
+        if empty? d.front then
+            empty? d.rear => return d
+            n := # d.rear
+            n = 1 =>
+                d.front := d.rear
+                d.rear := []
+                return d
+            d.front := reverse! split!(d.rear, n quo 2)
+            return d
+        if empty? d.rear then
+            n := # d.front
+            n = 1 => return d
+            d.rear := reverse! split!(d.front, n quo 2)
+        d
+
+    -- DequeueAggregate's exclusive operations
     extractTop! d ==
-        e := top d
-        setref(d, rest deref d)
+        if empty? d.front then
+            empty? d.rear => error "empty dequeue"
+            balance! d
+        e := first d.front
+        d.front := rest d.front
         e
-    insertTop!(e, d) == (setref(d, cons(e, deref d)); e)
-    lastTail==> LAST$Lisp
+
+    extractBottom! d ==
+        if empty? d.rear then
+            empty? d.front => error "empty dequeue"
+            if null rest d.front then
+                -- have 1 element in d
+                e := first d.front
+                d.front := []
+                return e
+            balance! d
+        e := first d.rear
+        d.rear := rest d.rear
+        e
+
+    insertTop!(e, d) ==
+        d.front := cons(e, d.front)
+        e
+
     insertBottom!(e, d) ==
-        if empty? d then setref(d, list e)
-        else lastTail.(deref d).rest := list e
+        d.rear := cons(e, d.rear)
         e
-    top d == if empty? d then error "empty dequeue" else first deref d
-    reverse! d == (setref(d, reverse deref d); d)
-    pop!(d) == extractTop!(d)
+
+    reverse! d ==
+        empty? d => d
+        (d.front, d.rear) := (d.rear, d.front)
+        d
+
+    bottom d ==
+        empty? d.rear =>
+            empty? d.front => error "empty dequeue"
+            last d.front
+        first d.rear
+
+    -- QueueAggregate's exclusive operations
+    front d ==
+        empty? d.front =>
+            empty? d.rear => error "empty dequeue"
+            last d.rear
+        first d.front
+    enqueue!(e, d) == insertBottom!(e, d)
+    dequeue! d == extractTop! d
+    back d == bottom d
+
+    -- StackAggregate's exclusive operations
+    top d == front d
+    pop! d == extractTop! d
     push!(e, d) == insertTop!(e, d)
+
+    -- BagAggregate's exclusive operations
+    insert!(e, d) == (insertBottom!(e, d); d)
+    extract! d == extractTop! d
+    inspect d == front d
 
 )abbrev domain HEAP Heap
 ++ Author: Michael Monagan and Stephen Watt

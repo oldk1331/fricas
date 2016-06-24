@@ -320,7 +320,7 @@ QueueAggregate(S : Type) : Category == Join(BagAggregate S, finiteAggregate) wit
    rotate! : % -> %
      ++ rotate! q rotates queue q so that the element at the front of
      ++ the queue goes to the back of the queue.
-     ++ Note: rotate! q is equivalent to enqueue!(dequeue!(q)).
+     ++ Note: rotate! q is equivalent to (enqueue!(dequeue! q, q); q).
    front : % -> S
      ++ front(q) returns the element at the front of the queue.
      ++ The queue q is unchanged by this operation.
@@ -329,6 +329,11 @@ QueueAggregate(S : Type) : Category == Join(BagAggregate S, finiteAggregate) wit
      ++ back(q) returns the element at the back of the queue.
      ++ The queue q is unchanged by this operation.
      ++ Error: if q is empty.
+ add
+   rotate! q ==
+       empty? q => q
+       enqueue!(dequeue! q, q)
+       q
 
 )abbrev category DQAGG DequeueAggregate
 ++ Author: Michael Monagan; revised by Manuel Bronstein and Richard Jenks
