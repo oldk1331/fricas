@@ -41,7 +41,7 @@ Stack(S : SetCategory) : StackAggregate S with
     insert!(e : S, s : %) : % == (push!(e, s);s)
     empty() == ref nil()$List(S)
     empty? s == null deref s
-    construct s == ref copy s
+    construct s == ref s
     stack s == construct s
     hashUpdate!(st, s) == hashUpdate!(st, deref s)
 
