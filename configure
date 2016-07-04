@@ -4678,6 +4678,8 @@ case $fricas_lisp_flavor in
 esac
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking compiled Lisp file extension" >&5
+$as_echo_n "checking compiled Lisp file extension... " >&6; }
 if test -z $fricas_fasl_type; then
    as_fn_error $? "Could not determine extension for compiled Lisp files" "$LINENO" 5
 fi
