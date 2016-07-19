@@ -1023,6 +1023,20 @@ UnivariatePolynomialCategory(R : Join(SemiRng, AbelianMonoid)) : Category ==
                 x := reductum x
             d
         differentiate(x : %, v : SingletonAsOrderedSet) : % == differentiate x
+        pseudoRemainder(p, q) ==
+           zero? q => error "PseudoDivision by Zero"
+           zero? p => 0
+           c2 := leadingCoefficient q
+           e2 := degree q
+           q := reductum q
+           n := max((degree p)-e2+1, 0)::NonNegativeInteger
+           while not zero? p repeat
+               if (u := subtractIfCan(degree p, e2)) case "failed" then break
+               p := fmecg(c2 * reductum p, u, leadingCoefficient p, q)
+               n := (n - 1)::NonNegativeInteger
+           n = 0 => p
+           c2 ^ n * p
+
     if R has IntegralDomain then
       elt(g : Fraction %, f : Fraction %) == ((numer g) f) / ((denom g) f)
 

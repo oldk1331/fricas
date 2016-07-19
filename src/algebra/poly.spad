@@ -827,20 +827,6 @@ SparseUnivariatePolynomial(R : Join(SemiRng, AbelianMonoid)
            rout := cons([ee, a], rout)
         null p1 => reverse(rout)::%    -- nreverse?
         "failed"
-   if R has Ring then
-       pseudoRemainder(p1, p2) ==
-           zero? p2 => error "PseudoDivision by Zero"
-           zero? p1 => 0
-           c2 := leadingCoefficient p2
-           e2 := degree p2
-           p2 := reductum p2
-           n := max((degree p1)-e2+1, 0)::NonNegativeInteger
-           while not zero? p1 repeat
-               if (u := subtractIfCan(degree p1, e2)) case "failed" then break
-               p1 := fmecg(c2 * reductum p1, u, leadingCoefficient p1, p2)
-               n := (n - 1)::NonNegativeInteger
-           n = 0 => p1
-           c2 ^ n * p1
 
    -- Ugly, but we want to avoid conditonal exports or testing
    -- in inner loops
