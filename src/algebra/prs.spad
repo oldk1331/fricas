@@ -188,23 +188,6 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
          ++ the subresultant \spad{S_{e-1}} where
          ++ \spad{P ~ S_d,  Q = S_{d-1},  Z = S_e,  s = lc(S_d)}
 
-       resultant_naif : (polR, polR) -> R
-         ++ \spad{resultant_naif(P, Q)} returns
-         ++ the resultant of \spad{P} and \spad{Q} computed
-         ++ by means of the naive algorithm.
-
-       resultantEuclidean_naif : (polR, polR) ->
-                          Record(coef1 : polR, coef2 : polR, resultant : R)
-         ++ \spad{resultantEuclidean_naif(P, Q)} returns
-         ++ the extended resultant of \spad{P} and \spad{Q} computed
-         ++ by means of the naive algorithm.
-
-       semiResultantEuclidean_naif : (polR, polR) ->
-                          Record(coef2 : polR, resultant : R)
-         ++ \spad{semiResultantEuclidean_naif(P, Q)} returns
-         ++ the semi-extended resultant of \spad{P} and \spad{Q} computed
-         ++ by means of the naive algorithm.
-
   Implementation == add
     X : polR := monomial(1$R, 1)
 
@@ -227,49 +210,74 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
             F := reductum(F) - mon * G
          return construct(quot, F)
 
-    resultant_naif(P : polR, Q : polR) : R ==
-    -- valid over a field
-       a : R := 1
-       repeat
-          zero?(Q) => return 0
-          (degP, degQ) := (degree(P), degree(Q))
-          if odd?(degP) and odd?(degQ) then a := - a
-          zero?(degQ) => return (a * LC(Q)^degP)
+    if R has FiniteFieldCategory then
+      resultant(P : polR, Q : polR) : R ==
+        zero? Q or zero? P => 0
+        (degP, degQ) := (degree P, degree Q)
+        if degP < degQ then
+          (P, Q) := (Q, P)
+          (degP, degQ) := (degQ, degP)
+          if odd? degP and odd? degQ then Q := - Q
+        zero? degQ => LC(Q)^degP
+        -- degP >= degQ > 0
+        a : R := 1
+        repeat
+          zero? Q => return 0
+          (degP, degQ) := (degree P, degree Q)
+          if odd? degP and odd? degQ then a := - a
+          zero? degQ => return (a * LC(Q)^degP)
           U : polR := divide(P, Q).remainder
           a := a * LC(Q)^(degP - degree(U))::NNI
           (P, Q) := (Q, U)
 
-    resultantEuclidean_naif(P : polR, Q : polR) :
+      resultantEuclidean(P : polR, Q : polR) :
                        Record(coef1 : polR, coef2 : polR, resultant : R) ==
-    -- valid over a field.
-       a : R := 1
-       old_cf1 : polR := 1 ; cf1 : polR := 0
-       old_cf2 : polR := 0 ; cf2 : polR := 1
-       repeat
-          zero?(Q) => return construct(0::polR, 0::polR, 0::R)
-          (degP, degQ) := (degree(P), degree(Q))
-          if odd?(degP) and odd?(degQ) then a := -a
-          if zero?(degQ) then
+        zero? P or zero? Q => [0, 0, 0]
+        (degP, degQ) := (degree P, degree Q)
+        if degP < degQ then
+          e : Integer := if odd? degP and odd? degQ then -1 else 1
+          l := resultantEuclidean(Q, e * P)
+          return [e * l.coef2, l.coef1, l.resultant]
+        if zero? degQ then
+          zero? degP => error "resultantEuclidean$PRS : constant polynomials"
+          s : R := LC(Q)^(degP-1)::NNI
+          return [0::polR, s::polR, s * LC(Q)]
+        -- init part over
+        a : R := 1
+        old_cf1 : polR := 1 ; cf1 : polR := 0
+        old_cf2 : polR := 0 ; cf2 : polR := 1
+        repeat
+          zero? Q => return [0, 0, 0]
+          (degP, degQ) := (degree P, degree Q)
+          if odd? degP and odd? degQ then a := -a
+          if zero? degQ then
              a := a * LC(Q)^(degP-1)::NNI
-             return construct(a*cf1, a*cf2, a*LC(Q))
+             return [a*cf1, a*cf2, a*LC(Q)]
           divid := divide(P, Q)
           a := a * LC(Q)^(degP - degree(divid.remainder))::NNI
           (P, Q) := (Q, divid.remainder)
           (old_cf1, old_cf2, cf1, cf2) := (cf1, cf2,
                 old_cf1 - divid.quotient * cf1, old_cf2 - divid.quotient * cf2)
 
-    semiResultantEuclidean_naif(P : polR, Q : polR) :
+      semiResultantEuclidean2(P : polR, Q : polR) :
                        Record(coef2 : polR, resultant : R) ==
-    -- valid over a field
-       a : R := 1
-       old_cf2 : polR := 0 ; cf2 : polR := 1
-       repeat
-          zero?(Q) => return construct(0::polR, 0::R)
-          (degP, degQ) := (degree(P), degree(Q))
-          if odd?(degP) and odd?(degQ) then a := -a
-          if zero?(degQ) then
+        zero? P or zero? Q => [0, 0]
+        (degP, degQ) := (degree P, degree Q)
+        degP < degQ => error "semiResultantEuclidean2 : bad degrees"
+        if zero? degQ then
+          zero? degP => error "semiResultantEuclidean2 : constant polynomials"
+          s : R := LC(Q)^(degP-1)::NNI
+          return [s::polR, s * LC(Q)]
+        -- init part over
+        a : R := 1
+        old_cf2 : polR := 0 ; cf2 : polR := 1
+        repeat
+          zero? Q => return [0, 0]
+          (degP, degQ) := (degree P, degree Q)
+          if odd? degP and odd? degQ then a := -a
+          if zero? degQ then
              a := a * LC(Q)^(degP-1)::NNI
-             return construct(a*cf2, a*LC(Q))
+             return [a*cf2, a*LC(Q)]
           divid := divide(P, Q)
           a := a * LC(Q)^(degP - degree(divid.remainder))::NNI
           (P, Q) := (Q, divid.remainder)
@@ -333,8 +341,7 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
        (P, Q) := (VP.1, VQ.1)
        (lcP, c) := (LC(P), LC(Q))
        e : NNI := degree(Q)
---       if one?(delta := degree(P) - e) then                   -- algo_new
-       if ((delta := degree(P) - e) = 1) then                   -- algo_new
+       if ((delta := degree(P) - e) = 1) then
          VP := c * VP - coefficient(P, e) * VQ
          VP := VP exquo lcP
          VP := c * (VP - X * VQ) + coefficient(Q, (e-1)::NNI) * VQ
@@ -348,34 +355,43 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
            VP.i := (VP.i exquo r)::polR
        return (if odd?(delta) then VP else - VP)
 
-    algo_new(P : polR, Q : polR) : R ==
-       delta : NNI := (degree(P) - degree(Q))::NNI
+    resultant(P : polR, Q : polR) : R ==
+       zero? Q or zero? P => 0
+       (degP, degQ) := (degree P, degree Q)
+       if degP < degQ then
+          (P, Q) := (Q, P)
+          (degP, degQ) := (degQ, degP)
+          if odd? degP and odd? degQ then Q := - Q
+       zero? degQ => LC(Q)^degP
+       -- degP >= degQ > 0
+       delta : NNI := (degP - degQ)::NNI
        s : R := LC(Q)^delta
        (P, Q) := (Q, pseudoRemainder(P, -Q))
        repeat
           -- P = S_c-1 (except the first turn : P ~ S_c-1),
           -- Q = S_d-1,  s = lc(S_d)
-          zero?(Q) => return 0
+          zero? Q => return 0
           delta := (degree(P) - degree(Q))::NNI
           Z : polR := Lazard2(Q, LC(Q), s, delta)
           -- Z = S_e ~ S_d-1
-          zero?(degree(Z)) => return LC(Z)
+          zero? degree Z => return LC(Z)
           (P, Q) := (Q, next_sousResultant2(P, Q, Z, s))
           s := LC(Z)
 
-    resultant(P : polR, Q : polR) : R ==
-       zero?(Q) or zero?(P) => 0
-       if degree(P) < degree(Q) then
-          (P, Q) := (Q, P)
-          if odd?(degree(P)) and odd?(degree(Q)) then Q := - Q
-       zero?(degree(Q)) => LC(Q)^degree(P)
-       -- degree(P) >= degree(Q) > 0
-       R has Finite => resultant_naif(P, Q)
-       return algo_new(P, Q)
-
-    subResultantEuclidean(P : polR, Q : polR) :
-                          Record(coef1 : polR, coef2 : polR, resultant : R) ==
-       s : R := LC(Q)^(degree(P) - degree(Q))::NNI
+    resultantEuclidean(P : polR, Q : polR) :
+                       Record(coef1 : polR, coef2 : polR, resultant : R) ==
+       zero? P or zero? Q => [0, 0, 0]
+       (degP, degQ) := (degree P, degree Q)
+       if degP < degQ then
+          e : Integer := if odd? degP and odd? degQ then -1 else 1
+          l := resultantEuclidean(Q, e * P)
+          return [e * l.coef2, l.coef1, l.resultant]
+       if zero? degQ then
+          zero? degP => error "resultantEuclidean$PRS : constant polynomials"
+          s : R := LC(Q)^(degP-1)::NNI
+          return [0::polR, s::polR, s * LC(Q)]
+       -- init part over
+       s : R := LC(Q)^(degP - degQ)::NNI
        VP : Vector(polR) := [Q, 0::polR, 1::polR]
        pdiv := pseudoDivide(P, -Q)
        VQ : Vector(polR) := [pdiv.remainder, pdiv.coef::polR, pdiv.quotient]
@@ -383,34 +399,27 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           --  VP.1 = S_{c-1},  VQ.1 = S_{d-1},  s=lc(S_d)
           --  S_{c-1} = VP.2 P_0 + VP.3 Q_0,  S_{d-1} = VQ.2 P_0 + VQ.3 Q_0
           (P, Q) := (VP.1, VQ.1)
-          zero?(Q) => return construct(0::polR, 0::polR, 0::R)
-          e : NNI := degree(Q)
-          delta : NNI := (degree(P) - e)::NNI
-          if zero?(e) then
+          zero? Q => return [0::polR, 0::polR, 0::R]
+          degQ := degree Q
+          delta : NNI := (degree P - degQ)::NNI
+          if zero? degQ then
              l : Vector(polR) := Lazard3(VQ, LC(Q), s, delta)
-             return construct(l.2, l.3, LC(l.1))
+             return [l.2, l.3, LC(l.1)]
           ss : R := Lazard(LC(Q), s, delta)
           (VP, VQ) := (VQ, next_sousResultant3(VP, VQ, s, ss))
           s := ss
 
-    resultantEuclidean(P : polR, Q : polR) :
-                       Record(coef1 : polR, coef2 : polR, resultant : R) ==
-       zero?(P) or zero?(Q) => construct(0::polR, 0::polR, 0::R)
-       if degree(P) < degree(Q) then
-          e : Integer := if odd?(degree(P)) and odd?(degree(Q)) then -1 else 1
-          l := resultantEuclidean(Q, e * P)
-          return construct(e * l.coef2, l.coef1, l.resultant)
-       if zero?(degree(Q)) then
-          degP : NNI := degree(P)
-          zero?(degP) => error("resultantEuclidean$PRS : constant polynomials")
-          s : R := LC(Q)^(degP-1)::NNI
-          return construct(0::polR, s::polR, s * LC(Q))
-       R has Finite => resultantEuclidean_naif(P, Q)
-       return subResultantEuclidean(P, Q)
-
-    semiSubResultantEuclidean(P : polR, Q : polR) :
+    semiResultantEuclidean2(P : polR, Q : polR) :
                        Record(coef2 : polR, resultant : R) ==
-       s : R := LC(Q)^(degree(P) - degree(Q))::NNI
+       zero? P or zero? Q => [0, 0]
+       (degP, degQ) := (degree P, degree Q)
+       degP < degQ => error "semiResultantEuclidean2 : bad degrees"
+       if zero? degQ then
+          zero? degP => error "semiResultantEuclidean2 : constant polynomials"
+          s : R := LC(Q)^(degP-1)::NNI
+          return [s::polR, s * LC(Q)]
+       -- init part over
+       s : R := LC(Q)^(degP - degQ)::NNI
        VP : Vector(polR) := [Q, 1::polR]
        pdiv := pseudoDivide(P, -Q)
        VQ : Vector(polR) := [pdiv.remainder, pdiv.quotient]
@@ -418,27 +427,15 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           --  VP.1 = S_{c-1},  VQ.1 = S_{d-1},  s=lc(S_d)
           --  S_{c-1} = ...P_0 + VP.3 Q_0,  S_{d-1} = ...P_0 + VQ.3 Q_0
           (P, Q) := (VP.1, VQ.1)
-          zero?(Q) => return construct(0::polR, 0::R)
-          e : NNI := degree(Q)
-          delta : NNI := (degree(P) - e)::NNI
-          if zero?(e) then
+          zero? Q => return [0, 0]
+          degQ : NNI := degree Q
+          delta : NNI := (degree P - degQ)::NNI
+          if zero? degQ then
              l : Vector(polR) := Lazard3(VQ, LC(Q), s, delta)
-             return construct(l.2, LC(l.1))
+             return [l.2, LC(l.1)]
           ss : R := Lazard(LC(Q), s, delta)
           (VP, VQ) := (VQ, next_sousResultant3(VP, VQ, s, ss))
           s := ss
-
-    semiResultantEuclidean2(P : polR, Q : polR) :
-                       Record(coef2 : polR, resultant : R) ==
-       zero?(P) or zero?(Q) => construct(0::polR, 0::R)
-       degree(P) < degree(Q) => error("semiResultantEuclidean2 : bad degrees")
-       if zero?(degree(Q)) then
-          degP : NNI := degree(P)
-          zero?(degP) => error("semiResultantEuclidean2 : constant polynomials")
-          s : R := LC(Q)^(degP-1)::NNI
-          return construct(s::polR, s * LC(Q))
-       R has Finite => semiResultantEuclidean_naif(P, Q)
-       return semiSubResultantEuclidean(P, Q)
 
     semiResultantEuclidean1(P : polR, Q : polR) :
                        Record(coef1 : polR, resultant : R) ==
@@ -872,24 +869,23 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           rr : R := (LC(UVs) exquo gl)::R
           return construct(c2, rr)
 
-       gcd_naif(P : polR, Q : polR) : polR ==
-       -- valid over a field
-          zero?(P) => (Q exquo LC(Q))::polR
-          repeat
-             zero?(Q) => return (P exquo LC(P))::polR
-             zero?(degree(Q)) => return 1$polR
+       if R has FiniteFieldCategory then
+         gcd(P : polR, Q : polR) : polR ==
+           zero? P => (Q exquo LC(Q))::polR
+           repeat
+             zero? Q => return (P exquo LC(P))::polR
+             zero? degree Q => return 1$polR
              (P, Q) := (Q, divide(P, Q).remainder)
 
        gcd(P : polR, Q : polR) : polR ==
-          R has Finite => gcd_naif(P, Q)
-          zero?(P) => Q
-          zero?(Q) => P
-          cP : R := content(P)
-          cQ : R := content(Q)
+          zero? P => Q
+          zero? Q => P
+          cP : R := content P
+          cQ : R := content Q
           P := (P exquo cP)::polR
           Q := (Q exquo cQ)::polR
           G : polR := subResultantGcd(P, Q)
-          return gcd(cP, cQ) * primitivePart(G)
+          gcd(cP, cQ) * primitivePart(G)
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.
