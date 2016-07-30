@@ -1620,8 +1620,7 @@ NewSparseMultivariatePolynomial(R, VarSet) : Exports == Implementation where
          test := degree(a, b.v)::Z - db
        [a, lcb, pow]
 
-     if R has IntegralDomain
-     then
+     if R has IntegralDomain then
 
        packD := PseudoRemainderSequence(%, D)
 
@@ -1631,23 +1630,10 @@ NewSparseMultivariatePolynomial(R, VarSet) : Exports == Implementation where
          error "in exactQuotient$NSMP: bad args"
 
        LazardQuotient(x : %, y : %, n : N) : % ==
-         zero?(n) => error("LazardQuotient$NSMP : n = 0")
---         one?(n) => x
-         (n = 1) => x
-         a : N := 1
-         while n >= (b := 2*a) repeat a := b
-         c : % := x
-         n := (n - a)::N
-         repeat
---           one?(a) => return c
-           (a = 1) => return c
-           a := a quo 2
-           c := exactQuo(c*c, y)
-           if n >= a then ( c := exactQuo(c*x, y) ; n := (n - a)::N )
+         LazardQuotient(x, y, n)$packD
 
        LazardQuotient2(p : %, a : %, b : %, n : N) ==
-         zero?(n) => error " in LazardQuotient2$NSMP: bad #4"
---         one?(n) => p
+         zero? n => error " in LazardQuotient2$NSMP: bad #4"
          (n = 1) => p
          c : %  := LazardQuotient(a, b, (n-1)::N)
          exactQuo(c*p, b)

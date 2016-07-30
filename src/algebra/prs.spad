@@ -176,11 +176,11 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
          ++ \spad{divide(F, G)} computes quotient and rest
          ++ of the exact euclidean division of \spad{F} by \spad{G}.
 
-       Lazard : (R, R, NNI) -> R
-         ++ \spad{Lazard(x, y, n)} computes \spad{x^n exquo y^(n-1)}
+       LazardQuotient : (R, R, NNI) -> R
+         ++ \spad{LazardQuotient(x, y, n)} computes \spad{x^n exquo y^(n-1)}
 
-       Lazard2 : (polR, R, R, NNI) -> polR
-         ++ \spad{Lazard2(F, x, y, n)} computes
+       LazardQuotient2 : (polR, R, R, NNI) -> polR
+         ++ \spad{LazardQuotient2(F, x, y, n)} computes
          ++ \spad{(x^(n-1) * F) exquo y^(n-1)}
 
        next_sousResultant2 : (polR, polR, polR, R) -> polR
@@ -283,35 +283,36 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           (P, Q) := (Q, divid.remainder)
           (old_cf2, cf2) := (cf2, old_cf2 - divid.quotient * cf2)
 
-    Lazard(x : R, y : R, n : NNI) : R ==
-       zero?(n) => error("Lazard$PRS : n = 0")
---       one?(n) => x
-       (n = 1) => x
+    exactQuo(x : R, y : R) : R ==
+       ex : Union(R, "failed") := x exquo$R y
+       ex case R => ex::R
+       error "exactQuo$PRS: bad args"
+
+    LazardQuotient(x : R, y : R, n : NNI) : R ==
+       zero? n => error("LazardQuotient$PRS : n = 0")
+       n = 1 => x
        a : NNI := 1
        while n >= (b := 2*a) repeat a := b
        c : R := x
        n := (n - a)::NNI
-       repeat                    --  c = x^i / y^(i-1),  i = n_0 quo a,  a = 2^?
---          one?(a) => return c
-          (a = 1) => return c
+       repeat  --  c = x^i / y^(i-1),  i = n_0 quo a,  a = 2^?
+          a = 1 => return c
           a := a quo 2
-          c := ((c * c) exquo y)::R
-          if n >= a then ( c := ((c * x) exquo y)::R ; n := (n - a)::NNI )
+          c := exactQuo(c*c, y)
+          if n >= a then ( c := exactQuo(c*x, y) ; n := (n - a)::NNI )
 
-    Lazard2(F : polR, x : R, y : R, n : NNI) : polR ==
-       zero?(n) => error("Lazard2$PRS : n = 0")
---       one?(n) => F
-       (n = 1) => F
-       x := Lazard(x, y, (n-1)::NNI)
-       return ((x * F) exquo y)::polR
+    LazardQuotient2(F : polR, x : R, y : R, n : NNI) : polR ==
+       zero? n => error("LazardQuotient2$PRS : n = 0")
+       n = 1 => F
+       x := LazardQuotient(x, y, (n-1)::NNI)
+       ((x * F) exquo y)::polR
 
-    Lazard3(V : Vector(polR), x : R, y : R, n : NNI) : Vector(polR) ==
+    Lazard3(V : Vector polR, x : R, y : R, n : NNI) : Vector polR ==
     -- computes x^(n-1) * V / y^(n-1)
-       zero?(n) => error("Lazard3$prs : n = 0")
---       one?(n) => V
-       (n = 1) => V
-       x := Lazard(x, y, (n-1)::NNI)
-       return ((x * V) exquo y)
+       zero? n => error("Lazard3$prs : n = 0")
+       n = 1 => V
+       x := LazardQuotient(x, y, (n-1)::NNI)
+       (x * V) exquo y
 
     next_sousResultant2(P : polR, Q : polR, Z : polR, s : R) : polR ==
        (lcP, c, se) := (LC(P), LC(Q), LC(Z))
@@ -372,7 +373,7 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           -- Q = S_d-1,  s = lc(S_d)
           zero? Q => return 0
           delta := (degree(P) - degree(Q))::NNI
-          Z : polR := Lazard2(Q, LC(Q), s, delta)
+          Z : polR := LazardQuotient2(Q, LC(Q), s, delta)
           -- Z = S_e ~ S_d-1
           zero? degree Z => return LC(Z)
           (P, Q) := (Q, next_sousResultant2(P, Q, Z, s))
@@ -405,7 +406,7 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           if zero? degQ then
              l : Vector(polR) := Lazard3(VQ, LC(Q), s, delta)
              return [l.2, l.3, LC(l.1)]
-          ss : R := Lazard(LC(Q), s, delta)
+          ss : R := LazardQuotient(LC(Q), s, delta)
           (VP, VQ) := (VQ, next_sousResultant3(VP, VQ, s, ss))
           s := ss
 
@@ -433,7 +434,7 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           if zero? degQ then
              l : Vector(polR) := Lazard3(VQ, LC(Q), s, delta)
              return [l.2, LC(l.1)]
-          ss : R := Lazard(LC(Q), s, delta)
+          ss : R := LazardQuotient(LC(Q), s, delta)
           (VP, VQ) := (VQ, next_sousResultant3(VP, VQ, s, ss))
           s := ss
 
@@ -460,7 +461,7 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           (degP, degQ) := (degree(P), degree(Q))
           i = degP-1 => return Q
           zero?(Q) or (i > degQ) => return 0
-          Z : polR := Lazard2(Q, LC(Q), s, (degP - degQ)::NNI)
+          Z : polR := LazardQuotient2(Q, LC(Q), s, (degP - degQ)::NNI)
           --  Z = S_e ~ S_d-1
           i = degQ => return Z
           (P, Q) := (Q, next_sousResultant2(P, Q, Z, s))
@@ -543,7 +544,7 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           -- P = S_{c-1},  Q = S_{d-1},  s = lc(S_d)
           zero?(Q) or (i > degree(Q)) => return 0
           i = degree(Q) => return Q
-          Z : polR := Lazard2(Q, LC(Q), s, (degree(P) - degree(Q))::NNI)
+          Z : polR := LazardQuotient2(Q, LC(Q), s, (degree(P) - degree(Q))::NNI)
           --  Z = S_e ~ S_d-1
           (P, Q) := (Q, next_sousResultant2(P, Q, Z, s))
           s := LC(Z)
@@ -572,7 +573,7 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           zero?(Q) or (i > degree(Q)) =>
                return construct(0::polR, 0::polR, 0::polR)
           i = degree(Q) => return construct(VQ.2, VQ.3, VQ.1)
-          ss : R := Lazard(LC(Q), s, (degree(P)-degree(Q))::NNI)
+          ss : R := LazardQuotient(LC(Q), s, (degree(P)-degree(Q))::NNI)
           (VP, VQ) := (VQ, next_sousResultant3(VP, VQ, s, ss))
           s := ss
 
@@ -599,7 +600,7 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           zero?(Q) or (i > degree(Q)) =>
                return construct(0::polR, 0::polR)
           i = degree(Q) => return construct(VQ.2, VQ.1)
-          ss : R := Lazard(LC(Q), s, (degree(P)-degree(Q))::NNI)
+          ss : R := LazardQuotient(LC(Q), s, (degree(P)-degree(Q))::NNI)
           (VP, VQ) := (VQ, next_sousResultant3(VP, VQ, s, ss))
           s := ss
 
@@ -614,7 +615,7 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           -- Z = S_d  (except the first turn : Z = P)
           -- P = S_{c-1} ~ S_d,  Q = S_{d-1},  s = lc(S_d)
           zero?(Q) => return Z
-          Z := Lazard2(Q, LC(Q), s, (degree(P) - degree(Q))::NNI)
+          Z := LazardQuotient2(Q, LC(Q), s, (degree(P) - degree(Q))::NNI)
           -- Z = S_e ~ S_{d-1}
           zero?(degree(Z)) => return Z
           (P, Q) := (Q, next_sousResultant2(P, Q, Z, s))
@@ -696,7 +697,7 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           L := concat(Q, L)
           -- L = [S_{d-1}, ...., S_{q-1}]
           delta : NNI := (degree(P) - degree(Q))::NNI
-          Z : polR := Lazard2(Q, LC(Q), s, delta)            -- Z = S_e ~ S_d-1
+          Z : polR := LazardQuotient2(Q, LC(Q), s, delta)  -- Z = S_e ~ S_d-1
           if delta > 1 then L := concat(Z, L)
           -- L = [S_e, ...., S_{q-1}]
           zero?(degree(Z)) => return L
@@ -716,7 +717,7 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           e : NNI := degree(Q)
           L := concat(e, L)
           delta : NNI := (degree(P) - e)::NNI
-          Z : polR := Lazard2(Q, LC(Q), s, delta)            -- Z = S_e ~ S_d-1
+          Z : polR := LazardQuotient2(Q, LC(Q), s, delta)  -- Z = S_e ~ S_d-1
           if delta > 1 then L := concat(e, L)
           zero?(e) => return L
           (P, Q) := (Q, next_sousResultant2(P, Q, Z, s))
@@ -734,7 +735,7 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           -- P = S_{c-1},  Q = S_{d-1},  s = lc(S_d)
           zero?(Q) => return P
           zero?(degree(Q)) => return 1$polR
-          Z : polR := Lazard2(Q, LC(Q), s, (degree(P) - degree(Q))::NNI)
+          Z : polR := LazardQuotient2(Q, LC(Q), s, (degree(P) - degree(Q))::NNI)
           -- Z = S_e ~ S_d-1
           (P, Q) := (Q, next_sousResultant2(P, Q, Z, s))
           s := LC(Z)
@@ -759,7 +760,7 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           zero?(Q) => return construct(VP.2, VP.3, P)
           e : NNI := degree(Q)
           zero?(e) => return construct(VQ.2, VQ.3, Q)
-          ss := Lazard(LC(Q), s, (degree(P) - e)::NNI)
+          ss := LazardQuotient(LC(Q), s, (degree(P) - e)::NNI)
           (VP, VQ) := (VQ, next_sousResultant3(VP, VQ, s, ss))
           s := ss
 
@@ -782,7 +783,7 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
           zero?(Q) => return construct(VP.2, P)
           e : NNI := degree(Q)
           zero?(e) => return construct(VQ.2, Q)
-          ss := Lazard(LC(Q), s, (degree(P) - e)::NNI)
+          ss := LazardQuotient(LC(Q), s, (degree(P) - e)::NNI)
           (VP, VQ) := (VQ, next_sousResultant3(VP, VQ, s, ss))
           s := ss
 
