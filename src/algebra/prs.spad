@@ -172,13 +172,6 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
 
        -- sub-routines exported for convenience ----------------------------
 
-       "*" : (R, Vector(polR)) -> Vector(polR)
-         ++ \spad{r * v} computes the product of \spad{r} and \spad{v}
-
-       "exquo" : (Vector(polR), R) -> Vector(polR)
-         ++ \spad{v exquo r} computes
-         ++ the exact quotient of \spad{v} by \spad{r}
-
        divide : (polR, polR) -> Record(quotient : polR, remainder : polR)
          ++ \spad{divide(F, G)} computes quotient and rest
          ++ of the exact euclidean division of \spad{F} by \spad{G}.
@@ -215,10 +208,11 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
   Implementation == add
     X : polR := monomial(1$R, 1)
 
-    r : R * v : Vector(polR) == r::polR * v
+    -- vector version of "*" and "exquo"
+    _*(r : R , v : Vector polR) : Vector polR == r::polR * v
               -- the instruction  map(r * #1, v) is slower !?
-
-    v : Vector(polR) exquo r : R == map((p1 : polR) : polR +-> (p1 exquo r)::polR, v)
+    _exquo(v : Vector polR, r : R) : Vector polR ==
+        map((p1 : polR) : polR +-> (p1 exquo r)::polR, v)
 
     divide(F : polR, G : polR) : Record(quotient : polR, remainder : polR)==
     -- computes quotient and rest of the exact euclidean division of F by G
