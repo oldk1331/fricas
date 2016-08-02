@@ -886,17 +886,16 @@ RightOpenIntervalRootCharacterization(TheField, ThePolDom) : PUB == PRIV where
 ++ This domain implements the real closure of an ordered field.
 ++ Note:
 ++ The code here is generic i.e. it does not depend of the way the operations
-++ are done. The two macros PME and SEG should be passed as functorial
-++ arguments to the domain. It does not help much to write a category
+++ are done. The two macros PME and SEG should be passed as function
+++ arguments in this domain. It does not help much to write a category
 ++ since non trivial methods cannot be placed there either.
-++
 RealClosure(TheField) : PUB == PRIV where
 
    TheField   : Join(OrderedRing, Field, RealConstant)
 
 --   ThePols    : UnivariatePolynomialCategory(%)
 --   PME       ==> ThePols
---   TheCharDom : RealRootCharacterizationCategory(%, ThePols )
+--   TheCharDom : RealRootCharacterizationCategory(%, ThePols)
 --   SEG       ==> TheCharDom
 -- this does not work yet
 
