@@ -6,16 +6,15 @@
 ++ Also See:
 ++ AMS Classifications:
 ++ Keywords: localization
-++ References:
+++ References: Sturm-Habicht Sequences, Determinants and Real Roots of
+++             Univariate Polynomials, 1993, Lalo Gonzalez-Vega
 ++ Description:
-++ This package produces functions for counting
-++ etc. real roots of univariate polynomials in x over R, which must
-++ be an OrderedIntegralDomain
-SturmHabichtPackage(R, x) : T == C where
+++ This package provides functions for counting
+++ real roots of univariate polynomials over R, which must
+++ be an OrderedIntegralDomain.
+SturmHabichtPackage(R, UP) : T == C where
   R : OrderedIntegralDomain
-  x : Symbol
-
-  UP ==> UnivariatePolynomial(x, R)
+  UP : UnivariatePolynomialCategory R
   L ==> List
   INT ==> Integer
   NNI ==> NonNegativeInteger
@@ -57,7 +56,7 @@ SturmHabichtPackage(R, x) : T == C where
 
      delta: NNI -> R
      polsth1: (UP, NNI, UP, NNI, R) -> L UP
-     polsth2: (UP, NNI, UP, NNI, R) -> L UP
+     polsth2: (UP, NNI, UP, R) -> L UP
      polsth3: (UP, NNI, UP, NNI, R) -> L UP
      variation: L R -> INT
      permanence: L R -> INT
@@ -68,9 +67,9 @@ SturmHabichtPackage(R, x) : T == C where
      wfunctaux: L R -> INT
      wfunct: L R -> INT
 
-     ++ \spad{subresultantSequenceBegin(P, Q)} computes the initial terms
-     ++ of the Subresultant sequence Sres(j)(P, deg(P), Q, deg(Q))
-     ++ when deg(Q)<deg(P)
+     -- \spad{subresultantSequenceBegin(P, Q)} computes the initial terms
+     -- of the Subresultant sequence Sres(j)(P, deg(P), Q, deg(Q))
+     -- when deg(Q)<deg(P)
      subresultantSequenceBegin(p1, p2) : L UP ==
          n : NNI := (degree(p1)-degree(p2)-1)::NNI
          Pr : UP := pseudoRemainder(p1, p2)
@@ -156,7 +155,7 @@ SturmHabichtPackage(R, x) : T == C where
              List2 := append([Pr6], List2)
          append(Listf, List2)
 
-     polsth2(p1 : UP, p : NNI, p2 : UP, q : NNI, c1 : R) : L UP ==
+     polsth2(p1 : UP, p : NNI, p2 : UP, c1 : R) : L UP ==
          sc1 := (sign(c1))::R
          Pr1 := monomial(sc1, 0)*p1
          Pr2 := differentiate(p1)*p2
@@ -189,7 +188,7 @@ SturmHabichtPackage(R, x) : T == C where
        q : NNI := degree(p2)
        c1 : R := leadingCoefficient(p1)
        c1 = 1 or q = 1 => polsth1(p1, p, p2, q, c1)
-       q = 0 => polsth2(p1, p, p2, q, c1)
+       q = 0 => polsth2(p1, p, p2, c1)
        polsth3(p1, p, p2, q, c1)
 
 
