@@ -379,6 +379,7 @@ case $fricas_lisp_flavor in
 esac
 AC_SUBST(fricas_quiet_flags)
 
+AC_MSG_CHECKING([compiled Lisp file extension])
 if test -z $fricas_fasl_type; then
    AC_MSG_ERROR([Could not determine extension for compiled Lisp files])
 fi
