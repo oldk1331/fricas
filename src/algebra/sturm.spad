@@ -81,8 +81,10 @@ SturmHabichtPackage(R, UP) : T == C where
 
      subresultantSequenceInner(p1, p2) : L UP ==
          Lin : L UP := subresultantSequenceBegin(p1, p2)
-         while degree last Lin ~= 0 repeat
+         while last Lin ~= 0 repeat
+             -- break the loop until the last element is 0
              Lin := subresultantSequenceNext(Lin)
+         Lin := delete!(Lin, #Lin) -- remove the last 0
          -- It's possible that #Lin is larger than degree(p1)
          for j in #Lin..degree(p1) repeat
              Lin := append(Lin, [0])
