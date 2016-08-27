@@ -151,7 +151,7 @@ REGRESS = agcd.output array.output bezout.output bugs2007.output \
       lode.output lodof.output lodof2.output \
       mantepse.output matcat.output mts.output ord.output \
       pgcd.output polylift.output psgenfcn.output \
-      series3.output ssolve.output \
+      seg.output series3.output ssolve.output \
       table.output tensor.output vsbasis.output
 
 READINS = conformal.input
