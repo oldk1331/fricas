@@ -36,9 +36,6 @@ PolynomialInterpolationAlgorithms(F, P) : Cat == Body   where
                 ip := ip + (yi/xp) * pp
             ip
 
-@
-\section{package PINTERP PolynomialInterpolation}
-<<package PINTERP PolynomialInterpolation>>=
 )abbrev package PINTERP PolynomialInterpolation
 ++ Description:
 ++ This package exports interpolation algorithms
@@ -64,9 +61,6 @@ PolynomialInterpolation(xx, F) : Cat == Body   where
         interpolate(lx, ly) ==
             LagrangeInterpolation(lx, ly)$PIA(F, SUP F)
 
-@
-\section{License}
-<<license>>=
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.
 --
@@ -97,15 +91,3 @@ PolynomialInterpolation(xx, F) : Cat == Body   where
 --LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 --NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 --SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-@
-<<*>>=
-<<license>>
-
-<<package PINTERPA PolynomialInterpolationAlgorithms>>
-<<package PINTERP PolynomialInterpolation>>
-@
-\eject
-\begin{thebibliography}{99}
-\bibitem{1} nothing
-\end{thebibliography}
-\end{document}
