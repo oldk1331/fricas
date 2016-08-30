@@ -138,5 +138,12 @@ mm := matrix([[1,1,0,0,0,0,1,0],[0,1,0,0,1,1,0,0],[1,0,0,-2,0,0,1,0],
               [0,1,0,5,1,0,0,0],[0,0,0,0,1,0,0,0]])
 test_smith()
 
+testcase "hashing SAE"
+
+T ==> SAE(INT, UP(y, INT), y^2+5)
+y : T := y
+testEquals("hash(y)", "hash(y)")
+testEquals("hash(y^3)", "hash(-5*y)")
+
 )set output algebra on
 statistics()
