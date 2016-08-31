@@ -6,16 +6,16 @@
 ++ Also See:
 ++ AMS Classifications:
 ++ Keywords: localization
-++ References:
+++ References: Sturm-Habicht Sequences, Determinants and Real Roots of
+++             Univariate Polynomials, 1993, Lalo Gonzalez-Vega
+++             https://www.researchgate.net/profile/Laureano_Gonzalez-Vega/publication/265659293_SturmHabicht_Sequences_Determinants_and_Real_Roots_of_Univariate_Polynomials/links/55b5fa0f08ae9289a08a8de7.pdf
 ++ Description:
-++ This package produces functions for counting
-++ etc. real roots of univariate polynomials in x over R, which must
-++ be an OrderedIntegralDomain
-SturmHabichtPackage(R, x) : T == C where
-  R : OrderedIntegralDomain
-  x : Symbol
-
-  UP ==> UnivariatePolynomial(x, R)
+++ This package provides functions for counting
+++ real roots of univariate polynomials over R, which must
+++ be an OrderedIntegralDomain.
+SturmHabichtPackage(R, UP) : T == C where
+  R : IntegralDomain
+  UP : UnivariatePolynomialCategory R
   L ==> List
   INT ==> Integer
   NNI ==> NonNegativeInteger
@@ -30,23 +30,23 @@ SturmHabichtPackage(R, x) : T == C where
      SturmHabichtCoefficients : (UP, UP) -> L R
        ++ SturmHabichtCoefficients(p1, p2) computes the principal
        ++ Sturm-Habicht coefficients of p1 and p2
-     SturmHabicht : (UP, UP) -> INT
-       ++ SturmHabicht(p1, p2) computes c_{+}-c_{-} where
-       ++ c_{+} is the number of real roots of p1 with p2>0 and c_{-}
-       ++ is the number of real roots of p1 with p2<0. If p2=1 what
-       ++ you get is the number of real roots of p1.
-     countRealRoots : UP -> INT
-       ++ countRealRoots(p) says how many real roots p has
-     if R has GcdDomain then
-        SturmHabichtMultiple : (UP, UP) -> INT
-          ++ SturmHabichtMultiple(p1, p2) computes c_{+}-c_{-} where
-          ++ c_{+} is the number of real roots of p1 with p2>0 and c_{-}
-          ++ is the number of real roots of p1 with p2<0. If p2=1 what
-          ++ you get is the number of real roots of p1.
-        countRealRootsMultiple : UP -> INT
-          ++ countRealRootsMultiple(p) says how many real roots p has,
-          ++ counted with multiplicity
-
+     if R has OrderedIntegralDomain then
+         SturmHabicht : (UP, UP) -> INT
+             ++ SturmHabicht(p1, p2) computes c_{+}-c_{-} where
+             ++ c_{+} is the number of real roots of p1 with p2>0 and c_{-}
+             ++ is the number of real roots of p1 with p2<0. If p2=1 what
+             ++ you get is the number of real roots of p1.
+         countRealRoots : UP -> INT
+             ++ countRealRoots(p) says how many real roots p has.
+         if R has GcdDomain then
+             SturmHabichtMultiple : (UP, UP) -> INT
+                 ++ SturmHabichtMultiple(p1, p2) computes c_{+}-c_{-} where
+                 ++ c_{+} is the number of real roots of p1 with p2>0 and c_{-}
+                 ++ is the number of real roots of p1 with p2<0. If p2=1 what
+                 ++ you get is the number of real roots of p1.
+             countRealRootsMultiple : UP -> INT
+                 ++ countRealRootsMultiple(p) says how many real roots p has,
+                 ++ counted with multiplicity.
 
   C == add
      p1, p2 : UP
@@ -55,9 +55,54 @@ SturmHabichtPackage(R, x) : T == C where
      subresultantSequenceBegin: (UP, UP) -> L UP
      subresultantSequenceNext: L UP -> L UP
 
+     -- \spad{subresultantSequenceBegin(P, Q)} computes the initial terms
+     -- of the Subresultant sequence Sres(j)(P, deg(P), Q, deg(Q))
+     -- when deg(P) > deg(Q)
+     subresultantSequenceBegin(p1, p2) : L UP ==
+         n : NNI := (degree(p1)-degree(p2)-1)::NNI
+         Pr : UP := pseudoRemainder(p1, p2)
+         n = 0 => [p1, p2, Pr]
+         lc1 := leadingCoefficient p1
+         lc2 := leadingCoefficient p2
+         LSubr := append(new((n-1)::NNI, 0), [(lc2)^n*p2, (-1)^n*Pr])
+         append([p1, p2], LSubr)
+
+     subresultantSequenceNext(LcsI : L UP) : L UP ==
+         p2 : UP := last LcsI
+         p1 : UP := second reverse LcsI
+         n : NNI := (degree(p1)-degree(p2)-1)::NNI
+         c1 : R := leadingCoefficient p1
+         Pr : UP := pseudoRemainder(p1, p2)
+         n = 0 => append(LcsI, [(Pr exquo c1^2)::UP])
+         pr1 := (leadingCoefficient(p2)^n*p2 exquo c1^n)::UP
+         pr2 := (Pr exquo (-c1)^(n+2))::UP
+         LSub := append(new((n-1)::NNI, 0), [pr1, pr2])
+         append(LcsI, LSub)
+
+     subresultantSequenceInner(p1, p2) : L UP ==
+         Lin : L UP := subresultantSequenceBegin(p1, p2)
+         while last Lin ~= 0 repeat
+             -- break the loop until the last element is 0
+             Lin := subresultantSequenceNext(Lin)
+         Lin := delete!(Lin, #Lin) -- remove the last 0
+         -- It's possible that #Lin is larger than degree(p1)
+         for j in #Lin..degree(p1) repeat
+             Lin := append(Lin, [0])
+         Lin
+
+     -- Computation of the subresultant sequence Sres(j)(P, deg(P), Q, deg(Q))
+     -- when deg(P) > deg(Q)
+     subresultantSequence(p1, p2) : L UP ==
+         n : INT := degree(p1)-degree(p2)-1
+         n < 0 => error "subresultantSequence : degree(p1) <= degree(p2)"
+         List1 : L UP := subresultantSequenceInner(p1, p2)
+         -- #List1 is degree(p1)+1, we need the last degree(p2) elements
+         rest(List1, (n+2)::NNI)
+
+
      delta: NNI -> R
      polsth1: (UP, NNI, UP, NNI, R) -> L UP
-     polsth2: (UP, NNI, UP, NNI, R) -> L UP
+     polsth2: (UP, NNI, UP, R) -> L UP
      polsth3: (UP, NNI, UP, NNI, R) -> L UP
      variation: L R -> INT
      permanence: L R -> INT
@@ -68,129 +113,70 @@ SturmHabichtPackage(R, x) : T == C where
      wfunctaux: L R -> INT
      wfunct: L R -> INT
 
-     ++ \spad{subresultantSequenceBegin(P, Q)} computes the initial terms
-     ++ of the Subresultant sequence Sres(j)(P, deg(P), Q, deg(Q))
-     ++ when deg(Q)<deg(P)
-     subresultantSequenceBegin(p1, p2) : L UP ==
-         n : NNI := (degree(p1)-degree(p2)-1)::NNI
-         Pr : UP := pseudoRemainder(p1, p2)
-         n = 0 =>
-             [p1, p2, Pr]
-         lc1 := leadingCoefficient p1
-         lc2 := leadingCoefficient p2
-         n = 1 =>
-             [p1, p2, lc1*lc2*p2, -lc1*Pr]
-         LSubr := append([p1, p2], new((n-1)::NNI, 0))
-         append(LSubr, [(lc1*lc2)^n*p2, (-lc1)^n*Pr])
-
-     subresultantSequenceNext(LcsI : L UP) : L UP ==
-         p2 : UP := last LcsI
-         p1 : UP := second reverse LcsI
-         n : NNI := (degree(p1)-degree(p2)-1)::NNI
-         c1 : R := leadingCoefficient p1
-         Pr : UP := pseudoRemainder(p1, p2)
-         n = 0 =>
-             append(LcsI, [(Pr exquo c1^2)::UP])
-         pr1 := (leadingCoefficient(p2)^n*p2 exquo c1^n)::UP
-         pr2 := (Pr exquo (-c1)^(n+2))::UP
-         LSub := append(new((n-1)::NNI, 0), [pr1, pr2])
-         append(LcsI, LSub)
-
-     subresultantSequenceInner(p1, p2) : L UP ==
-         Lin : L UP := subresultantSequenceBegin(p1, p2)
-         indf : NNI := if Lin.last ~= 0 then degree(Lin.last)
-                                        else 0
-         while indf ~= 0 repeat
-             Lin := subresultantSequenceNext(Lin)
-             indf := if Lin.last ~= 0 then degree(Lin.last)
-                                      else 0
-         -- It's possible that #Lin is larger than degree(p1)
-         for j in #Lin..degree(p1) repeat
-             Lin := append(Lin, [0])
-         Lin
-
-
--- Computation of the subresultant sequence Sres(j)(P, p, Q, q) when:
---             deg(P) = p   and   deg(Q) = q   and   p > q
-
-     subresultantSequence(p1, p2) : L UP ==
-         n : INT := degree(p1)-degree(p2)-1
-         n < 0 => error "subresultantSequence : degree(p1) <= degree(p2)"
-         List1 : L UP := subresultantSequenceInner(p1, p2)
-         List2 : L UP := [p1, p2]
-         c1 : R := leadingCoefficient(p1)
-         for j in 3..#List1 repeat
-             Pr0 := List1.j
-             Pr1 := (Pr0 exquo c1^(n::NNI))::UP
-             List2 := append(List2, [Pr1])
-         List2
-
-
 -- Computation of the delta function:
 
      delta(int1 : NNI) : R ==
        (-1)^((int1*(int1+1) exquo 2)::NNI)
 
+     sign2 : R -> R
+     -- polsth* functions use function "sign" only on the leading coefficient
+     -- of its first argument, unlike other functions that requires R to be
+     -- OrderedIntegralDomain, which use function "sign" on every coefficient.
+     if R has OrderedIntegralDomain then
+         sign2 y == (sign y)::R
+     else
+         import ToolsForSign R
+         sign2 y ==
+             res := sign y
+             res case "failed" =>
+                 error "the sign of leading coefficient can not be determinated"
+             res::INT::R
 
 -- Computation of the Sturm-Habicht sequence of two polynomials P and Q
 -- in R[x] where R is an ordered integral domain
 
      polsth1(p1 : UP, p : NNI, p2 : UP, q : NNI, c1 : R) : L UP ==
-         sc1 := (sign(c1))::R
+         sc1 := sign2 c1
          Pr1 := pseudoRemainder(differentiate(p1)*p2, p1)
          Pr2 := (Pr1 exquo c1^q)::UP
          c2 := leadingCoefficient(Pr2)
          r  := degree(Pr2)
-         Pr3 := monomial(sc1^((p-r-1)::NNI), 0)*p1
-         Pr4 := monomial(sc1^((p-r-1)::NNI), 0)*Pr2
+         t : NNI := (p-r-1)::NNI
+         Pr3 : UP := sc1^(t)*p1
+         Pr4 : UP := sc1^(t)*Pr2
          Listf : L UP := [Pr3, Pr4]
-         if r < p-1 then
-             Pr5 := monomial(delta((p-r-1)::NNI)*c2^((p-r-1)::NNI), 0)*Pr2
-             Listf := append(Listf, new((p-r-2)::NNI, 0))
+         if t > 0 then
+             Pr5 := delta(t)*c2^(t)*Pr2
+             Listf := append(Listf, new((t-1)::NNI, 0))
              Listf := append(Listf, [Pr5])
          List1 : L UP := if Pr1 = 0 then Listf
-                          else subresultantSequence(p1, Pr2)
-         List2 : L UP := []
-         for j in 0..(r-1) repeat
-             Pr6 := monomial(delta((p-j-1)::NNI), 0)*List1.((p-j+1)::NNI)
-             List2 := append([Pr6], List2)
-         append(Listf, List2)
+                             else subresultantSequence(p1, Pr2)
+         List1 := [delta(t+i)*Pr for i in 1..r for Pr in List1]
+         append(Listf, List1)
 
-     polsth2(p1 : UP, p : NNI, p2 : UP, q : NNI, c1 : R) : L UP ==
-         sc1 := (sign(c1))::R
-         Pr1 := monomial(sc1, 0)*p1
+     polsth2(p1 : UP, p : NNI, p2 : UP, c1 : R) : L UP ==
+         sc1 := sign2 c1
+         Pr1 := sc1*p1
          Pr2 := differentiate(p1)*p2
-         Pr3 := monomial(sc1, 0)*Pr2
-         Listf : L UP := [Pr1, Pr3]
+         Pr3 := sc1*Pr2
          List1 := subresultantSequence(p1, Pr2)
-         List2 : L UP := []
-         for j in 0..(p-2) repeat
-             Pr4 := monomial(delta((p-j-1)::NNI), 0)*List1.((p-j+1)::NNI)
-             Pr5 := (Pr4 exquo c1)::UP
-             List2 := append([Pr5], List2)
-         append(Listf, List2)
+         List1 := [(delta(i)*Pr exquo c1)::UP for i in 1..p-1 for Pr in List1]
+         append([Pr1, Pr3], List1)
 
      polsth3(p1, p : NNI, p2, q : NNI, c1 : R) : L UP ==
-         sc1 := (sign(c1))::R
-         q1  := (q-1)::NNI
-         v := p+q1
-         Pr1 := monomial(delta(q1)*sc1^(q+1), 0)*p1
-         Listf : L UP := [Pr1]
+         sc1 := sign2 c1
+         Pr1 := delta((q-1)::NNI)*sc1^(q+1)*p1
          List1 := subresultantSequence(differentiate(p1)*p2, p1)
-         List2 : L UP := []
-         for j in 0..((p-1)::NNI) repeat
-             Pr2 := monomial(delta((v-j)::NNI), 0)*List1.((v-j+1)::NNI)
-             Pr3 := (Pr2 exquo c1)::UP
-             List2 := append([Pr3], List2)
-         append(Listf, List2)
+         List1 := [(delta((i+q-1)::NNI)*Pr exquo c1)::UP for i in 1..p for Pr in List1]
+         cons(Pr1, List1)
 
      SturmHabichtSequence(p1, p2) : L UP ==
-       p : NNI := degree(p1)
-       q : NNI := degree(p2)
-       c1 : R := leadingCoefficient(p1)
-       c1 = 1 or q = 1 => polsth1(p1, p, p2, q, c1)
-       q = 0 => polsth2(p1, p, p2, q, c1)
-       polsth3(p1, p, p2, q, c1)
+         p : NNI := degree(p1)
+         q : NNI := degree(p2)
+         c1 : R := leadingCoefficient(p1)
+         c1 = 1 or q = 1 => polsth1(p1, p, p2, q, c1)
+         q = 0 => polsth2(p1, p, p2, c1)
+         polsth3(p1, p, p2, q, c1)
 
 
 -- Computation of the Sturm-Habicht principal coefficients of two
@@ -201,82 +187,78 @@ SturmHabichtPackage(R, x) : T == C where
          qp := #List1
          [coefficient(p, (qp-j)::NNI) for p in List1 for j in 1..qp]
 
-
+     if R has OrderedIntegralDomain then
 -- Computation of the number of sign variations of a list of non zero
 -- elements in an ordered integral domain
 
-     variation(Lsig : L R) : INT ==
-       size?(Lsig, 1) => 0
-       elt1 : R := first Lsig
-       elt2 : R := Lsig.2
-       sig1 : R := (sign(elt1*elt2))::R
-       List1 : L R := rest Lsig
-       sig1 = 1 => variation List1
-       1+variation List1
+         variation(Lsig : L R) : INT ==
+             size?(Lsig, 1) => 0
+             elt1 : R := first Lsig
+             elt2 : R := second Lsig
+             sig1 : R := (sign(elt1*elt2))::R
+             res : INT := variation rest Lsig
+             sig1 = 1 => res
+             1+res
 
 
 -- Computation of the number of sign permanences of a list of non zero
 -- elements in an ordered integral domain
 
-     permanence(Lsig : L R) : INT ==
-       size?(Lsig, 1) => 0
-       elt1 : R := first Lsig
-       elt2 : R := Lsig.2
-       sig1 : R := (sign(elt1*elt2))::R
-       List1 : L R := rest Lsig
-       sig1 = -1 => permanence List1
-       1+permanence List1
+         permanence(Lsig : L R) : INT ==
+             size?(Lsig, 1) => 0
+             elt1 : R := first Lsig
+             elt2 : R := second Lsig
+             sig1 : R := (sign(elt1*elt2))::R
+             res : INT := permanence rest Lsig
+             sig1 = -1 => res
+             1+res
 
 
 -- Computation of the functional W which works over a list of elements
 -- in an ordered integral domain, with non zero first element
 
-     qzeros(Lsig : L R) : L R ==
-         Lsig := reverse Lsig
-         while first Lsig = 0 repeat
-             Lsig := rest Lsig
-         reverse! Lsig
+         qzeros(Lsig : L R) : L R ==
+             rightTrim(Lsig, 0)
 
-     epsil(int1 : NNI, elt1 : R, elt2 : R) : INT ==
-       int1 = 0 => 0
-       odd? int1 => 0
-       ct1 : INT := if elt1 > 0 then 1 else -1
-       ct2 : INT := if elt2 > 0 then 1 else -1
-       ct3 := (int1 exquo 2)::NNI
-       ct4 := ct1*ct2
-       ((-1)^ct3)*ct4
+         epsil(int1 : NNI, elt1 : R, elt2 : R) : INT ==
+             int1 = 0 => 0
+             odd? int1 => 0
+             ct1 : INT := if elt1 > 0 then 1 else -1
+             ct2 : INT := if elt2 > 0 then 1 else -1
+             ct3 := (int1 exquo 2)::NNI
+             ct4 := ct1*ct2
+             ((-1)^ct3)*ct4
 
-     numbnce(Lsig : L R) : NNI ==
-         null Lsig => 0
-         first Lsig = 0 => 0
-         1 + numbnce(rest Lsig)
+         numbnce(Lsig : L R) : NNI ==
+             null Lsig => 0
+             first Lsig = 0 => 0
+             1 + numbnce rest Lsig
 
-     numbce(Lsig : L R) : NNI ==
-         null Lsig => 0
-         first Lsig ~= 0 => 0
-         1 + numbce rest Lsig
+         numbce(Lsig : L R) : NNI ==
+             null Lsig => 0
+             first Lsig ~= 0 => 0
+             1 + numbce rest Lsig
 
-     wfunctaux(Lsig : L R) : INT ==
-         null Lsig => 0
-         List2 : L R := []
-         List1 : L R := Lsig
-         cont1 : NNI := numbnce(List1)
-         for j in 1..cont1 repeat
-             List2 := append(List2, [first List1])
-             List1 := rest List1
-         ind2 : INT := 0
-         cont2 : NNI := numbce(List1)
-         for j in 1..cont2 repeat
-             List1 := rest List1
-         if cont2 > 0 then
-             ind2 := epsil(cont2, last List2, first List1)
-         ind3 : INT := permanence(List2) - variation(List2)
-         ind4 : INT := ind2+ind3
-         ind4 + wfunctaux(List1)
+         wfunctaux(Lsig : L R) : INT ==
+             null Lsig => 0
+             List2 : L R := []
+             List1 : L R := Lsig
+             cont1 : NNI := numbnce(List1)
+             for j in 1..cont1 repeat
+                 List2 := append(List2, [first List1])
+                 List1 := rest List1
+             ind2 : INT := 0
+             cont2 : NNI := numbce(List1)
+             for j in 1..cont2 repeat
+                 List1 := rest List1
+             if cont2 > 0 then
+                 ind2 := epsil(cont2, last List2, first List1)
+             ind3 : INT := permanence(List2) - variation(List2)
+             ind4 : INT := ind2+ind3
+             ind4 + wfunctaux(List1)
 
-     wfunct(Lsig : L R) : INT ==
-         List1 : L R := qzeros(Lsig)
-         wfunctaux(List1)
+         wfunct(Lsig : L R) : INT ==
+             wfunctaux qzeros Lsig
 
 
 -- Computation of the integer number:
@@ -291,35 +273,35 @@ SturmHabichtPackage(R, x) : T == C where
 --      - SturmHabicht(P,1) is the number of "real" roots of P,
 --      - SturmHabicht(P,Q^2) is the number of "real" roots of P making Q neq 0
 
-     SturmHabicht(p1 : UP, p2 : UP) : INT ==
-         p2 = 0 => 0
-         degree(p1) = 0 => 0
-         List1 : L UP := SturmHabichtSequence(p1, p2)
-         wfunct [leadingCoefficient p for p in List1]
+         SturmHabicht(p1 : UP, p2 : UP) : INT ==
+             p2 = 0 => 0
+             degree(p1) = 0 => 0
+             List1 : L UP := SturmHabichtSequence(p1, p2)
+             wfunct [leadingCoefficient p for p in List1]
 
-     countRealRoots(p1) : INT == SturmHabicht(p1, 1)
+         countRealRoots(p1) : INT == SturmHabicht(p1, 1)
 
-     if R has GcdDomain then
-        SturmHabichtMultiple(p1, p2) : INT ==
-          p2 = 0 => 0
-          degree(p1) = 0 => 0
-          SH : L UP := SturmHabichtSequence(p1, p2)
-          qp : NNI := #SH
-          ans := wfunct [coefficient(p, (qp-j)::NNI) for p in SH for j in 1..qp]
-          SH := reverse SH
-          while first SH = 0 repeat SH := rest SH
-          degree first SH = 0 => ans
-          -- OK: it probably wasn't square free, so this item is probably the
-          -- gcd of p1 and p1'
-          -- unless p1 and p2 have a factor in common (naughty!)
-          differentiate(p1) exquo first SH case UP =>
-             -- it was the gcd of p1 and p1'
-             ans+SturmHabichtMultiple(first SH, p2)
-          sqfr := factorList squareFree p1
-          #sqfr = 1 and sqfr.first.xpnt = 1 => ans
-          reduce("+",[f.xpnt*SturmHabicht(f.fctr,p2) for f in sqfr])
+         if R has GcdDomain then
+             SturmHabichtMultiple(p1, p2) : INT ==
+                 p2 = 0 => 0
+                 degree(p1) = 0 => 0
+                 SH : L UP := SturmHabichtSequence(p1, p2)
+                 qp : NNI := #SH
+                 ans := wfunct [coefficient(p, (qp-j)::NNI) for p in SH for j in 1..qp]
+                 SH := reverse SH
+                 while first SH = 0 repeat SH := rest SH
+                 degree first SH = 0 => ans
+                 -- OK: it probably wasn't square free, so this item is probably the
+                 -- gcd of p1 and p1'
+                 -- unless p1 and p2 have a factor in common (naughty!)
+                 differentiate(p1) exquo first SH case UP =>
+                     -- it was the gcd of p1 and p1'
+                     ans+SturmHabichtMultiple(first SH, p2)
+                 sqfr := factorList squareFree p1
+                 #sqfr = 1 and sqfr.first.xpnt = 1 => ans
+                 reduce("+",[f.xpnt*SturmHabicht(f.fctr,p2) for f in sqfr])
 
-        countRealRootsMultiple(p1) : INT == SturmHabichtMultiple(p1, 1)
+             countRealRootsMultiple(p1) : INT == SturmHabichtMultiple(p1, 1)
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.
