@@ -75,7 +75,7 @@ SPAD_SRCS= \
      random ratfact rdeefx rdesys real0q \
      realzero reclos rec regset rep1 rep2 \
      resring retract rf riccati rinterp \
-     rule scene seg serexp setorder sets sex sf \
+     rule scene seg serexp setorder sets sex sexpr sf \
      sgcf sign si skpol smith smith2 solvedio solvefor \
      solvelin solverad sortpak space special special2 sregset \
      ssolve stream string sttaylor sttf \
