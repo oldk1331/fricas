@@ -170,7 +170,11 @@ QuotientFieldCategory(S : IntegralDomain) : Category ==
         (deriv n * d - n * deriv d) / (d^2)
 
     if S has ConvertibleTo InputForm then
-      convert(x : %) : InputForm == (convert numer x) / (convert denom x)
+      convert(x : %) : InputForm ==
+        if denom x = 1$S then
+          convert numer x
+        else
+          (convert numer x) / (convert denom x)
 
     if S has RealConstant then
       convert(x : %) : Float == (convert numer x) / (convert denom x)
