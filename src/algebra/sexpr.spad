@@ -85,17 +85,20 @@ SymbolicExpression(R : Join(Comparable,ConvertibleTo(InputForm))) : Exports == I
     factor: % -> %
   Implementation ==> add
     Rep := InputForm
-    -- +0 is a hack to avoid premature conversion
-    hack(x:%):Rep == binary(convert('_+),[x::Rep,0::Rep])$InputForm
-    convert(x:%):F == interpret(hack x)$InputFormFunctions1(F)
     if R has IntegralDomain then
       0:% == convert(0$F)@InputForm
       1:% == convert(1$F)@InputForm
       numer(x) == numer(convert(x)@F) pretend MP
       denom(x) == denom(convert(x)@F) pretend MP
 
+    if F has FunctionSpace(Integer) then
+      factor(x:%):% ==
+        (factor(numer(convert(x)@F)$F)::OutputForm pretend InputForm /
+          factor(denom(convert(x)@F)$F)::OutputForm pretend InputForm)$InputForm
+
     if R has Ring then
       coerce(x:MP):% == convert(x)@InputForm
+
     coerce(x:Pi):% == convert(x)@InputForm
     coerce1(x:Rep):OutputForm ==
       if null? x then return empty()$OutputForm
@@ -112,6 +115,9 @@ SymbolicExpression(R : Join(Comparable,ConvertibleTo(InputForm))) : Exports == I
       return hconcat(message("what is:")$OutputForm,x pretend OutputForm)
     coerce(x:%):OutputForm == coerce1(x pretend Rep) -- x pretend OutputForm
 
+    -- +0 is a hack to avoid premature conversion
+    hack(x:%):Rep == binary(convert('_+),[x::Rep,0::Rep])$InputForm
+    convert(x:%):F == interpret(hack x)$InputFormFunctions1(F)
     coerce(x:R):% == convert(x)@InputForm
     coerce(x:F):% == convert(x)@InputForm
     convert(x:%):InputForm == x pretend Rep
