@@ -13,105 +13,105 @@ SymbolicExpression(R : Join(Comparable,ConvertibleTo(InputForm))) : Exports == I
   F ==> Expression R
   K   ==> Kernel %
   MP  ==> SparseMultivariatePolynomial(R, K)
-  AF  ==> AlgebraicFunction(R, %)
-  EF  ==> ElementaryFunction(R, %)
-  CF  ==> CombinatorialFunction(R, %)
-  LF  ==> LiouvillianFunction(R, %)
+  AF  ==> AlgebraicFunction(R, F)
+  EF  ==> ElementaryFunction(R, F)
+  CF  ==> CombinatorialFunction(R, F)
+  LF  ==> LiouvillianFunction(R, F)
   AN  ==> AlgebraicNumber
   KAN ==> Kernel AN
-  ESD ==> ExpressionSpace_&(%)
-  FSD ==> FunctionSpace_&(%, R)
+  ESD ==> ExpressionSpace_&(F)
+  FSD ==> FunctionSpace_&(F, R)
 
-  Exports ==> FunctionSpace R with
+  Exports ==> Join(Comparable,ConvertibleTo(InputForm),CoercibleTo(OutputForm)) with
     if R has IntegralDomain then
+      Ring
       AlgebraicallyClosedFunctionSpace R
       TranscendentalFunctionCategory
       CombinatorialOpsCategory
       LiouvillianFunctionCategory
       SpecialFunctionCategory
-      reduce : % -> %
-        ++ reduce(f) simplifies all the unreduced algebraic quantities
-        ++ present in f by applying their defining relations.
-      number? : % -> Boolean
-        ++ number?(f) tests if f is rational
-      simplifyPower : (%, Integer) -> %
-        ++ simplifyPower(f, n) \undocumented{}
-      if R has PolynomialFactorizationExplicit then
-          PolynomialFactorizationExplicit
-      if R has RetractableTo Integer then RetractableTo AN
-      setSimplifyDenomsFlag : Boolean -> Boolean
-        ++ setSimplifyDenomsFlag(x) sets flag affecting simplification
-        ++ of denominators.  If true irrational algebraics are removed from
-        ++ denominators.  If false they are kept.
-      getSimplifyDenomsFlag : () -> Boolean
-        ++ getSimplifyDenomsFlag() gets values of flag affecting
-        ++ simplification of denominators.  See setSimplifyDenomsFlag.
+      -- transformations
+      expand: % -> %
+    if F has FunctionSpace(Integer) then
+      factor: % -> %
 
-    --SymbolicExpression(R:Join(Comparable,ConvertibleTo(InputForm))):Join(Comparable,ConvertibleTo(InputForm)) with
-    -- extra conversions
-    convert: % -> Expression R
+
+    -- coercions and conversions
+    coerce: Symbol -> %
     coerce: F -> %
+    coerce: R -> %
     coerce: Pi -> %
-    -- Elementary Functions
-    acos : % -> %
-    acosh : % -> %
-    acot : % -> %
-    acoth : % -> %
-    acsc : % -> %
-    acsch : % -> %
-    asec : % -> %
-    asech : % -> %
-    asin : % -> %
-    asinh : % -> %
-    atan : % -> %
-    atanh : % -> %
-    cos : % -> %
-    cosh : % -> %
-    cot : % -> %
-    coth : % -> %
-    csc : % -> %
-    csch : % -> %
-    exp : % -> %
-    log : % -> %
-    sec : % -> %
-    sech : % -> %
-    sin : % -> %
-    sinh : % -> %
-    sqrt : % -> %
-    tan : % -> %
-    tanh : % -> %
+    convert: % -> Expression R
+    retract: % -> Symbol
+    retract: % -> R
+
     -- transformations
+    eval: (%,%,%) -> %
+    eval: (%,Equation %) -> %
     simplify : % -> %
-    factor: % -> %
+    subst: (%,Equation %) -> %
+
   Implementation ==> add
     Rep := InputForm
+    eval(x:%,a:%,b:%):% == coerce eval(convert(x)@F, convert(a)@F, convert(b)@F)
+    eval(x:%,e:Equation %):% == eval(x,lhs e,rhs e)
+    subst(x:%,e:Equation %):% == SUBST(rhs(e)::Rep,lhs(e)::Rep,x::Rep)$Lisp
+    retract(x:%):Symbol == retract(convert(x)@F)$F
+
     if R has IntegralDomain then
       0:% == convert(0$F)@InputForm
       1:% == convert(1$F)@InputForm
-      numer(x) == numer(convert(x)@F) pretend MP
-      denom(x) == denom(convert(x)@F) pretend MP
+      one? x  == (x = 1)$Rep
+      zero? x == (x = 0)$Rep
+      --numer(x:%):% == coerce numerator(convert x)$F
+      --denom(x:%):% == coerce denominator(convert x)$F
+      numerator(x:%):% == coerce numerator(convert x)$F
+      denominator(x:%):% == coerce denominator(convert x)$F
+      factorials(x:%):%           == coerce factorials(convert x)$CF
+      factorials(x:%, n:Symbol):% == coerce factorials(convert x, n)$CF
+      expand(x:%):% ==
+        d := isPlus denominator(convert x)$F
+        if d case List F then
+          n := numerator(x)
+          return reduce((p:%,q:%):%+->p+q,[n/coerce(s) for s in d])
+        else
+          return x
 
     if F has FunctionSpace(Integer) then
       factor(x:%):% ==
         (factor(numer(convert(x)@F)$F)::OutputForm pretend InputForm /
           factor(denom(convert(x)@F)$F)::OutputForm pretend InputForm)$InputForm
 
-    if R has Ring then
-      coerce(x:MP):% == convert(x)@InputForm
-
     coerce(x:Pi):% == convert(x)@InputForm
+    coerce(x:Symbol):% == convert(x)@InputForm
+
     coerce1(x:Rep):OutputForm ==
       if null? x then return empty()$OutputForm
       if atom? x then return (x pretend OutputForm)
       if list? x and symbol? car x then
         s := symbol car x
-        if s='float then return interpret(x)$InputFormFunctions1(Float)::OutputForm
-        if member?(s,['_+,'_-,'_*,'_/,'_^])$List(Symbol) then
-          return infix(outputForm(s)$OutputForm,
-            [coerce1(i) for i in destruct cdr(x)])
+        if s='float then
+          return interpret(x)$InputFormFunctions1(Float)::OutputForm
+        if s='factorial then
+          if list? car(cdr x) then
+            return postfix(outputForm '_!, paren coerce1 car cdr x)
+          else
+            return postfix(outputForm '_!, coerce1 car cdr x)
+        if s='sum or s='summation then
+            return sum(coerce1 car cdr x, coerce1 car cdr cdr x)
+        if s='product then
+            return prod(coerce1 car cdr x, coerce1 car cdr cdr x)
+        if s='binomial then
+            return binomial(coerce1 car cdr x, coerce1 car cdr cdr x)
+        if s='sqrt then
+            return root coerce1 car cdr x
+        if member?(s,['_+,'_-,'_*,'_/,'_^])$List(Symbol) and #cdr(x)>1 then
+          return infix(outputForm s, [coerce1(i) for i in destruct cdr x])
         else
-          return prefix(outputForm(s)$OutputForm,
-            [coerce1(i) for i in destruct cdr(x)])
+          if list? car(cdr x) then
+            return prefix(hconcat(outputForm s,hspace(1)), [coerce1(i) for i in destruct cdr x])
+          else
+            return hconcat([outputForm s, hspace(1), coerce1 car cdr x])
       return hconcat(message("what is:")$OutputForm,x pretend OutputForm)
     coerce(x:%):OutputForm == coerce1(x pretend Rep) -- x pretend OutputForm
 
@@ -127,6 +127,17 @@ SymbolicExpression(R : Join(Comparable,ConvertibleTo(InputForm))) : Exports == I
       binary(convert('_^),[x::Rep,y::Rep])$InputForm
     (x:% ^ y:NonNegativeInteger):% ==
       binary(convert('_^),[x::Rep,y::Rep])$InputForm
+
+    factorial(x:%):%          == convert([convert('factorial)@InputForm,x::Rep])
+    binomial(n:%, m:%):%      == binary(convert('binomial),[n::Rep,m::Rep])$InputForm
+    permutation(n:%, m:%):%   == binary(convert('permutation),[n::Rep,m::Rep])$InputForm
+    sum(x : %, n : Symbol):%           == binary(convert('sum),[x::Rep,convert(n)@InputForm])$InputForm
+    sum(x : %, s : SegmentBinding %):% == binary(convert('sum),[x::Rep,convert(s)@InputForm])$InputForm
+    summation(x : %, n : Symbol):%           == binary(convert('summation),[x::Rep,convert(n)@InputForm])$InputForm
+    summation(x : %, s : SegmentBinding %):% == binary(convert('summation),[x::Rep,convert(s)@InputForm])$InputForm
+    product(x : %, n : Symbol):%             == binary(convert('product),[x::Rep,convert(n)@InputForm])$InputForm
+    product(x : %, s : SegmentBinding %):%   == binary(convert('product),[x::Rep,convert(s)@InputForm])$InputForm
+
     -- We don't want any InputForm +0 and *1 auto-simplification
     (x:% + y:%):% == binary(convert('_+),[x::Rep,y::Rep])$InputForm
     (x:% - y:%):% == binary(convert('_-),[x::Rep,y::Rep])$InputForm
@@ -155,7 +166,7 @@ SymbolicExpression(R : Join(Comparable,ConvertibleTo(InputForm))) : Exports == I
     csch(x:%):% == convert([convert('csch)@InputForm,x::Rep])
     exp(x:%):% == convert([convert('exp)@InputForm,x::Rep])
     log(x:%):% == convert([convert('log)@InputForm,x::Rep])
-    pi():% == convert([convert('pi)@InputForm])
+    --pi():% == convert([convert('pi)@InputForm])
     sec(x:%):% == convert([convert('sec)@InputForm,x::Rep])
     sech(x:%):% == convert([convert('sech)@InputForm,x::Rep])
     sin(x:%):% == convert([convert('sin)@InputForm,x::Rep])
