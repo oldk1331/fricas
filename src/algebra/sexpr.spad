@@ -1,4 +1,4 @@
-)abbrev domain SEXPR SymbolicExpression
+)abbrev domain SYMB Symbolic
 ++ Unevaluated mathematical expressions
 ++ Author: Bill Page
 ++ Date Created: 15 Novermber 2016
@@ -9,83 +9,172 @@
 ++ simplification. The domain depends directly internally on the Expression
 ++ domain for evaluation of expressions.
 ++ Keywords: expression, evaluation, operator, function.
-SymbolicExpression(R : Join(Comparable,ConvertibleTo(InputForm))) : Exports == Implementation where
+Symbolic(R : Join(Comparable,ConvertibleTo(InputForm)),OptList : List Symbol) : Exports == Implementation where
   F ==> Expression R
   K   ==> Kernel %
-  MP  ==> SparseMultivariatePolynomial(R, K)
-  AF  ==> AlgebraicFunction(R, F)
-  EF  ==> ElementaryFunction(R, F)
+  KF  ==> Kernel F
+  SMP  ==> SparseMultivariatePolynomial(R, K)
+  LIFT ==> PolynomialCategoryLifting(IndexedExponents(KF),KF,R,SparseMultivariatePolynomial(R,KF),SMP)
+  --AF  ==> AlgebraicFunction(R, F)
+  --EF  ==> ElementaryFunction(R, F)
   CF  ==> CombinatorialFunction(R, F)
-  LF  ==> LiouvillianFunction(R, F)
-  AN  ==> AlgebraicNumber
-  KAN ==> Kernel AN
-  ESD ==> ExpressionSpace_&(F)
-  FSD ==> FunctionSpace_&(F, R)
+  --LF  ==> LiouvillianFunction(R, F)
+  --AN  ==> AlgebraicNumber
+  --KAN ==> Kernel AN
+  --ESD ==> ExpressionSpace_&(F)
+  --FSD ==> FunctionSpace_&(F, R)
+  Maybe(S) ==> Union(S,"failed")
 
-  Exports ==> Join(Comparable,ConvertibleTo(InputForm),CoercibleTo(OutputForm)) with
+  Exports ==> Join(FunctionSpace R,ConvertibleTo(InputForm),CoercibleTo(OutputForm)) with
     if R has IntegralDomain then
       Ring
       AlgebraicallyClosedFunctionSpace R
+      nthRoot: (%, %) -> %
+      -- Field?
+      --_/: (%, %) -> %
       TranscendentalFunctionCategory
       CombinatorialOpsCategory
       LiouvillianFunctionCategory
       SpecialFunctionCategory
+      coerce: Polynomial R -> %
       -- transformations
       expand: % -> %
-    if F has FunctionSpace(Integer) then
+    if % has FunctionSpace(Integer) then
       factor: % -> %
+    if % has TranscendentalFunctionCategory and R has GcdDomain then
+      simplify : % -> %
 
-
-    -- coercions and conversions
-    coerce: Symbol -> %
-    coerce: F -> %
-    coerce: R -> %
+    -- coercions
     coerce: Pi -> %
-    convert: % -> Expression R
-    retract: % -> Symbol
-    retract: % -> R
-
-    -- transformations
-    eval: (%,%,%) -> %
-    eval: (%,Equation %) -> %
-    simplify : % -> %
-    subst: (%,Equation %) -> %
+    coerce: % -> F
+    coerce: F -> %
+    --
+    equal: (%,%) -> Boolean
+    options: () -> List Symbol
 
   Implementation ==> add
     Rep := InputForm
-    eval(x:%,a:%,b:%):% == coerce eval(convert(x)@F, convert(a)@F, convert(b)@F)
+    options:=['identities,'commutative,'associative,'distributive,'alternative,'constants,'doubles,'squares]
+    setIdentities:Boolean:=false
+    setCommutative:Boolean:=false
+    setAssociative:Boolean:=false
+    setDistributive:Boolean:=false
+    setAlternative:Boolean:=false
+    setConstants:Boolean:=false
+    setDoubles:Boolean:=false
+    setSquares:Boolean:=false
+    for xopt in OptList repeat
+        xopt = 'identities => setIdentities := true
+        xopt = 'commutative => setCommutative := true
+        xopt = 'associative => setAssociative := true
+        xopt = 'distributive => setDistributive := true
+        xopt = 'alternative => setAlternative := true
+        xopt = 'constants => setConstants := true
+        xopt = 'doubles => setDoubles := true
+        xopt = 'squares => setSquares := true
+        error concat ["opt: ",string(xopt), " not in [",
+          string first options, concat [concat [", ",string opt]
+            for opt in rest options], "]"]
+    options():List Symbol == OptList
+    belong? op == true
+    -- use equality from Expression(R)
+    (x:% = y:%):Boolean == coerce(x)@F = coerce(y)@F
+    hash(x:%):SingleInteger == hash(x pretend Rep)$InputForm
+    smaller?(x:%,y:%):Boolean ==
+      null? y => false
+      integer? y => null? x or integer? x and integer x < integer y
+      float? y => null? x or integer? x or float? x and float x < float y
+      symbol? y => null? x or integer? x or float? x or symbol? x and symbol? y and symbol x < symbol y
+      list? y => null? x or atom? x or list? x and (smaller?(car x,car y) or smaller?(cdr x,cdr y))
+      false
+    equal(x:%,y:%):Boolean == not smaller?(x,y) and not smaller?(y,x)
+    --
+    eval(x:%,k:Kernel(%),s:%):% == subst(x,[k],[s])
+    eval(x:%):% == coerce eval(coerce x)$F
+    eval(x:%,a:%,b:%):% == coerce eval(coerce(x)@F, coerce(a)@F, coerce(b)@F)
     eval(x:%,e:Equation %):% == eval(x,lhs e,rhs e)
-    subst(x:%,e:Equation %):% == SUBST(rhs(e)::Rep,lhs(e)::Rep,x::Rep)$Lisp
-    retract(x:%):Symbol == retract(convert(x)@F)$F
-
+    --
+    subst(x:%,e:Equation %):% == SUBST(rhs(e) pretend Rep,lhs(e) pretend Rep,x pretend Rep)$Lisp
+    subst(x:%,ks:List Kernel %, vs:List %) ==
+      if #ks > 1 then return subst(subst(x,equation(first(ks)::%,first(vs))),rest ks, rest vs)
+      else return subst(x,equation(first(ks)::%,first(vs)))
+    subst(x:%, es:List Equation %):% ==
+      if #es > 1 then return subst(subst(x, first es),rest es)
+      else subst(x, first es)
+    --
+    -- need to handel subscripted Symbol
+    retractIfCan(x:%):Union(Kernel %,"failed") ==
+      if atom? x and symbol? x then return kernel symbol x
+      if list? x and symbol? car x then
+        if list? cdr x then
+          s := symbol car x
+          if not member?(s,['_+,'_-,'_*,'_/])$List(Symbol) then
+            k:Kernel(%) := kernel(operator(s)$CommonOperators,
+              destruct cdr x, #cdr(x)::NonNegativeInteger)
+            return k
+      return "failed"
+    retract(x:%):Symbol ==
+      k:Union(Kernel %,"failed"):=retractIfCan(x)
+      if k case "failed" then
+        error "not a kernel"
+      else
+        return name k
+    --
+    isPlus1(x:%):Union(List %,"failed") ==
+      list? x and symbol? car x and symbol car x = '_+ => destruct cdr x
+      "failed"
+    isTimes1(x:%):Union(List %,"failed") ==
+      list? x and symbol? car x and symbol car x = '_* => destruct cdr x
+      "failed"
     if R has IntegralDomain then
-      0:% == convert(0$F)@InputForm
-      1:% == convert(1$F)@InputForm
+      0:% == coerce(0$F)
+      1:% == coerce(1$F)
       one? x  == (x = 1)$Rep
       zero? x == (x = 0)$Rep
-      --numer(x:%):% == coerce numerator(convert x)$F
-      --denom(x:%):% == coerce denominator(convert x)$F
-      numerator(x:%):% == coerce numerator(convert x)$F
-      denominator(x:%):% == coerce denominator(convert x)$F
-      factorials(x:%):%           == coerce factorials(convert x)$CF
-      factorials(x:%, n:Symbol):% == coerce factorials(convert x, n)$CF
+      k2(k:KF):SMP ==
+        ak:List % := [coerce x for x in argument k]
+        return coerce kernel(operator k,ak,position k)$K
+      r2(r:R):SMP == coerce r
+      numer(x:%):SparseMultivariatePolynomial(R,Kernel %) ==
+        map(k2,r2, numer(coerce x)$F)$LIFT
+      denom(x:%):SparseMultivariatePolynomial(R,Kernel %) ==
+        map(k2,r2, denom(coerce x)$F)$LIFT
+      (x:SMP / y:SMP):% == coerce(x) / coerce(y)
+      isPlus(x:%):Union(List %,"failed") == isPlus1(x)
+
+      factorials(x:%):%           == coerce factorials(coerce x)$CF
+      factorials(x:%, n:Symbol):% == coerce factorials(coerce x, n)$CF
       expand(x:%):% ==
-        d := isPlus denominator(convert x)$F
-        if d case List F then
-          n := numerator(x)
-          return reduce((p:%,q:%):%+->p+q,[n/coerce(s) for s in d])
+        n := isPlus numerator(coerce x)$F
+        if n case List F then
+          d:% := denominator(x)
+          if d=1 then return reduce("+",[coerce(s) for s in n])
+          return reduce("+",[coerce(s)/d for s in n])
         else
           return x
+      coerce(x:SMP):% == convert(x)@InputForm
+      coerce(x:Polynomial R):% == convert(x)@InputForm
+      coerce(x:Fraction R):% == convert(x)@InputForm
+      if R has RetractableTo Integer or R has RetractableTo Fraction Integer then
+        retractIfCan(x:%):Union(Fraction Integer,"failed") ==
+          r:Union(R,"failed"):=retractIfCan(x)
+          if R has RetractableTo Fraction Integer then
+            return retractIfCan(r::R)@Union(Fraction Integer,"failed")
+          if R has RetractableTo Integer then
+            r2:Union(Integer,"failed"):=retractIfCan(r::R)
+            if r2 case Integer then return r2::Integer::Fraction Integer
+          return "failed"
 
     if F has FunctionSpace(Integer) then
       factor(x:%):% ==
-        (factor(numer(convert(x)@F)$F)::OutputForm pretend InputForm /
-          factor(denom(convert(x)@F)$F)::OutputForm pretend InputForm)$InputForm
+        (factor(numer(coerce x)$F)::OutputForm pretend InputForm /
+          factor(denom(coerce x)$F)::OutputForm pretend InputForm)$InputForm
 
     coerce(x:Pi):% == convert(x)@InputForm
     coerce(x:Symbol):% == convert(x)@InputForm
+    coerce(k:Kernel %):% == coerce name(k)
 
-    coerce1(x:Rep):OutputForm ==
+    coerceOutputForm(x:Rep):OutputForm ==
       if null? x then return empty()$OutputForm
       if atom? x then return (x pretend OutputForm)
       if list? x and symbol? car x then
@@ -94,32 +183,46 @@ SymbolicExpression(R : Join(Comparable,ConvertibleTo(InputForm))) : Exports == I
           return interpret(x)$InputFormFunctions1(Float)::OutputForm
         if s='factorial then
           if list? car(cdr x) then
-            return postfix(outputForm '_!, paren coerce1 car cdr x)
+            return postfix(outputForm '_!, paren coerceOutputForm car cdr x)
           else
-            return postfix(outputForm '_!, coerce1 car cdr x)
+            return postfix(outputForm '_!, coerceOutputForm car cdr x)
         if s='sum or s='summation then
-            return sum(coerce1 car cdr x, coerce1 car cdr cdr x)
+            return sum(coerceOutputForm car cdr x, coerceOutputForm car cdr cdr x)
         if s='product then
-            return prod(coerce1 car cdr x, coerce1 car cdr cdr x)
+            return prod(coerceOutputForm car cdr x, coerceOutputForm car cdr cdr x)
         if s='binomial then
-            return binomial(coerce1 car cdr x, coerce1 car cdr cdr x)
+            return binomial(coerceOutputForm car cdr x, coerceOutputForm car cdr cdr x)
         if s='sqrt then
-            return root coerce1 car cdr x
+            return root coerceOutputForm car cdr x
+        if s='nthRoot then
+            return root(coerceOutputForm car cdr x, coerceOutputForm car cdr cdr x)
+        if s='exp and car(cdr x)=1 then return outputForm '%e
         if member?(s,['_+,'_-,'_*,'_/,'_^])$List(Symbol) and #cdr(x)>1 then
-          return infix(outputForm s, [coerce1(i) for i in destruct cdr x])
+          setAssociative =>
+            return infix(outputForm s, [coerceOutputForm(i) for i in destruct cdr x])
+          return paren infix(outputForm s, [coerceOutputForm(i) for i in destruct cdr x])
         else
-          if list? car(cdr x) then
-            return prefix(hconcat(outputForm s,hspace(1)), [coerce1(i) for i in destruct cdr x])
+          if list? car(cdr x) or s ~= '_- then
+            return prefix(outputForm s,
+              [coerceOutputForm(i) for i in destruct cdr x])
           else
-            return hconcat([outputForm s, hspace(1), coerce1 car cdr x])
+            return hconcat([outputForm s, hspace(1), coerceOutputForm car cdr x])
       return hconcat(message("what is:")$OutputForm,x pretend OutputForm)
-    coerce(x:%):OutputForm == coerce1(x pretend Rep) -- x pretend OutputForm
+    coerce(x:%):OutputForm == coerceOutputForm(x pretend Rep)
 
     -- +0 is a hack to avoid premature conversion
     hack(x:%):Rep == binary(convert('_+),[x::Rep,0::Rep])$InputForm
-    convert(x:%):F == interpret(hack x)$InputFormFunctions1(F)
-    coerce(x:R):% == convert(x)@InputForm
+
+    coerce(x:%):F ==
+      v:List Symbol := variables x
+      if #v = 0 then return interpret(hack x)$InputFormFunctions1(F)
+      -- we need to substitute variables with unknown modes
+      s:List Symbol := [new()$Symbol for vi in v]
+      ks:List Equation % := [equation(coerce(vi)$%, coerce(si)$%) for vi in v for si in s]
+      sk:List Equation F := [equation(coerce(si)$F, coerce(vi)$F) for vi in v for si in s]
+      return subst(interpret(hack subst(x,ks))$InputFormFunctions1(F),sk)
     coerce(x:F):% == convert(x)@InputForm
+    coerce(x:R):% == convert(x)@InputForm
     convert(x:%):InputForm == x pretend Rep
     --
     (x:% ^ y:%):% == binary(convert('_^),[x::Rep,y::Rep])$InputForm
@@ -127,10 +230,13 @@ SymbolicExpression(R : Join(Comparable,ConvertibleTo(InputForm))) : Exports == I
       binary(convert('_^),[x::Rep,y::Rep])$InputForm
     (x:% ^ y:NonNegativeInteger):% ==
       binary(convert('_^),[x::Rep,y::Rep])$InputForm
+    (x:% ^ y:Fraction Integer):% ==
+      binary(convert('_^),[x::Rep, convert y])$InputForm
 
     factorial(x:%):%          == convert([convert('factorial)@InputForm,x::Rep])
     binomial(n:%, m:%):%      == binary(convert('binomial),[n::Rep,m::Rep])$InputForm
     permutation(n:%, m:%):%   == binary(convert('permutation),[n::Rep,m::Rep])$InputForm
+    --
     sum(x : %, n : Symbol):%           == binary(convert('sum),[x::Rep,convert(n)@InputForm])$InputForm
     sum(x : %, s : SegmentBinding %):% == binary(convert('sum),[x::Rep,convert(s)@InputForm])$InputForm
     summation(x : %, n : Symbol):%           == binary(convert('summation),[x::Rep,convert(n)@InputForm])$InputForm
@@ -138,13 +244,52 @@ SymbolicExpression(R : Join(Comparable,ConvertibleTo(InputForm))) : Exports == I
     product(x : %, n : Symbol):%             == binary(convert('product),[x::Rep,convert(n)@InputForm])$InputForm
     product(x : %, s : SegmentBinding %):%   == binary(convert('product),[x::Rep,convert(s)@InputForm])$InputForm
 
-    -- We don't want any InputForm +0 and *1 auto-simplification
-    (x:% + y:%):% == binary(convert('_+),[x::Rep,y::Rep])$InputForm
+    -- We don't want the InputForm +0 and *1 auto-simplification but we
+    -- might be doing our own simplifications.
+    times(x:%,y:%):% ==
+      --output("times: ",paren [coerce(x)@OutputForm,coerce(y)@OutputForm])$OutputPackage
+      if setIdentities and x=1 then return y
+      if setIdentities and y=1 then return x
+      if setAssociative and (t:=isTimes1(x)) case List % then
+        return times(t(1),times(t(2),y))
+      if setCommutative and smaller?(y,x) then return times(y,x)
+      if R has SemiGroup and setSquares then
+        if equal(x,y) then return x^2
+        if (t:=isTimes1(y)) case List % and equal(x,t(1)) then
+          return times(x^2,t(2))
+      if R has IntegralDomain and setConstants then
+        if (r1:=retractIfCan(x)@Union(R,"failed")) case R then
+          if (r2:=retractIfCan(y)@Union(R,"failed")) case R then
+            return coerce(r1*r2)
+      return binary(convert('_*),[x::Rep,y::Rep])$InputForm
+    (x:% * y:%):% == times(x,y)
+
+    plus(x:%,y:%):% ==
+      --output("plus: ",paren [coerce(x)@OutputForm,coerce(y)@OutputForm])$OutputPackage
+      if setIdentities and x=0 then return y
+      if setIdentities and y=0 then return x
+      if setCommutative and smaller?(y,x) then return plus(y,x)
+      if setAssociative and (t:=isPlus1(x)) case List % then
+        return plus(t(1),plus(t(2),y))
+      if R has AbelianSemiGroup and setDoubles then
+        if equal(x,y) then return times(2::%,x)
+        if (t:=isPlus1(y)) case List % and equal(x,t(1)) then
+          return plus(times(2::%,x),t(2))
+      if R has IntegralDomain and setConstants then
+        if (r1:=retractIfCan(x)@Union(R,"failed")) case R then
+          if (r2:=retractIfCan(y)@Union(R,"failed")) case R then
+            return coerce(r1+r2)
+      return binary(convert('_+),[x::Rep,y::Rep])$InputForm
+    (x:% + y:%):% == plus(x,y)
+
     (x:% - y:%):% == binary(convert('_-),[x::Rep,y::Rep])$InputForm
-    (x:% * y:%):% == binary(convert('_*),[x::Rep,y::Rep])$InputForm
+
     (x:% / y:%):% == binary(convert('_/),[x::Rep,y::Rep])$InputForm
+
     (x:Integer * y:%):% == convert(x)@InputForm * y
+
     _-(x:%):% == convert([convert('_-)@InputForm,x::Rep])
+
     -- Elementary Functions
     acos(x:%):% == convert([convert('acos)@InputForm,x::Rep])
     acosh(x:%):% == convert([convert('acosh)@InputForm,x::Rep])
@@ -166,6 +311,8 @@ SymbolicExpression(R : Join(Comparable,ConvertibleTo(InputForm))) : Exports == I
     csch(x:%):% == convert([convert('csch)@InputForm,x::Rep])
     exp(x:%):% == convert([convert('exp)@InputForm,x::Rep])
     log(x:%):% == convert([convert('log)@InputForm,x::Rep])
+    nthRoot(x:%, n:Integer) == binary(convert('nthRoot),[x::Rep,n::Rep])$InputForm
+    nthRoot(x:%, n:%) == binary(convert('nthRoot),[x::Rep,n::Rep])$InputForm
     --pi():% == convert([convert('pi)@InputForm])
     sec(x:%):% == convert([convert('sec)@InputForm,x::Rep])
     sech(x:%):% == convert([convert('sech)@InputForm,x::Rep])
@@ -175,19 +322,84 @@ SymbolicExpression(R : Join(Comparable,ConvertibleTo(InputForm))) : Exports == I
     tan(x:%):% == convert([convert('tan)@InputForm,x::Rep])
     tanh(x:%):% == convert([convert('tanh)@InputForm,x::Rep])
     --
-    retract(x:%):R == retract(convert(x)@F)$F
-    variables(x:%):List Symbol == variables(convert x)$F
-    -- use equality from Expression(R)
-    (x:% = y:%):Boolean ==
-      convert(x)@F = convert(x)@F
+    retract(x:%):R == retract(coerce x)$F
 
-    if F has TranscendentalFunctionCategory then
-      if F has FunctionSpace(Integer) then
-        simplify(x:%):% ==
-          convert(simplify(convert(x)@F)$TranscendentalManipulations(Integer,F))
-      else
-        if R has GcdDomain then
-          simplify(x:%):% ==
-            convert(simplify(convert(x)@F)$TranscendentalManipulations(R,F))
-    else
-      simplify(x:%):% == convert( convert(x)@F )
+    variables1(x:Rep):Set Symbol ==
+      if null? x then return empty()
+      if atom? x and symbol? x then return set [symbol x]
+      if list? x and symbol? car x then
+        if list? cdr x then
+          return reduce("union", [variables1(i) for i in destruct cdr x])
+        else
+          return variables1 car cdr x
+      return empty()
+    variables(x:%):List Symbol == members variables1(x pretend Rep)
+
+    -- still need to handle non symbols and scripted symbols
+    kernels1(x:Rep):Set Kernel % ==
+      if null? x then return empty()
+      if atom? x and symbol? x then return set [kernel symbol x]
+      if list? x and symbol? car x then
+          if list? cdr x then
+            s := symbol car x
+            if member?(s,['_+,'_-,'_*,'_/])$List(Symbol) then
+              r:Set Kernel % := reduce("union",
+                [kernels1(i) for i in destruct cdr x])
+              return r
+            else
+              k:Kernel(%) := kernel(operator(s)$CommonOperators,
+                destruct cdr x, #cdr(x)::NonNegativeInteger)
+              return set [k]
+          else
+            return kernels1 car cdr x
+      return empty()
+    kernels(x:%):List Kernel % == members kernels1(x pretend Rep)
+
+    if F has TranscendentalFunctionCategory and R has GcdDomain then
+      simplify(x:%):% ==
+        coerce(simplify(coerce x)$TranscendentalManipulations(R,F))
+
+)abbrev domain SEXPR SymbolicExpression
+SymbolicExpression(R : Join(Comparable,ConvertibleTo(InputForm))) : Exports == Implementation where
+  F ==> Expression R
+  K   ==> Kernel %
+  KF  ==> Kernel F
+  SMP  ==> SparseMultivariatePolynomial(R, K)
+  LIFT ==> PolynomialCategoryLifting(IndexedExponents(KF),KF,R,SparseMultivariatePolynomial(R,KF),SMP)
+  --AF  ==> AlgebraicFunction(R, F)
+  --EF  ==> ElementaryFunction(R, F)
+  CF  ==> CombinatorialFunction(R, F)
+  --LF  ==> LiouvillianFunction(R, F)
+  --AN  ==> AlgebraicNumber
+  --KAN ==> Kernel AN
+  --ESD ==> ExpressionSpace_&(F)
+  --FSD ==> FunctionSpace_&(F, R)
+
+  Exports ==> Join(FunctionSpace R,ConvertibleTo(InputForm),CoercibleTo(OutputForm)) with
+    if R has IntegralDomain then
+      Ring
+      AlgebraicallyClosedFunctionSpace R
+      nthRoot: (%, %) -> %
+      -- Field?
+      _/: (%, %) -> %
+      TranscendentalFunctionCategory
+      CombinatorialOpsCategory
+      LiouvillianFunctionCategory
+      SpecialFunctionCategory
+      coerce: Polynomial R -> %
+      -- transformations
+      expand: % -> %
+    if % has FunctionSpace(Integer) then
+      factor: % -> %
+    if % has TranscendentalFunctionCategory and R has GcdDomain then
+      simplify : % -> %
+
+    -- coercions
+    coerce: Pi -> %
+    coerce: % -> F
+    coerce: F -> %
+    --
+    equal: (%,%) -> Boolean
+    options: () -> List Symbol
+
+  Implementation ==> Symbolic(R,['identities,'commutative,'associative,'constants,'doubles,'squares])
