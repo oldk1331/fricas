@@ -1,0 +1,80 @@
+s:SymbolicExpression Integer := 1+1+1
+eval s
+s::Integer
+test(s=3)
+(1/5)::SEXPR INT
+--
+(x,y,z):SymbolicExpression Integer
+(p,q,r):Expression Integer
+--
+x::Expression Integer
+x+x = 2*x
+test %
+x-x = 0
+test %
+x+y = y+x
+test %
+x+(y+z)= (x+y)+z
+test %
+x*x = x^2
+test %
+x/x = 1
+test %
+x*y = y*x
+test %
+x*(y*z)= (x*y)*z
+test %
+x*(y+z) = x*y + x*z
+test %
+--
+sin(x)+cos(x)+tan(x)
+asin(x)+acos(x)+atan(x)
+sin(x)^2 + cos(x)^2 = 1
+test map(simplify,%)
+--
+exp(x+1) = %e*exp(x)
+test map(simplify, %)
+--
+nthRoot(x, y)
+nthRoot(x,2)
+sqrt(x)
+test(sqrt(x)=nthRoot(x,2))
+test(nthRoot(x,2)=sqrt(x))
+(nthRoot(x,2)=sqrt(x))@Boolean
+--
+variables(sin(x*y)+2*z)
+kernels(sin(x*y)+2*z)
+--
+x+1/y
+simplify %
+simplify p
+factor(x^2+2*x*y+y^2)
+expand((x+y)/z)
+expand(x*(y+z))
+--
+-- Kurt
+--
+SEI==>SymbolicExpression INT
+(x,y):SEI
+(x+y)^2
+r:=(x+y)^2
+r::InputForm
+rs := simplify r
+factor rs
+convert(r)$SEI
+coerce(r)$SEI
+sum(x,'x=1..10)
+reduce(+,[n::SEXPR INT for n in 1..10])
+x - x
+(x+y)^x
+exp(-x)
+-x
+exp(-x)::InputForm
+f:=operator 'f
+f(x)
+f(0$SEXPR INT)
+f(0$EXPR INT)
+D(x^2,'x)
+simplify %
+x^n
+D(x^n,'x)
