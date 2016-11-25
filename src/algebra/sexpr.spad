@@ -1,3 +1,60 @@
+)abbrev category AXIOM Axiom
+Axiom(): Category == with
+  axioms: () -> List Equation %
+)abbrev category COMAX CommutativeAxiom
+CommutativeAxiom(): Category == Axiom
+)abbrev domain COM Commutative
+Commutative():CommutativeAxiom == add
+    axioms() == []
+)abbrev category DISAX DistributiveAxiom
+DistributiveAxiom(): Category == Axiom
+)abbrev domain DIS Distributive
+Distributive():DistributiveAxiom == add
+    axioms() == []
+)abbrev category ASSAX AssociativeAxiom
+AssociativeAxiom(): Category == Axiom
+)abbrev domain ASS Associative
+Associative():AssociativeAxiom == add
+    axioms() == []
+)abbrev category IDAX IdentityAxiom
+IdentityAxiom(): Category == Axiom
+)abbrev domain ID Identities
+Identities():IdentityAxiom == add
+    axioms() == []
+)abbrev category CONAX ConstantsAxiom
+ConstantsAxiom(): Category == Axiom
+)abbrev domain CON Constants
+Constants():ConstantsAxiom == add
+    axioms() == []
+)abbrev category DBLAX DoublesAxiom
+DoublesAxiom(): Category == Axiom
+)abbrev domain DBL Doubles
+Doubles():DoublesAxiom == add
+    axioms() == []
+)abbrev category SQAX SquaresAxiom
+SquaresAxiom(): Category == Axiom
+)abbrev domain SQ Squares
+Squares():SquaresAxiom == add
+    axioms() == []
+)abbrev domain AA /\
+(A:Axiom /\ B:Axiom):Axiom with
+    if A has CommutativeAxiom then CommutativeAxiom
+    if B has CommutativeAxiom then CommutativeAxiom
+    if A has DistributiveAxiom then DistributiveAxiom
+    if B has DistributiveAxiom then DistributiveAxiom
+    if A has AssociativeAxiom then AssociativeAxiom
+    if B has AssociativeAxiom then AssociativeAxiom
+    if A has IdentityAxiom then IdentityAxiom
+    if B has IdentityAxiom then IdentityAxiom
+    if A has ConstantsAxiom then ConstantsAxiom
+    if B has ConstantsAxiom then ConstantsAxiom
+    if A has DoublesAxiom then DoublesAxiom
+    if B has DoublesAxiom then DoublesAxiom
+    if A has SquaresAxiom then SquaresAxiom
+    if B has SquaresAxiom then SquaresAxiom
+  == add
+    axioms() == []
+
 )abbrev domain SYMB Symbolic
 ++ Unevaluated mathematical expressions
 ++ Author: Bill Page
@@ -9,7 +66,7 @@
 ++ simplification. The domain depends directly internally on the Expression
 ++ domain for evaluation of expressions.
 ++ Keywords: expression, evaluation, operator, function.
-Symbolic(R : Join(Comparable,ConvertibleTo(InputForm)),OptList : List Symbol) : Exports == Implementation where
+Symbolic(R : Join(Comparable,ConvertibleTo(InputForm)), AxiomList : Axiom) : Exports == Implementation where
   F ==> Expression R
   K   ==> Kernel %
   KF  ==> Kernel F
@@ -54,38 +111,23 @@ Symbolic(R : Join(Comparable,ConvertibleTo(InputForm)),OptList : List Symbol) : 
 
   Implementation ==> add
     Rep := InputForm
-    options:=['identities,'commutative,'associative,'distributive,'alternative,'constants,'doubles,'squares]
-    setIdentities:Boolean:=false
-    setCommutative:Boolean:=false
-    setAssociative:Boolean:=false
-    setDistributive:Boolean:=false
-    setAlternative:Boolean:=false
-    setConstants:Boolean:=false
-    setDoubles:Boolean:=false
-    setSquares:Boolean:=false
-    for xopt in OptList repeat
-        xopt = 'identities => setIdentities := true
-        xopt = 'commutative => setCommutative := true
-        xopt = 'associative => setAssociative := true
-        xopt = 'distributive => setDistributive := true
-        xopt = 'alternative => setAlternative := true
-        xopt = 'constants => setConstants := true
-        xopt = 'doubles => setDoubles := true
-        xopt = 'squares => setSquares := true
-        error concat ["opt: ",string(xopt), " not in [",
-          string first options, concat [concat [", ",string opt]
-            for opt in rest options], "]"]
-    options():List Symbol == OptList
+
     belong? op == true
     -- use equality from Expression(R)
     (x:% = y:%):Boolean == coerce(x)@F = coerce(y)@F
     hash(x:%):SingleInteger == hash(x pretend Rep)$InputForm
     smaller?(x:%,y:%):Boolean ==
+      --output("smaller? ",paren [x::OutputForm,y::OutputForm])$OutputPackage
       null? y => false
-      integer? y => null? x or integer? x and integer x < integer y
-      float? y => null? x or integer? x or float? x and float x < float y
-      symbol? y => null? x or integer? x or float? x or symbol? x and symbol? y and symbol x < symbol y
-      list? y => null? x or atom? x or list? x and (smaller?(car x,car y) or smaller?(cdr x,cdr y))
+      list? y => list? x and (smaller?(car x,car y) or not smaller?(car y,car x) and smaller?(cdr x,cdr y))
+      symbol? y => list? x or symbol? x and symbol x < symbol y
+      float? y => list? x or symbol? x or float? x and float x < float y
+      integer? y => list? x or symbol? x or float? x or integer? x and integer x < integer y
+
+      --integer? y => null? x or integer? x and integer x < integer y
+      --float? y => null? x or integer? x or float? x and float x < float y
+      --symbol? y => null? x or integer? x or float? x or symbol? x and symbol x < symbol y
+      --list? y => null? x or atom? x or list? x and (smaller?(car x,car y) or not smaller?(car y,car x) and smaller?(cdr x,cdr y))
       false
     equal(x:%,y:%):Boolean == not smaller?(x,y) and not smaller?(y,x)
     --
@@ -198,9 +240,10 @@ Symbolic(R : Join(Comparable,ConvertibleTo(InputForm)),OptList : List Symbol) : 
             return root(coerceOutputForm car cdr x, coerceOutputForm car cdr cdr x)
         if s='exp and car(cdr x)=1 then return outputForm '%e
         if member?(s,['_+,'_-,'_*,'_/,'_^])$List(Symbol) and #cdr(x)>1 then
-          setAssociative =>
+          if AxiomList has AssociativeAxiom then
             return infix(outputForm s, [coerceOutputForm(i) for i in destruct cdr x])
-          return paren infix(outputForm s, [coerceOutputForm(i) for i in destruct cdr x])
+          else
+            return paren infix(outputForm s, [coerceOutputForm(i) for i in destruct cdr x])
         else
           if list? car(cdr x) or s ~= '_- then
             return prefix(outputForm s,
@@ -246,39 +289,62 @@ Symbolic(R : Join(Comparable,ConvertibleTo(InputForm)),OptList : List Symbol) : 
 
     -- We don't want the InputForm +0 and *1 auto-simplification but we
     -- might be doing our own simplifications.
+    plus: (%,%) -> %
+    times: (%,%) -> %
+    --
     times(x:%,y:%):% ==
       --output("times: ",paren [coerce(x)@OutputForm,coerce(y)@OutputForm])$OutputPackage
-      if setIdentities and x=1 then return y
-      if setIdentities and y=1 then return x
-      if setAssociative and (t:=isTimes1(x)) case List % then
-        return times(t(1),times(t(2),y))
-      if setCommutative and smaller?(y,x) then return times(y,x)
-      if R has SemiGroup and setSquares then
-        if equal(x,y) then return x^2
-        if (t:=isTimes1(y)) case List % and equal(x,t(1)) then
-          return times(x^2,t(2))
-      if R has IntegralDomain and setConstants then
-        if (r1:=retractIfCan(x)@Union(R,"failed")) case R then
-          if (r2:=retractIfCan(y)@Union(R,"failed")) case R then
-            return coerce(r1*r2)
+      if AxiomList has IdentityAxiom then
+        if x=1 then return y
+        if y=1 then return x
+      if AxiomList has CommutativeAxiom then
+        if smaller?(y,x) then return times(y,x)
+        if AxiomList has AssociativeAxiom then
+          if (t:=isTimes1(x)) case List % then
+            if smaller?(y,t(2)) then return times(times(t(1),y),t(2))
+      if AxiomList has Associative then
+        if (t:=isTimes1(y)) case List % then
+          return times(times(x,t(1)),t(2))
+      if AxiomList has SquaresAxiom then
+        if R has SemiGroup then
+          if equal(x,y) then return x^2
+      if AxiomList has ConstantsAxiom then
+        if R has IntegralDomain then
+          if (r1:=retractIfCan(x)@Union(R,"failed")) case R then
+            if (r2:=retractIfCan(y)@Union(R,"failed")) case R then
+              return coerce(r1*r2)
+      if AxiomList has DistributiveAxiom then
+        if (t:=isPlus1(x)) case List % then
+          return plus(times(t(1),y),times(t(2),y))
+        if (t:=isPlus1(y)) case List % then
+          return plus(times(x,t(1)),times(x,t(2)))
       return binary(convert('_*),[x::Rep,y::Rep])$InputForm
     (x:% * y:%):% == times(x,y)
 
     plus(x:%,y:%):% ==
       --output("plus: ",paren [coerce(x)@OutputForm,coerce(y)@OutputForm])$OutputPackage
-      if setIdentities and x=0 then return y
-      if setIdentities and y=0 then return x
-      if setCommutative and smaller?(y,x) then return plus(y,x)
-      if setAssociative and (t:=isPlus1(x)) case List % then
-        return plus(t(1),plus(t(2),y))
-      if R has AbelianSemiGroup and setDoubles then
-        if equal(x,y) then return times(2::%,x)
-        if (t:=isPlus1(y)) case List % and equal(x,t(1)) then
-          return plus(times(2::%,x),t(2))
-      if R has IntegralDomain and setConstants then
-        if (r1:=retractIfCan(x)@Union(R,"failed")) case R then
-          if (r2:=retractIfCan(y)@Union(R,"failed")) case R then
-            return coerce(r1+r2)
+      if AxiomList has IdentityAxiom then
+        if x=0 then return y
+        if y=0 then return x
+      if AxiomList has CommutativeAxiom then
+        if smaller?(y,x) then return plus(y,x)
+        if AxiomList has AssociativeAxiom then
+          if (t:=isPlus1(x)) case List % then
+            if smaller?(y,t(2)) then return plus(plus(t(1),y),t(2))
+      if AxiomList has AssociativeAxiom then
+        if (t:=isPlus1(y)) case List % then
+          return plus(plus(x,t(1)),t(2))
+      if AxiomList has DoublesAxiom then
+        if R has AbelianSemiGroup then
+          if equal(x,y) then return times(2::%,x)
+          if AxiomList has AssociativeAxiom then
+            if (t:=isPlus1(x)) case List % then
+              if equal(t(2),y) then return plus(t(1),times(2::%,y))
+      if AxiomList has ConstantsAxiom then
+        if R has IntegralDomain then
+          if (r1:=retractIfCan(x)@Union(R,"failed")) case R then
+            if (r2:=retractIfCan(y)@Union(R,"failed")) case R then
+              return coerce(r1+r2)
       return binary(convert('_+),[x::Rep,y::Rep])$InputForm
     (x:% + y:%):% == plus(x,y)
 
@@ -402,4 +468,4 @@ SymbolicExpression(R : Join(Comparable,ConvertibleTo(InputForm))) : Exports == I
     equal: (%,%) -> Boolean
     options: () -> List Symbol
 
-  Implementation ==> Symbolic(R,['identities,'commutative,'associative,'constants,'doubles,'squares])
+  Implementation ==> Symbolic(R,Identities/\Commutative/\Associative/\Distributive/\Constants/\Doubles/\Squares)
