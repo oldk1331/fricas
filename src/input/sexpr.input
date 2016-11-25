@@ -57,9 +57,9 @@ expand(x*(y+z))
 SEI==>SymbolicExpression INT
 (x,y):SEI
 (x+y)^2
-r:=(x+y)^2
-r::InputForm
-rs := simplify r
+r0:=(x+y)^2
+r0::InputForm
+rs := simplify r0
 factor rs
 convert(r)$SEI
 coerce(r)$SEI
