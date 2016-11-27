@@ -1,6 +1,7 @@
 s:SymbolicExpression Integer := 1+1+1
 eval s
 s::Integer
+equal? (s=3)
 test(s=3)
 (1/5)::SEXPR INT
 --
