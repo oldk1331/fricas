@@ -1,59 +1,76 @@
 )abbrev category AXIOM Axiom
-Axiom(): Category == with
-  axioms: () -> List Equation %
+++ Properties and axioms for symbolic rewrite rules
+Axiom(): Category == Type with
+    axioms: () -> List Equation InputForm
+
 )abbrev category COMAX CommutativeAxiom
+++ Commutative
 CommutativeAxiom(): Category == Axiom
-)abbrev domain COM Commutative
-Commutative():CommutativeAxiom == add
-    axioms() == []
+
 )abbrev category DISAX DistributiveAxiom
+++ Distributive
 DistributiveAxiom(): Category == Axiom
-)abbrev domain DIS Distributive
-Distributive():DistributiveAxiom == add
-    axioms() == []
+
 )abbrev category ASSAX AssociativeAxiom
+++ Associative
 AssociativeAxiom(): Category == Axiom
-)abbrev domain ASS Associative
-Associative():AssociativeAxiom == add
-    axioms() == []
+
 )abbrev category IDAX IdentityAxiom
+++ Identities
 IdentityAxiom(): Category == Axiom
-)abbrev domain ID Identities
-Identities():IdentityAxiom == add
-    axioms() == []
+
 )abbrev category CONAX ConstantsAxiom
+++ Constants
 ConstantsAxiom(): Category == Axiom
-)abbrev domain CON Constants
-Constants():ConstantsAxiom == add
-    axioms() == []
+
 )abbrev category DBLAX DoublesAxiom
+++ Doubling
 DoublesAxiom(): Category == Axiom
-)abbrev domain DBL Doubles
-Doubles():DoublesAxiom == add
-    axioms() == []
+
 )abbrev category SQAX SquaresAxiom
+++ Squares
 SquaresAxiom(): Category == Axiom
-)abbrev domain SQ Squares
-Squares():SquaresAxiom == add
-    axioms() == []
-)abbrev domain AA /\
-(A:Axiom /\ B:Axiom):Axiom with
-    if A has CommutativeAxiom then CommutativeAxiom
-    if B has CommutativeAxiom then CommutativeAxiom
-    if A has DistributiveAxiom then DistributiveAxiom
-    if B has DistributiveAxiom then DistributiveAxiom
-    if A has AssociativeAxiom then AssociativeAxiom
-    if B has AssociativeAxiom then AssociativeAxiom
-    if A has IdentityAxiom then IdentityAxiom
-    if B has IdentityAxiom then IdentityAxiom
-    if A has ConstantsAxiom then ConstantsAxiom
-    if B has ConstantsAxiom then ConstantsAxiom
-    if A has DoublesAxiom then DoublesAxiom
-    if B has DoublesAxiom then DoublesAxiom
-    if A has SquaresAxiom then SquaresAxiom
-    if B has SquaresAxiom then SquaresAxiom
-  == add
-    axioms() == []
+
+)abbrev category SYMCAT SymbolicCategory
+SymbolicCategory(R : Join(Comparable,ConvertibleTo(InputForm))) : Category == Exports where
+  F ==> Expression R
+  Exports ==> Join(FunctionSpace R,ConvertibleTo(InputForm),CoercibleTo(OutputForm)) with
+    axioms: () -> List Equation InputForm
+    _+: (%,%) -> %
+    _-: (%,%) -> %
+    _-: % -> %
+    _*: (%,%) -> %
+    _*:(PositiveInteger,%) -> %
+    _*:(NonNegativeInteger,%) -> %
+    _/: (%,%) -> %
+    _^: (%,%) -> %
+    _^: (%,Integer) -> %
+    nthRoot: (%, %) -> %
+    nthRoot: (%, Integer) -> %
+    if R has IntegralDomain then
+      Ring
+      AlgebraicallyClosedFunctionSpace R
+      TranscendentalFunctionCategory
+      CombinatorialOpsCategory
+      LiouvillianFunctionCategory
+      SpecialFunctionCategory
+      coerce: Polynomial R -> %
+      -- transformations
+      expand: % -> %
+    if % has FunctionSpace(Integer) then
+      factor: % -> %
+    if % has TranscendentalFunctionCategory and R has GcdDomain then
+      simplify : % -> %
+    -- coercions
+    coerce: Pi -> %
+    coerce: % -> F
+    coerce: F -> %
+    convert: Equation % -> Equation InputForm
+    convert: Equation InputForm -> Equation %
+    convert: InputForm -> %
+    --
+    equal?: Equation % -> Boolean
+    --eq  : (%, %) -> Equation InputForm
 
 )abbrev domain SYMB Symbolic
 ++ Unevaluated mathematical expressions
@@ -66,7 +83,7 @@ Squares():SquaresAxiom == add
 ++ simplification. The domain depends directly internally on the Expression
 ++ domain for evaluation of expressions.
 ++ Keywords: expression, evaluation, operator, function.
-Symbolic(R : Join(Comparable,ConvertibleTo(InputForm)), AxiomList : Axiom) : Exports == Implementation where
+Symbolic(R : Join(Comparable,ConvertibleTo(InputForm)), AxiomList : Type) : Exports == Implementation where
   F ==> Expression R
   K   ==> Kernel %
   KF  ==> Kernel F
@@ -80,56 +97,36 @@ Symbolic(R : Join(Comparable,ConvertibleTo(InputForm)), AxiomList : Axiom) : Exp
   --KAN ==> Kernel AN
   --ESD ==> ExpressionSpace_&(F)
   --FSD ==> FunctionSpace_&(F, R)
+  SIN ==> %
+  LES ==> List Equation SIN
   Maybe(S) ==> Union(S,"failed")
 
-  Exports ==> Join(FunctionSpace R,ConvertibleTo(InputForm),CoercibleTo(OutputForm)) with
-    if R has IntegralDomain then
-      Ring
-      AlgebraicallyClosedFunctionSpace R
-      nthRoot: (%, %) -> %
-      -- Field?
-      --_/: (%, %) -> %
-      TranscendentalFunctionCategory
-      CombinatorialOpsCategory
-      LiouvillianFunctionCategory
-      SpecialFunctionCategory
-      coerce: Polynomial R -> %
-      -- transformations
-      expand: % -> %
-    if % has FunctionSpace(Integer) then
-      factor: % -> %
-    if % has TranscendentalFunctionCategory and R has GcdDomain then
-      simplify : % -> %
-
-    -- coercions
-    coerce: Pi -> %
-    coerce: % -> F
-    coerce: F -> %
-    --
-    equal: (%,%) -> Boolean
-    options: () -> List Symbol
+  Exports ==> SymbolicCategory(R)
 
   Implementation ==> add
     Rep := InputForm
 
+    if AxiomList has Axiom then
+      -- It might be nice if this was displayed like Symbolic(Integer,None)
+      -- but that would be recursive and require bootstrap mode.
+      axioms() == axioms()$AxiomList
+    else
+      axioms() == []
     belong? op == true
     -- use equality from Expression(R)
     (x:% = y:%):Boolean == coerce(x)@F = coerce(y)@F
     hash(x:%):SingleInteger == hash(x pretend Rep)$InputForm
+    -- term ordering:
+    -- breadth first < integer (numeric) < float (numeric) < symbol (lexical)
     smaller?(x:%,y:%):Boolean ==
       --output("smaller? ",paren [x::OutputForm,y::OutputForm])$OutputPackage
       null? y => false
-      list? y => list? x and (smaller?(car x,car y) or not smaller?(car y,car x) and smaller?(cdr x,cdr y))
-      symbol? y => list? x or symbol? x and symbol x < symbol y
-      float? y => list? x or symbol? x or float? x and float x < float y
-      integer? y => list? x or symbol? x or float? x or integer? x and integer x < integer y
-
-      --integer? y => null? x or integer? x and integer x < integer y
-      --float? y => null? x or integer? x or float? x and float x < float y
-      --symbol? y => null? x or integer? x or float? x or symbol? x and symbol x < symbol y
-      --list? y => null? x or atom? x or list? x and (smaller?(car x,car y) or not smaller?(car y,car x) and smaller?(cdr x,cdr y))
+      list? y => null? x or list? x and (smaller?(car x,car y) or not smaller?(car y,car x) and smaller?(cdr x,cdr y))
+      integer? y => null? x or list? x or integer? x and integer x < integer y
+      float? y => null? x or list? x or symbol? x or float? x and float x < float y
+      symbol? y => null? x or list? x or integer? x or float? x or symbol? x and symbol x < symbol y
       false
-    equal(x:%,y:%):Boolean == not smaller?(x,y) and not smaller?(y,x)
+    equal?(eq:Equation %):Boolean == not smaller?(lhs eq,rhs eq) and not smaller?(lhs eq,rhs eq)
     --
     eval(x:%,k:Kernel(%),s:%):% == subst(x,[k],[s])
     eval(x:%):% == coerce eval(coerce x)$F
@@ -254,7 +251,7 @@ Symbolic(R : Join(Comparable,ConvertibleTo(InputForm)), AxiomList : Axiom) : Exp
     coerce(x:%):OutputForm == coerceOutputForm(x pretend Rep)
 
     -- +0 is a hack to avoid premature conversion
-    hack(x:%):Rep == binary(convert('_+),[x::Rep,0::Rep])$InputForm
+    hack(x:%):Rep == x -- binary(convert('_+),[x::Rep,0::Rep])
 
     coerce(x:%):F ==
       v:List Symbol := variables x
@@ -267,15 +264,8 @@ Symbolic(R : Join(Comparable,ConvertibleTo(InputForm)), AxiomList : Axiom) : Exp
     coerce(x:F):% == convert(x)@InputForm
     coerce(x:R):% == convert(x)@InputForm
     convert(x:%):InputForm == x pretend Rep
+    convert(x:InputForm):% ==interpret(hack x)$InputFormFunctions1(%)
     --
-    (x:% ^ y:%):% == binary(convert('_^),[x::Rep,y::Rep])$InputForm
-    (x:% ^ y:PositiveInteger):% ==
-      binary(convert('_^),[x::Rep,y::Rep])$InputForm
-    (x:% ^ y:NonNegativeInteger):% ==
-      binary(convert('_^),[x::Rep,y::Rep])$InputForm
-    (x:% ^ y:Fraction Integer):% ==
-      binary(convert('_^),[x::Rep, convert y])$InputForm
-
     factorial(x:%):%          == convert([convert('factorial)@InputForm,x::Rep])
     binomial(n:%, m:%):%      == binary(convert('binomial),[n::Rep,m::Rep])$InputForm
     permutation(n:%, m:%):%   == binary(convert('permutation),[n::Rep,m::Rep])$InputForm
@@ -289,9 +279,17 @@ Symbolic(R : Join(Comparable,ConvertibleTo(InputForm)), AxiomList : Axiom) : Exp
 
     -- We don't want the InputForm +0 and *1 auto-simplification but we
     -- might be doing our own simplifications.
-    plus: (%,%) -> %
-    times: (%,%) -> %
+    (x:% ^ y:%):% == binary(convert('_^),[x::Rep,y::Rep])$InputForm
+    (x:% ^ y:PositiveInteger):% == expt(x, y)$RepeatedSquaring(%)
+    (x:% ^ y:NonNegativeInteger):% ==
+      if y = 0 then x^0
+      else x ^ y::PositiveInteger
+    (x:% ^ y:Integer):% ==
+      if y < 0 then 1/(x ^ (-y)::PositiveInteger)
+      else x ^ y::NonNegativeInteger
+    (x:% ^ y:Fraction Integer):% == nthRoot(x,denom(y))^numer(y)
     --
+    plus: (%,%) -> %
     times(x:%,y:%):% ==
       --output("times: ",paren [coerce(x)@OutputForm,coerce(y)@OutputForm])$OutputPackage
       if AxiomList has IdentityAxiom then
@@ -307,7 +305,7 @@ Symbolic(R : Join(Comparable,ConvertibleTo(InputForm)), AxiomList : Axiom) : Exp
           return times(times(x,t(1)),t(2))
       if AxiomList has SquaresAxiom then
         if R has SemiGroup then
-          if equal(x,y) then return x^2
+          if equal? equation(x,y) then return x^2
       if AxiomList has ConstantsAxiom then
         if R has IntegralDomain then
           if (r1:=retractIfCan(x)@Union(R,"failed")) case R then
@@ -320,7 +318,16 @@ Symbolic(R : Join(Comparable,ConvertibleTo(InputForm)), AxiomList : Axiom) : Exp
           return plus(times(x,t(1)),times(x,t(2)))
       return binary(convert('_*),[x::Rep,y::Rep])$InputForm
     (x:% * y:%):% == times(x,y)
-
+    (x:PositiveInteger * y:%):% == double(x,y)$RepeatedDoubling(%)
+    (x:NonNegativeInteger * y:%):% ==
+      if x=0 then 0*y
+      else x::PositiveInteger * y
+    (x:Integer * y:%):% ==
+      if x < 0 then
+        (-x)::PositiveInteger * y
+      else
+        x::NonNegativeInteger * y
+    --
     plus(x:%,y:%):% ==
       --output("plus: ",paren [coerce(x)@OutputForm,coerce(y)@OutputForm])$OutputPackage
       if AxiomList has IdentityAxiom then
@@ -336,10 +343,10 @@ Symbolic(R : Join(Comparable,ConvertibleTo(InputForm)), AxiomList : Axiom) : Exp
           return plus(plus(x,t(1)),t(2))
       if AxiomList has DoublesAxiom then
         if R has AbelianSemiGroup then
-          if equal(x,y) then return times(2::%,x)
+          if equal? equation(x,y) then return times(2::%,x)
           if AxiomList has AssociativeAxiom then
             if (t:=isPlus1(x)) case List % then
-              if equal(t(2),y) then return plus(t(1),times(2::%,y))
+              if equal? equation(t(2),y) then return plus(t(1),times(2::%,y))
       if AxiomList has ConstantsAxiom then
         if R has IntegralDomain then
           if (r1:=retractIfCan(x)@Union(R,"failed")) case R then
@@ -352,9 +359,12 @@ Symbolic(R : Join(Comparable,ConvertibleTo(InputForm)), AxiomList : Axiom) : Exp
 
     (x:% / y:%):% == binary(convert('_/),[x::Rep,y::Rep])$InputForm
 
-    (x:Integer * y:%):% == convert(x)@InputForm * y
 
     _-(x:%):% == convert([convert('_-)@InputForm,x::Rep])
+
+    --elt(f:BasicOperator,x:%):% == convert([convert(name f)@InputForm,x::Rep])
+    elt(f:BasicOperator,x:List %):% ==
+      convert(concat(convert(name f)@InputForm,[i::Rep for i in x]))
 
     -- Elementary Functions
     acos(x:%):% == convert([convert('acos)@InputForm,x::Rep])
@@ -424,48 +434,102 @@ Symbolic(R : Join(Comparable,ConvertibleTo(InputForm)), AxiomList : Axiom) : Exp
     if F has TranscendentalFunctionCategory and R has GcdDomain then
       simplify(x:%):% ==
         coerce(simplify(coerce x)$TranscendentalManipulations(R,F))
+    convert(eq:Equation %): Equation InputForm == equation(convert lhs eq, convert rhs eq)
+    convert(eq:Equation InputForm): Equation % == equation(convert lhs eq, convert rhs eq)
+
+)abbrev domain COM Commutative
+Commutative():CommutativeAxiom == add
+    import Symbolic(Integer,None)
+    x := coerce 'x
+    y := coerce 'y
+    axioms() ==
+      [ convert equation (x+y, y+x),
+        convert equation (x*y, y*x) ]
+
+)abbrev domain DIS Distributive
+Distributive():DistributiveAxiom == add
+  import Symbolic(Integer,None)
+  x := coerce 'x
+  y := coerce 'y
+  z := coerce 'z
+  axioms() ==
+    [ convert equation (x*(y+z), (x*y)+(x*z)) ]
+
+)abbrev domain ASS Associative
+Associative():AssociativeAxiom == add
+  import Symbolic(Integer,None)
+  x := coerce 'x
+  y := coerce 'y
+  z := coerce 'z
+  axioms() ==
+    [ convert equation ((x+y)+z, x+(y+z)),
+      convert equation ((x*y)*z, (x*(y*z))) ]
+
+)abbrev domain ID Identities
+Identities():IdentityAxiom == add
+  import Symbolic(Integer,None)
+  x := coerce 'x
+  axioms() ==
+    [ convert equation (x+0, x), convert equation (0+x, x),
+      convert equation (x*1, x), convert equation (1*x, x) ]
+
+)abbrev domain CON Constants
+Constants():ConstantsAxiom == add
+  import Symbolic(Integer,None)
+  x := coerce 'x
+  y := coerce 'y
+  retractIfCan:BasicOperator := operator 'retractIfCan
+  axioms() ==
+    [ convert equation (retractIfCan(x)+retractIfCan(y), retractIfCan(x+y)) ]
+
+)abbrev domain DBL Doubles
+Doubles():DoublesAxiom == add
+  import Symbolic(Integer,None)
+  x := coerce 'x
+  axioms() == [ convert equation (x+x, 2*x) ]
+
+)abbrev domain SQ Squares
+Squares():SquaresAxiom == add
+  import Symbolic(Integer,None)
+  x := coerce 'x
+  axioms() == [ convert equation (x*x, x^2) ]
+
+)abbrev domain AA /\
+++ Adding rules
+(A:Axiom /\ B:Axiom):Axiom with
+    if A has CommutativeAxiom then CommutativeAxiom
+    if B has CommutativeAxiom then CommutativeAxiom
+    if A has DistributiveAxiom then DistributiveAxiom
+    if B has DistributiveAxiom then DistributiveAxiom
+    if A has AssociativeAxiom then AssociativeAxiom
+    if B has AssociativeAxiom then AssociativeAxiom
+    if A has IdentityAxiom then IdentityAxiom
+    if B has IdentityAxiom then IdentityAxiom
+    if A has ConstantsAxiom then ConstantsAxiom
+    if B has ConstantsAxiom then ConstantsAxiom
+    if A has DoublesAxiom then DoublesAxiom
+    if B has DoublesAxiom then DoublesAxiom
+    if A has SquaresAxiom then SquaresAxiom
+    if B has SquaresAxiom then SquaresAxiom
+  == add
+    axioms() == concat(axioms()$A,axioms()$B)
 
 )abbrev domain SEXPR SymbolicExpression
-SymbolicExpression(R : Join(Comparable,ConvertibleTo(InputForm))) : Exports == Implementation where
-  F ==> Expression R
-  K   ==> Kernel %
-  KF  ==> Kernel F
-  SMP  ==> SparseMultivariatePolynomial(R, K)
-  LIFT ==> PolynomialCategoryLifting(IndexedExponents(KF),KF,R,SparseMultivariatePolynomial(R,KF),SMP)
-  --AF  ==> AlgebraicFunction(R, F)
-  --EF  ==> ElementaryFunction(R, F)
-  CF  ==> CombinatorialFunction(R, F)
-  --LF  ==> LiouvillianFunction(R, F)
-  --AN  ==> AlgebraicNumber
-  --KAN ==> Kernel AN
-  --ESD ==> ExpressionSpace_&(F)
-  --FSD ==> FunctionSpace_&(F, R)
+SymbolicExpression(R : Join(Comparable,ConvertibleTo(InputForm))) : SymbolicCategory(R)
+  == Symbolic(R,Identities/\Commutative/\Associative/\Distributive/\Constants/\Doubles/\Squares)
 
-  Exports ==> Join(FunctionSpace R,ConvertibleTo(InputForm),CoercibleTo(OutputForm)) with
-    if R has IntegralDomain then
-      Ring
-      AlgebraicallyClosedFunctionSpace R
-      nthRoot: (%, %) -> %
-      -- Field?
-      _/: (%, %) -> %
-      TranscendentalFunctionCategory
-      CombinatorialOpsCategory
-      LiouvillianFunctionCategory
-      SpecialFunctionCategory
-      coerce: Polynomial R -> %
-      -- transformations
-      expand: % -> %
-    if % has FunctionSpace(Integer) then
-      factor: % -> %
-    if % has TranscendentalFunctionCategory and R has GcdDomain then
-      simplify : % -> %
-
-    -- coercions
-    coerce: Pi -> %
-    coerce: % -> F
-    coerce: F -> %
-    --
-    equal: (%,%) -> Boolean
-    options: () -> List Symbol
-
-  Implementation ==> Symbolic(R,Identities/\Commutative/\Associative/\Distributive/\Constants/\Doubles/\Squares)
+)abbrev package SYMPKG1 SymbolicFunctions1
+SymbolicFunctions1(R: Join(Comparable,ConvertibleTo InputForm), A:SymbolicCategory R,
+  S: Join(Comparable,ConvertibleTo InputForm), B:SymbolicCategory S): with
+    convert: B -> A
+  == add
+    -- +0 is a hack to avoid premature conversion
+    hack(x:B):InputForm == binary(convert('_+),[convert x,0::InputForm])
+    convert(x:B):A ==
+      v:List Symbol := variables(x)
+      if #v = 0 then return interpret(hack x)$InputFormFunctions1(A)
+      -- we need to substitute variables with unknown modes
+      s:List Symbol := [new()$Symbol for vi in v]
+      ks:List Equation B := [equation(coerce(vi)$B, coerce(si)$B) for vi in v for si in s]
+      sk:List Equation A := [equation(coerce(si)$A, coerce(vi)$A) for vi in v for si in s]
+      return subst(interpret(hack subst(x,ks))$InputFormFunctions1(A),sk)
