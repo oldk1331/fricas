@@ -455,6 +455,7 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
     (x:% ^ y:Fraction Integer):% == nthRoot(x,denom(y))^numer(y)
     --
     plus: (Rep,Rep) -> Rep
+    minus: (Rep,Rep) -> Rep
     uminus: Rep -> Rep
 
     times(x:Rep,y:Rep):Rep ==
@@ -620,8 +621,8 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
 Commutative(op:Symbol):CommutativeAxiom(op) == add
     import Symbolic(Integer,None)
     axioms() ==
-      x := coerce 'x
-      y := coerce 'y
+      x:Symbolic(Integer,None) := coerce 'x
+      y:Symbolic(Integer,None) := coerce 'y
       [ convert equation (x+y, y+x),
         convert equation (x*y, y*x) ]
 
@@ -696,8 +697,10 @@ Divides():DividesAxiom == add
 )abbrev domain AND /\
 ++ Conjunction of rules
 _/_\(A:Axiom,B:Axiom):Axiom with
-    if A has CommutativeAxiom('+) then CommutativeAxiom('+)
-    if B has CommutativeAxiom('+) then CommutativeAxiom('+)
+    if A has CommutativeAxiom('_+) then CommutativeAxiom('_+)
+    if B has CommutativeAxiom('_+) then CommutativeAxiom('_+)
+    if A has CommutativeAxiom('_*) then CommutativeAxiom('_*)
+    if B has CommutativeAxiom('_*) then CommutativeAxiom('_*)
     if A has AlternativeAxiom then AlternativeAxiom
     if B has AlternativeAxiom then AlternativeAxiom
     if A has DistributiveAxiom then DistributiveAxiom
