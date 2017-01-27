@@ -20,17 +20,16 @@ SINFunctions(): with
     rank(x:Symbol,n:Integer):SIN == PUT(x,'rank,convert(n)@SIN)$Lisp
     rank(x:Symbol):SIN == GET(x,'rank)$Lisp
     --null < list < integer < float < symbol rank < symbol rank
-    smaller?(x:SIN,y:SIN):Boolean ==
-      --output("smaller? ",paren [x::OutputForm,y::OutputForm])$OutputPackage
+    smaller1?(x:SIN,y:SIN):Boolean ==
+      --output("smaller1? ",paren [x::OutputForm,y::OutputForm])$OutputPackage
       null? y => return false
       list? y and null? x => return true
       -- depth first
       list? y and list? x =>
-        --output("# cdr x, # cdr y", paren [(# cdr x)::OutputForm,(# cdr y)::OutputForm])$OutputPackage
-        ( # cdr x > # cdr y or
-          # cdr x = # cdr y and
-            smaller?(cdr x,cdr y) or
-              smaller?(car x, car y))
+        --output("cdr x, cdr y", paren [(cdr x)::OutputForm,(cdr y)::OutputForm])$OutputPackage
+        (# cdr x > # cdr y or (
+           # cdr x = # cdr y and (smaller?(cdr x,cdr y) or
+              not smaller?(cdr y, cdr x) and smaller?(car x,car y))))
       integer? y => null? x or list? x
         or integer? x and integer x < integer y
       float? y => null? x or list? x or integer? x
@@ -38,13 +37,13 @@ SINFunctions(): with
       symbol? y => null? x or list? x or integer? x or float? x
         or symbol? y and smaller?(rank symbol x, rank symbol y)
           or not smaller?(rank symbol y, rank symbol x) and symbol x < symbol y
-      -- commutative
-      --symbol? y and commutative?(symbol y) => null? x or list? x or integer? x or float? x
-      --  or symbol? x and commutative?(symbol x) and symbol x < symbol y
-      -- non-commutative
-      --symbol? y => null? x or list? x or integer? x or float? x
-      --    or symbol? x and (commutative?(symbol x) or symbol x < symbol y)
       false
+    smaller?(x:SIN,y:SIN):Boolean ==
+      if smaller1?(x,y) and smaller1?(y,x) then
+        output("smaller? ",paren [x::OutputForm,y::OutputForm])$OutputPackage
+        error("smaller? total order failed")
+      else
+        return smaller1?(x,y)
 
 )abbrev category SYMCAT SymbolicCategory
 SymbolicCategory(R : Comparable) : Category == Exports where
@@ -98,7 +97,11 @@ CommutativeAxiom(): Category == Axiom with
     rewriteCommutative: ((SIN,SIN)->SIN, SIN, SIN) -> Maybe(SIN)
   add
     rewriteCommutative(f:(SIN,SIN)->SIN, x:SIN, y:SIN): Maybe(SIN) ==
-      if smaller?(y,x)$SINFunctions then f(y,x) else "failed"
+      if smaller?(y,x)$SINFunctions then
+        --output("rewriteCommutative: ",paren [coerce(x)@OutputForm,coerce(y)@OutputForm])$OutputPackage
+        return f(y,x)
+      else
+        return "failed"
 )abbrev category COMAX+ CommutativeAxiom+
 CommutativeAxiom_+():Category == CommutativeAxiom
 )abbrev category COMAX1 CommutativeAxiom*
@@ -143,6 +146,8 @@ AssociativeAxiom(): Category == Axiom with
       --if (t:=terms(x)) case Pair SIN then
       --  return f(t.left,f(t.right,y))
       if (t:=terms(y)) case Pair SIN then
+        --output("rewriteAssociative: ",paren [coerce(x)@OutputForm,coerce(y)@OutputForm])$OutputPackage
+        --output("terms: ",paren [coerce(t.left)@OutputForm,coerce(t.right)@OutputForm])$OutputPackage
         return f(f(x,t.left),t.right)
       "failed"
 )abbrev category ASSAX+ AssociativeAxiom+
@@ -503,9 +508,9 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
         returnIf rewriteDistributive(isPlus1,plus,times,x,y)
       if AxiomList has SquaresAxiom then
         returnIf rewriteSquares(power,x,y)
-        if AxiomList has AssociativeAxiom then
-          if (t:=isTimes1(x)) case Pair SIN then
-            return times(t.left,times(t.right,y))
+        --if AxiomList has AssociativeAxiom then
+        --  if (t:=isTimes1(x)) case Pair SIN then
+        --    return times(t.left,times(t.right,y))
       binary(convert('_*),[x,y])$SIN
     (x:% * y:%):% == per times(rep x,rep y)
     --
@@ -758,6 +763,7 @@ _/_\(A:Axiom,B:Axiom):Axiom with
 
 )abbrev domain SEXPR SymbolicExpression
 SymbolicExpression(R:Comparable) : SymbolicCategory(R)
+  --== Symbolic(R, Commutative_+/\Associative_+)
   == Symbolic(R, Commutative_+/\Commutative_*/\Distributive/\Associative_+/\Associative_*/\Identities/\Inverse/\Doubles/\Cancels/\Squares/\Divides)
 
 )abbrev package SYMPKG1 SymbolicFunctions1
