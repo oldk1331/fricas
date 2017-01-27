@@ -1,7 +1,7 @@
 s:SymbolicExpression Integer := 1+1+1
 eval s
 s::Integer
-equal? (s=3)
+equal?(s=3)$SymbolicExpression(Integer)
 test(s=3)
 (1/5)::SEXPR INT
 --
@@ -27,11 +27,13 @@ x*(y*z)= (x*y)*z
 test %
 x*(y+z) = x*y + x*z
 test %
---
-sin(x)+cos(x)+tan(x)
-asin(x)+acos(x)+atan(x)
-sin(x)^2 + cos(x)^2 = 1
-test map(simplify,%)
+smaller?(x*x,x*y)
+smaller?(x*y,y*y)
+xxxy:=x*x+x*y
+yy:=y*y
+smaller?(xxxy,yy)
+x*x+x*y+y*y
+x^2+2*x*y+y^2
 --
 exp(x+1) = %e*exp(x)
 test map(simplify, %)
@@ -45,6 +47,19 @@ test(nthRoot(x,2)=sqrt(x))
 --
 variables(sin(x*y)+2*z)
 kernels(sin(x*y)+2*z)
+
+-- Symbolic Trig
+smaller?(cos(y), sin(x))
+smaller?(sin(x),cos(y))
+cos(y)*sin(x)
+sin(x)+cos(x)+tan(x)
+asin(x)+acos(x)+atan(x)
+sin(x)^2 + cos(x)^2 = 1
+test map(simplify,%)
+--
+t1 := cos(x)*sin(y) - cos(y)*sin(x)
+t2 := - sin(x)*sin(y) + cos(x)*cos(y)
+expr := tan(q)*tan(w) + t1*cos(x3) + t2*w*cos(a) + r3*t1*t2 + 5
 --
 x+1/y
 simplify %
@@ -78,4 +93,4 @@ f(0$EXPR INT)
 D(x^2,'x)
 simplify %
 x^n
-D(x^n,'x)
+--D(x^n,'x)
