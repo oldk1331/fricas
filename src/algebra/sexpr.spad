@@ -177,6 +177,7 @@ InverseAxiom(): Category == Axiom with
       if inv(y) = x then return u
       "failed"
     rewriteInverseInverse(inv:SIN->SIN,x:SIN) ==
+      --output("rewriteInverseInverse: ",coerce(x)@OutputForm)$OutputPackage
       if list? x and inv(car cdr x)=x then return car cdr x
       "failed"
     rewriteInverseBinary(inv:SIN->SIN,f:(SIN,SIN)->SIN,x:SIN,y:SIN): Maybe SIN ==
@@ -279,15 +280,13 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
       1:% == per 1$Rep
       one? x  == x = 1
 
-    -- use equality from Expression(R)
-    (x:% = y:%):Boolean == coerce(x)@F = coerce(y)@F
-
     hash(x:%):SingleInteger == hash(rep x)$SIN
-    -- term ordering:
-    -- breadth first < integer (numeric) < float (numeric) < symbol (lexical)
+    equal?(eq:Equation %):Boolean == not smaller?(lhs eq,rhs eq) and not smaller?(rhs eq,lhs eq)
+    -- use equality from Expression(R)
+    (x:% = y:%):Boolean == not smaller?(x,y) and not smaller?(y,x)
+      --output("=",paren [x::OutputForm,y::OutputForm])$OutputPackage
+      --coerce(x)@F = coerce(y)@F
 
-    equal?(eq:Equation %):Boolean == not smaller?(lhs eq,rhs eq) and not smaller?(lhs eq,rhs eq)
-    --
     subst(x:%,e:Equation %):% == per SUBST(rep rhs e,rep lhs e,rep x)$Lisp
     subst(x:%,ks:List Kernel %, vs:List %) ==
       if #ks > 1 then return subst(subst(x,equation(first(ks)::%,first(vs))),rest ks, rest vs)
@@ -304,6 +303,7 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
     --
     -- need to handle subscripted Symbol
     retractIfCan(x:%):Maybe(Kernel %) ==
+      --output("retractIfCan: ",x::OutputForm)$OutputPackage
       if atom? rep x and symbol? rep x then return kernel symbol rep x
       if list? rep x and symbol? car rep x then
         if list? cdr rep x then
@@ -312,7 +312,12 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
             k:Kernel(%) := kernel(operator(s)$CommonOperators,
               destruct cdr rep x, #cdr(rep x)::NonNegativeInteger)
             return k
-      return "failed"
+          else
+            return "failed"
+        else
+          return "failed"
+      else
+        return "failed"
     retract(x:%):Symbol ==
       k:Maybe(Kernel %):=retractIfCan(x)
       if k case "failed" then
@@ -326,15 +331,65 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
     isTimes1(x:SIN):Maybe(Pair SIN) ==
       list? x and symbol? car x and symbol car x = '_* => [car cdr x, car cdr cdr x]
       "failed"
+    isDivide1(x:SIN):Maybe(Pair SIN) ==
+      list? x and symbol? car x and symbol car x = '_/ => [car cdr x, car cdr cdr x]
+      "failed"
     if R has IntegralDomain then
       kk2(k:KF):SMP ==
         ak:List % := [coerce x for x in argument k]
         return coerce kernel(operator k,ak,position k)$K
       rr2(r:R):SMP == coerce r
+      -- Symbolic is syntactical!
+      numerator(x:%):% ==
+        r := isDivide1 rep x
+        if r case Pair SIN then
+          return per r.left
+        else
+          return x
+      denominator(x:%):% ==
+        r := isDivide1 rep x
+        if r case Pair SIN then
+          return per r.right
+        else
+          return 1
+      makeKernel(x:%):Kernel % ==
+        --output("makeKernel: ",x::OutputForm)$OutputPackage
+        k:Maybe(Kernel %):=retractIfCan(x)
+        if k case Kernel % then
+          return k
+        else
+          -- We must wrap up this term in a paren box for SMP.
+          return coerce kernel(operator('%box)$CommonOperators,[x],1)$K
+      smpTerm(x:%):SparseMultivariatePolynomial(R,Kernel %) ==
+        --output("smpTerm: ",x::OutputForm)$OutputPackage
+        t:=isTimes x
+        if t case List % then
+          return reduce("*",[smpTerm(i) for i in t])
+        -- this test is not quite adequate
+        t2:=isPower x
+        if t2 case Record(val:%,exponent:Integer) then
+          if t2.exponent > 0 then
+            return smpTerm(t2.val)^(t2.exponent::NonNegativeInteger)
+        if atom?(coerce x) and not symbol?(coerce x) then
+          return rr2 retract x
+        else
+          return coerce makeKernel(x)
       numer(x:%):SparseMultivariatePolynomial(R,Kernel %) ==
-        map(kk2,rr2, numer(coerce x)$F)$LIFT
+        r:=numerator(x)
+        s:=isPlus r
+        if s case List % then
+          return reduce("+",[smpTerm(i) for i in s])
+        else
+          return smpTerm(r)
       denom(x:%):SparseMultivariatePolynomial(R,Kernel %) ==
-        map(kk2,rr2, denom(coerce x)$F)$LIFT
+        --output("denom: ",x::OutputForm)$OutputPackage
+        r:=denominator(x)
+        s:=isPlus r
+        if s case List % then
+          return reduce("+",[smpTerm(i) for i in s])
+        else
+          return smpTerm(r)
+
       (x:SMP / y:SMP):% == coerce(x) / coerce(y)
       isPlus(x:%):Maybe(List %) ==
         r := isPlus1 rep x
@@ -378,6 +433,14 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
             r2:Maybe(Integer):=retractIfCan(r::R)
             if r2 case Integer then return r2::Integer::Fraction Integer
           return "failed"
+      if R has PatternMatchable Integer then
+        patternMatch(x : %, p : Pattern Integer, l : PatternMatchResult(Integer, %)) ==
+          --output("patternMatch: ",paren [x::OutputForm,p::OutputForm,l::OutputForm])$OutputPackage
+          patternMatch(x, p, l)$PatternMatchFunctionSpace(Integer, R, %)
+
+      if R has PatternMatchable Float then
+        patternMatch(x : %, p : Pattern Float, l : PatternMatchResult(Float, %)) ==
+          patternMatch(x, p, l)$PatternMatchFunctionSpace(Float, R, %)
 
     if R has SemiGroup then
       isTimes(x:%):Maybe(List %) ==
@@ -415,6 +478,11 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
         -- scripted?
         if #string(s)>2 and ord string(s).1 = 42 and digit? string(s).2 then
           return coerce(x pretend Symbol)
+        if s='%paren then
+          return paren coerceOutputForm car cdr x
+        if s='%box then
+          -- make box visible (for now)
+          return bracket coerceOutputForm car cdr x
         if s='float then
           return interpret(x)$InputFormFunctions1(Float)::OutputForm
         if s='factorial then
@@ -452,6 +520,7 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
     hack(x:%):Rep == binary(convert('_+),[rep x,0$Rep])
 
     coerce(x:%):F ==
+      --output("coerce: ",x::OutputForm)$OutputPackage
       v:List Symbol := variables x
       if #v = 0 then return interpret(hack x)$InputFormFunctions1(F)
       -- we need to substitute variables with unknown modes
@@ -489,6 +558,15 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
       if y < 0 then 1/(x ^ (-y)::PositiveInteger)
       else x ^ y::NonNegativeInteger
     (x:% ^ y:Fraction Integer):% == nthRoot(x,denom(y))^numer(y)
+    isPower1(x:SIN):Maybe(Pair SIN) ==
+      list? x and symbol? car x and symbol car x = '_^ => [car cdr x, car cdr cdr x]
+      "failed"
+    isPower(x:%):Maybe(Record(val:%,exponent:Integer)) ==
+      r:=isPower1(rep x)
+      if r case Pair SIN then
+        if integer?(r.right) then
+          return [per r.left,integer(r.right)]
+      "failed"
     --
     plus: (Rep,Rep) -> Rep
     minus: (Rep,Rep) -> Rep
@@ -608,7 +686,7 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
       if atom? x and symbol? x then return set [symbol x]
       if list? x and symbol? car x then
         if list? cdr x then
-          return reduce("union", [variables1(i) for i in destruct cdr x])
+          return reduce("union", [variables1(i) for i in destruct cdr x],empty())
         else
           return variables1 car cdr x
       return empty()
@@ -764,6 +842,7 @@ _/_\(A:Axiom,B:Axiom):Axiom with
 )abbrev domain SEXPR SymbolicExpression
 SymbolicExpression(R:Comparable) : SymbolicCategory(R)
   --== Symbolic(R, Commutative_+/\Associative_+)
+  --== Symbolic(R, Commutative_+/\Commutative_*/\Distributive/\Associative_+/\Associative_*/\Identities/\Doubles/\Cancels/\Squares/\Divides)
   == Symbolic(R, Commutative_+/\Commutative_*/\Distributive/\Associative_+/\Associative_*/\Identities/\Inverse/\Doubles/\Cancels/\Squares/\Divides)
 
 )abbrev package SYMPKG1 SymbolicFunctions1
