@@ -67,6 +67,8 @@ simplify p
 factor(x^2+2*x*y+y^2)
 expand((x+y)/z)
 expand(x*(y+z))
+numer((1/x+1)/y*x+x^2/y)
+denom((1/x+1)/y*x+x^2/y)
 --
 -- Kurt
 --
@@ -79,7 +81,7 @@ rs := simplify r0
 factor rs
 convert(r)$SEI
 coerce(r)$SEI
-sum(x,'x=1..10)
+--sum(x,'x=1..10)
 reduce(+,[n::SEXPR INT for n in 1..10])
 x - x
 (x+y)^x
