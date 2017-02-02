@@ -163,6 +163,7 @@ IdentityAxiom(): Category == Axiom with
     rewriteIdentity(u:SIN,x:SIN,y:SIN): Maybe SIN ==
       --if x=u then return y
       if y=u then return x
+      if x=u then return y
       "failed"
 
 )abbrev category INVAX InverseAxiom
@@ -303,12 +304,13 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
     --
     -- need to handle subscripted Symbol
     retractIfCan(x:%):Maybe(Kernel %) ==
-      --output("retractIfCan: ",x::OutputForm)$OutputPackage
+      --output("retractIfCan Kernel: ",x::OutputForm)$OutputPackage
       if atom? rep x and symbol? rep x then return kernel symbol rep x
       if list? rep x and symbol? car rep x then
         if list? cdr rep x then
           s := symbol car rep x
-          if not member?(s,['_+,'_-,'_*,'_/])$List(Symbol) then
+          -- Why not '_- ??
+          if not member?(s,['_+,'_*,'_/])$List(Symbol) then
             k:Kernel(%) := kernel(operator(s)$CommonOperators,
               destruct cdr rep x, #cdr(rep x)::NonNegativeInteger)
             return k
@@ -318,12 +320,31 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
           return "failed"
       else
         return "failed"
+    retractIfCan(x:%):Maybe(R) ==
+      --output("retractIfCan R: ",x::OutputForm)$OutputPackage
+      if list? rep x and # cdr rep x = 0 then error "stop"
+      if R is Integer then
+        if integer? rep x then return (integer rep x) pretend R
+      if R is DoubleFloat then
+        if float? rep x then return (float rep x) pretend R
+      if R is Symbol then
+        if symbol? rep x then return (symbol rep x) pretend R
+      --
+      return "failed"
+    retractIfCan(x:%):Maybe(Symbol) ==
+      --output("retractIfCan Symbol: ",x::OutputForm)$OutputPackage
+      if symbol? rep x then symbol rep x
+      else "failed"
     retract(x:%):Symbol ==
-      k:Maybe(Kernel %):=retractIfCan(x)
-      if k case "failed" then
-        error "not a kernel"
-      else
-        return name k
+      --output("retract Symbol: ",x::OutputForm)$OutputPackage
+      s:=retractIfCan(x)@Maybe(Symbol)
+      if s case Symbol then return s
+      error "not a Symbol"
+      --k:Maybe(Kernel %):=retractIfCan(x)
+      --if k case "failed" then
+      --  error "not a kernel"
+      --else
+      --  return name k
     --
     isPlus1(x:SIN):Maybe(Pair SIN) ==
       list? x and symbol? car x and symbol car x = '_+ => [car cdr x, car cdr cdr x]
@@ -354,6 +375,7 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
           return 1
       makeKernel(x:%):Kernel % ==
         --output("makeKernel: ",x::OutputForm)$OutputPackage
+        if symbol? rep x then return kernel symbol rep x
         k:Maybe(Kernel %):=retractIfCan(x)
         if k case Kernel % then
           return k
@@ -365,16 +387,19 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
         t:=isTimes x
         if t case List % then
           return reduce("*",[smpTerm(i) for i in t])
-        -- this test is not quite adequate
         t2:=isPower x
         if t2 case Record(val:%,exponent:Integer) then
           if t2.exponent > 0 then
             return smpTerm(t2.val)^(t2.exponent::NonNegativeInteger)
-        if atom?(coerce x) and not symbol?(coerce x) then
-          return rr2 retract x
+        -- this test is not quite adequate
+        if R is Integer and integer? rep x then
+          return coerce integer rep x
+        --if atom?(rep x) and not symbol?(rep x) then
+        --  return rr2 retract x
         else
           return coerce makeKernel(x)
       numer(x:%):SparseMultivariatePolynomial(R,Kernel %) ==
+        --output("numer: ",x::OutputForm)$OutputPackage
         r:=numerator(x)
         s:=isPlus r
         if s case List % then
@@ -500,6 +525,8 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
             return root coerceOutputForm car cdr x
         if s='nthRoot then
             return root(coerceOutputForm car cdr x, coerceOutputForm car cdr cdr x)
+        if s='_^ and car cdr cdr x = convert(1/2) then
+            return root(coerceOutputForm car cdr x)
         if s='exp and car(cdr x)=1 then return outputForm '%e
         if member?(s,['_+,'_-,'_*,'_/,'_^])$List(Symbol) and #cdr(x)>1 then
           if AxiomList has AssociativeAxiom then
@@ -644,8 +671,8 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
       binary(convert('_/),[x,y])$SIN
     (x:% / y:%):% == per div(rep x,rep y)
 
-    elt(f:BasicOperator,x:List %):% ==
-      per convert(concat(convert(name f)@SIN,[rep i for i in x]))
+    --elt(f:BasicOperator,x:List %):% ==
+    --  per convert(concat(convert(name f)@SIN,[rep i for i in x]))
 
     -- Elementary Functions
     acos(x:%):% == per convert([convert('acos)@SIN,rep x])
@@ -842,8 +869,8 @@ _/_\(A:Axiom,B:Axiom):Axiom with
 )abbrev domain SEXPR SymbolicExpression
 SymbolicExpression(R:Comparable) : SymbolicCategory(R)
   --== Symbolic(R, Commutative_+/\Associative_+)
-  --== Symbolic(R, Commutative_+/\Commutative_*/\Distributive/\Associative_+/\Associative_*/\Identities/\Doubles/\Cancels/\Squares/\Divides)
-  == Symbolic(R, Commutative_+/\Commutative_*/\Distributive/\Associative_+/\Associative_*/\Identities/\Inverse/\Doubles/\Cancels/\Squares/\Divides)
+  == Symbolic(R, Commutative_+/\Commutative_*/\Distributive/\Associative_+/\Associative_*/\Identities/\Doubles/\Cancels/\Squares/\Divides)
+  --== Symbolic(R, Commutative_+/\Commutative_*/\Distributive/\Associative_+/\Associative_*/\Identities/\Inverse/\Doubles/\Cancels/\Squares/\Divides)
 
 )abbrev package SYMPKG1 SymbolicFunctions1
 SymbolicFunctions1(R: Join(Comparable,ConvertibleTo SIN), A:SymbolicCategory R,

@@ -95,4 +95,9 @@ f(0$EXPR INT)
 D(x^2,'x)
 simplify %
 x^n
---D(x^n,'x)
+D(x^n,'x)
+--
+r1:=_rule(x,y)
+r1(z)
+r2:=_rule(x+1,y)
+r2(z+1)
