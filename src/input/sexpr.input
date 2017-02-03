@@ -57,10 +57,6 @@ asin(x)+acos(x)+atan(x)
 sin(x)^2 + cos(x)^2 = 1
 test map(simplify,%)
 --
-t1 := cos(x)*sin(y) - cos(y)*sin(x)
-t2 := - sin(x)*sin(y) + cos(x)*cos(y)
-expr := tan(q)*tan(w) + t1*cos(x3) + t2*w*cos(a) + r3*t1*t2 + 5
---
 x+1/y
 simplify %
 simplify p
@@ -81,7 +77,8 @@ rs := simplify r0
 factor rs
 convert(r)$SEI
 coerce(r)$SEI
---sum(x,'x=1..10)
+-- Wrong result !!
+sum(x,'x=1..10)
 reduce(+,[n::SEXPR INT for n in 1..10])
 x - x
 (x+y)^x
@@ -95,9 +92,27 @@ f(0$EXPR INT)
 D(x^2,'x)
 simplify %
 x^n
-D(x^n,'x)
+-- need to handle %diff operator
+--D(x^n,'x)
+--D(p^n,'p)
 --
-r1:=_rule(x,y)
-r1(z)
-r2:=_rule(x+1,y)
-r2(z+1)
+-- Rules
+--
+ru1:=_rule(x,y)
+ru1(z)
+ru2:=_rule(x+1,y)
+ru2(z+1)
+ru3:=_rule(cos(x), z)
+ru3 cos(x)+sin(y)
+ru3 cos(x)*sin(y)
+--
+t1 := cos(x)*sin(y) - cos(y)*sin(x)
+t2 := - sin(x)*sin(y) + cos(x)*cos(y)
+expr := tan(q)*tan(w) + t1*cos(x3) + t2*w*cos(a) + r3*t1*t2 + 5
+rs:=_rule(cos(x)*sin(y)-sin(x)*cos(y), sin(y-x))
+rc:=_rule(cos(x)*cos(y)-sin(x)*sin(y), cos(x+y))
+rs t1
+rs t2
+rc t1
+rc t2
+rc rs expr
