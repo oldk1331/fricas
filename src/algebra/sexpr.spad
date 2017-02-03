@@ -283,10 +283,7 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
 
     hash(x:%):SingleInteger == hash(rep x)$SIN
     equal?(eq:Equation %):Boolean == not smaller?(lhs eq,rhs eq) and not smaller?(rhs eq,lhs eq)
-    -- use equality from Expression(R)
     (x:% = y:%):Boolean == not smaller?(x,y) and not smaller?(y,x)
-      --output("=",paren [x::OutputForm,y::OutputForm])$OutputPackage
-      --coerce(x)@F = coerce(y)@F
 
     subst(x:%,e:Equation %):% == per SUBST(rep rhs e,rep lhs e,rep x)$Lisp
     subst(x:%,ks:List Kernel %, vs:List %) ==
@@ -296,10 +293,33 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
       if #es > 1 then return subst(subst(x, first es),rest es)
       else subst(x, first es)
     --
-    eval(x:%,k:Kernel(%),s:%):% == subst(x,[k],[s])
+    eval(x:%,k:Kernel(%),s:%):% ==
+      --output("eval 1:", paren [x::OutputForm, k::OutputForm, s::OutputForm])$OutputPackage
+      coerce rep subst(x,[k],[s])
+    eval(x:%,ks:List Kernel %, vs:List %) ==
+      --output("eval 2:", paren [x::OutputForm, ks::OutputForm, vs::OutputForm])$OutputPackage
+      r:=x
+      -- Use temporary symbols in case of parallel substitutions
+      ts:List Kernel % := [kernel(new()$Symbol) for k in ks]
+      for k in ks for t in ts repeat
+        r:=eval(r,k,coerce t)
+      for t in ts for v in vs repeat
+        r:=eval(r,t,v)
+      return r
+    --eval(x:%,k:Kernel(%),s:%):% ==
+    --  --output("eval 1:", paren [x::OutputForm, k::OutputForm, s::OutputForm])$OutputPackage
+    --  subst(x,[k],[s])
+    --eval(x:%,ks:List Kernel %, vs:List %) ==
+    --  output("eval 2:", paren [x::OutputForm, ks::OutputForm, vs::OutputForm])$OutputPackage
+    --  if #ks > 1 then return eval(eval(x,first(ks),first(vs)),rest ks, rest vs)
+    --  else return eval(x,first(ks),first(vs))
     if R has ConvertibleTo SIN then
-      eval(x:%):% == coerce(convert(x)@SIN)@%
-    eval(x:%,a:%,b:%):% == coerce eval(coerce(x)@F, coerce(a)@F, coerce(b)@F)
+      eval(x:%):% ==
+        --output("eval 0:", x::OutputForm)$OutputPackage
+        coerce(convert(x)@SIN)@%
+    eval(x:%,a:%,b:%):% ==
+      --output("eval 3:", paren [x::OutputForm, a::OutputForm, b::OutputForm])$OutputPackage
+      eval(x, retract a, b)
     eval(x:%,e:Equation %):% == eval(x,lhs e,rhs e)
     --
     -- need to handle subscripted Symbol
@@ -559,7 +579,7 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
       coerce(x:F):% == per convert(x)$F
       coerce(x:R):% == per convert(x)$R
     convert(x:%):SIN == rep x
-    coerce(x:SIN):% == per x -- interpret(hack x)$InputFormFunctions1(%)
+    coerce(x:SIN):% == interpret(hack x)$InputFormFunctions1(%)
     --
     factorial(x:%):%          == per convert([convert('factorial)@SIN,rep x])
     binomial(n:%, m:%):%      == binary(convert('binomial),[n::Rep,m::Rep])$SIN
@@ -671,8 +691,14 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
       binary(convert('_/),[x,y])$SIN
     (x:% / y:%):% == per div(rep x,rep y)
 
-    --elt(f:BasicOperator,x:List %):% ==
-    --  per convert(concat(convert(name f)@SIN,[rep i for i in x]))
+    elt(f:BasicOperator,x:List %):% ==
+      --output("elt: ", paren [f::OutputForm,x::OutputForm])$OutputPackage
+      --output("elt: properties: ",properties(f)::OutputForm)$OutputPackage
+      if not property(f,'%symbol) case "failed" then
+        return per convert name f
+      else
+        -- Should we actually evaluate the operator??
+        return per convert(concat(convert(name f)@SIN,[rep i for i in x]))
 
     -- Elementary Functions
     acos(x:%):% == per convert([convert('acos)@SIN,rep x])
@@ -867,10 +893,17 @@ _/_\(A:Axiom,B:Axiom):Axiom with
     axioms() == concat(axioms()$A,axioms()$B)
 
 )abbrev domain SEXPR SymbolicExpression
-SymbolicExpression(R:Comparable) : SymbolicCategory(R)
-  --== Symbolic(R, Commutative_+/\Associative_+)
-  == Symbolic(R, Commutative_+/\Commutative_*/\Distributive/\Associative_+/\Associative_*/\Identities/\Doubles/\Cancels/\Squares/\Divides)
-  --== Symbolic(R, Commutative_+/\Commutative_*/\Distributive/\Associative_+/\Associative_*/\Identities/\Inverse/\Doubles/\Cancels/\Squares/\Divides)
+--SymbolicExpression(R:Comparable) : SymbolicCategory(R)
+--  --== Symbolic(R, Commutative_+/\Associative_+)
+--  --== Symbolic(R, Commutative_+/\Commutative_*/\Distributive/\Associative_+/\Associative_*/\Identities/\Doubles/\Cancels/\Squares/\Divides)
+--  == Symbolic(R, Commutative_+/\Commutative_*/\Distributive/\Associative_+/\Associative_*/\Identities/\Inverse/\Doubles/\Cancels/\Squares/\Divides) add
+SymbolicExpression(R:Comparable) : SymbolicCategory(R) == Implementation where
+  F ==> Expression R
+  Implementation ==> Symbolic(R, Commutative_+/\Commutative_*/\Distributive/\Associative_+/\Associative_*/\Identities/\Inverse/\Doubles/\Cancels/\Squares/\Divides) add
+  -- use equality from Expression(R)
+    (x:% = y:%):Boolean ==
+      --output("=",paren [x::OutputForm,y::OutputForm])$OutputPackage
+      coerce(x)@F = coerce(y)@F
 
 )abbrev package SYMPKG1 SymbolicFunctions1
 SymbolicFunctions1(R: Join(Comparable,ConvertibleTo SIN), A:SymbolicCategory R,
