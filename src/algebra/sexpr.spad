@@ -515,7 +515,9 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
     coerce(x:Symbol):% == per convert(x)$Symbol
     coerce(k:Kernel %):% == coerce name(k)
 
-    coerceOutputForm(x:Rep):OutputForm ==
+    coerceOutputForm1:(Rep,Boolean)->OutputForm
+    coerceOutputForm(x:Rep):OutputForm ==coerceOutputForm1(x,false)
+    coerceOutputForm1(x:Rep,topLevel:Boolean):OutputForm ==
       if null? x then return empty()$OutputForm
       if atom? x then return (x pretend OutputForm)
       if list? x and symbol? car x then
@@ -549,9 +551,11 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
             return root(coerceOutputForm car cdr x)
         if s='exp and car(cdr x)=1 then return outputForm '%e
         if member?(s,['_+,'_-,'_*,'_/,'_^])$List(Symbol) and #cdr(x)>1 then
-          if AxiomList has AssociativeAxiom then
+          if s='_/ then -- assume )set output fraction vertical (should check flag?)
+            return infix(outputForm s, [coerceOutputForm1(i,true) for i in destruct cdr x])
+          else if AxiomList has AssociativeAxiom or topLevel then
             return infix(outputForm s, [coerceOutputForm(i) for i in destruct cdr x])
-          else
+          else -- ( ) required if non-associative
             return paren infix(outputForm s, [coerceOutputForm(i) for i in destruct cdr x])
         else
           if list? car(cdr x) or s ~= '_- then
@@ -561,7 +565,7 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
             return hconcat([outputForm s, hspace(1), coerceOutputForm car cdr x])
       else
         return hconcat(message("what is:")$OutputForm,x pretend OutputForm)
-    coerce(x:%):OutputForm == coerceOutputForm(rep x)
+    coerce(x:%):OutputForm == coerceOutputForm1(rep x,true)
 
     -- +0 is a hack to avoid premature conversion (do we need it?)
     hack(x:%):Rep == binary(convert('_+),[rep x,0$Rep])
