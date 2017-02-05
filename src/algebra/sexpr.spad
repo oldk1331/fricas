@@ -143,10 +143,8 @@ AssociativeAxiom(): Category == Axiom with
     rewriteAssociative: (SIN->Maybe Pair SIN, (SIN,SIN)->SIN, SIN, SIN) -> Maybe SIN
   add
     rewriteAssociative(terms:SIN->Maybe Pair SIN, f:(SIN,SIN)->SIN, x:SIN, y:SIN):Maybe(SIN) ==
-      --if (t:=terms(x)) case Pair SIN then
-      --  return f(t.left,f(t.right,y))
+    --output("rewriteAssociative: ",paren [coerce(x)@OutputForm,coerce(y)@OutputForm])$OutputPackage
       if (t:=terms(y)) case Pair SIN then
-        --output("rewriteAssociative: ",paren [coerce(x)@OutputForm,coerce(y)@OutputForm])$OutputPackage
         --output("terms: ",paren [coerce(t.left)@OutputForm,coerce(t.right)@OutputForm])$OutputPackage
         return f(f(x,t.left),t.right)
       "failed"
@@ -155,16 +153,24 @@ AssociativeAxiom_+():Category == AssociativeAxiom
 )abbrev category ASSAXS AssociativeAxiom*
 AssociativeAxiom_*():Category == AssociativeAxiom
 
+)abbrev category IDAXL IdentityLeftAxiom
+++ Left Identities
+IdentityLeftAxiom(): Category == Axiom with
+    rewriteIdentityLeft: (SIN,SIN,SIN)-> Maybe SIN
+  add
+    rewriteIdentityLeft(u:SIN,x:SIN,y:SIN): Maybe SIN ==
+      --output("rewriteIdentityLeft: ",paren [u::OutputForm,x::OutputForm,y::OutputForm])$OutputPackage
+      if x=u then y else "failed"
+)abbrev category IDAXR IdentityRightAxiom
+++ Right Identities
+IdentityRightAxiom(): Category == Axiom with
+    rewriteIdentityRight: (SIN,SIN,SIN)-> Maybe SIN
+  add
+    rewriteIdentityRight(u:SIN,x:SIN,y:SIN): Maybe SIN ==
+      if y=u then x else "failed"
 )abbrev category IDAX IdentityAxiom
 ++ Identities
-IdentityAxiom(): Category == Axiom with
-    rewriteIdentity: (SIN,SIN,SIN)-> Maybe SIN
-  add
-    rewriteIdentity(u:SIN,x:SIN,y:SIN): Maybe SIN ==
-      --if x=u then return y
-      if y=u then return x
-      if x=u then return y
-      "failed"
+IdentityAxiom(): Category == Join(IdentityLeftAxiom,IdentityRightAxiom)
 
 )abbrev category INVAX InverseAxiom
 ++ Inverse
@@ -306,13 +312,6 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
       for t in ts for v in vs repeat
         r:=eval(r,t,v)
       return r
-    --eval(x:%,k:Kernel(%),s:%):% ==
-    --  --output("eval 1:", paren [x::OutputForm, k::OutputForm, s::OutputForm])$OutputPackage
-    --  subst(x,[k],[s])
-    --eval(x:%,ks:List Kernel %, vs:List %) ==
-    --  output("eval 2:", paren [x::OutputForm, ks::OutputForm, vs::OutputForm])$OutputPackage
-    --  if #ks > 1 then return eval(eval(x,first(ks),first(vs)),rest ks, rest vs)
-    --  else return eval(x,first(ks),first(vs))
     if R has ConvertibleTo SIN then
       eval(x:%):% ==
         --output("eval 0:", x::OutputForm)$OutputPackage
@@ -360,11 +359,6 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
       s:=retractIfCan(x)@Maybe(Symbol)
       if s case Symbol then return s
       error "not a Symbol"
-      --k:Maybe(Kernel %):=retractIfCan(x)
-      --if k case "failed" then
-      --  error "not a kernel"
-      --else
-      --  return name k
     --
     isPlus1(x:SIN):Maybe(Pair SIN) ==
       list? x and symbol? car x and symbol car x = '_+ => [car cdr x, car cdr cdr x]
@@ -626,7 +620,8 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
     times(x:Rep,y:Rep):Rep ==
       --output("times: ",paren [coerce(x)@OutputForm,coerce(y)@OutputForm])$OutputPackage
       if AxiomList has IdentityAxiom then
-        returnIf rewriteIdentity(1,x,y)
+        returnIf rewriteIdentityLeft(1,x,y)
+        returnIf rewriteIdentityRight(1,x,y)
       if AxiomList has AssociativeAxiom_* then
         returnIf rewriteAssociative(isTimes1,times,x,y)
       if AxiomList has CommutativeAxiom_* then
@@ -656,7 +651,8 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
     plus(x:Rep,y:Rep):Rep ==
       --output("plus: ",paren [coerce(x)@OutputForm,coerce(y)@OutputForm])$OutputPackage
       if AxiomList has IdentityAxiom then
-        returnIf rewriteIdentity(0,x,y)
+        returnIf rewriteIdentityLeft(0,x,y)
+        returnIf rewriteIdentityRight(0,x,y)
       if AxiomList has AssociativeAxiom_+ then
         returnIf rewriteAssociative(isPlus1,plus,x,y)
       if AxiomList has CommutativeAxiom_+ then
@@ -671,8 +667,8 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
 
     minus(x:Rep,y:Rep):Rep ==
       --output("minus: ",paren [coerce(x)@OutputForm,coerce(y)@OutputForm])$OutputPackage
-      if AxiomList has IdentityAxiom then
-        returnIf rewriteIdentity(0,x,y)
+      if AxiomList has IdentityRightAxiom then
+        returnIf rewriteIdentityRight(0,x,y)
       if AxiomList has CancelsAxiom then
         returnIf rewriteCancels(x,y)
       if AxiomList has InverseAxiom then
@@ -688,8 +684,8 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
 
     div(x:Rep,y:Rep):Rep ==
       --output("divide: ",paren [coerce(x)@OutputForm,coerce(y)@OutputForm])$OutputPackage
-      if AxiomList has IdentityAxiom then
-        returnIf rewriteIdentity(1,x,y)
+      if AxiomList has IdentityRightAxiom then
+        returnIf rewriteIdentityRight(1,x,y)
       if AxiomList has DividesAxiom then
         returnIf rewriteDivides(x,y)
       binary(convert('_/),[x,y])$SIN
@@ -826,13 +822,22 @@ Associative_*():AssociativeAxiom_* == add
   axioms() ==
     [ convert equation ((x*y)*z, (x*(y*z))) ]
 
-)abbrev domain ID Identities
-Identities():IdentityAxiom == add
+)abbrev domain LID LeftIdentities
+LeftIdentities():IdentityLeftAxiom == add
   import Symbolic(Integer,None)
   x := coerce 'x
   axioms() ==
-    [ convert equation (x+0, x),
-      convert equation (x*1, x) ]
+    [ convert equation (0+x, x),
+      convert equation (1*x, x) ]
+)abbrev domain RID RightIdentities
+RightIdentities():IdentityRightAxiom == add
+  import Symbolic(Integer,None)
+  x := coerce 'x
+  axioms() ==
+    [ convert     equation (x+0, x),
+      convert     equation (x-0, x),
+        convert   equation (x*1, x),
+          convert equation (x/1, x) ]
 
 )abbrev domain INV Inverse
 Inverse():InverseAxiom == add
@@ -883,6 +888,10 @@ _/_\(A:Axiom,B:Axiom):Axiom with
     if B has AssociativeAxiom_* then AssociativeAxiom_*
     if A has IdentityAxiom then IdentityAxiom
     if B has IdentityAxiom then IdentityAxiom
+    if A has IdentityRightAxiom then IdentityRightAxiom
+    if B has IdentityRightAxiom then IdentityRightAxiom
+    if A has IdentityLeftAxiom then IdentityLeftAxiom
+    if B has IdentityLeftAxiom then IdentityLeftAxiom
     if A has InverseAxiom then InverseAxiom
     if B has InverseAxiom then InverseAxiom
     if A has DoublesAxiom then DoublesAxiom
@@ -896,11 +905,10 @@ _/_\(A:Axiom,B:Axiom):Axiom with
   == add
     axioms() == concat(axioms()$A,axioms()$B)
 
+)abbrev domain ID Identities
+Identities():IdentityAxiom == LeftIdentities /\ RightIdentities
+
 )abbrev domain SEXPR SymbolicExpression
---SymbolicExpression(R:Comparable) : SymbolicCategory(R)
---  --== Symbolic(R, Commutative_+/\Associative_+)
---  --== Symbolic(R, Commutative_+/\Commutative_*/\Distributive/\Associative_+/\Associative_*/\Identities/\Doubles/\Cancels/\Squares/\Divides)
---  == Symbolic(R, Commutative_+/\Commutative_*/\Distributive/\Associative_+/\Associative_*/\Identities/\Inverse/\Doubles/\Cancels/\Squares/\Divides) add
 SymbolicExpression(R:Comparable) : SymbolicCategory(R) == Implementation where
   F ==> Expression R
   Implementation ==> Symbolic(R, Commutative_+/\Commutative_*/\Distributive/\Associative_+/\Associative_*/\Identities/\Inverse/\Doubles/\Cancels/\Squares/\Divides) add
