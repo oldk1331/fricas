@@ -1,17 +1,28 @@
 -- left and right identities
-RID has IDAXR
-LID has IDAXL
+RID has RIDAX
+LID has LIDAX
 ID has IDAX
-ID has IDAXR
-ID has IDAXL
--- no automatic simplifications
+ID has RIDAX
+ID has LIDAX
+-- separate * and + associative and commutative
+ASSS has ASSAXS
+ASSS has ASSAX
+ASS_+ has ASSAX_+
+ASS_+ has ASSAX
+-- domain with no automatic simplifications
 s:Symbolic(Integer,None) := 1+1+1
 simplify s
 s::Expression Integer
 retract s
 equal?(s=3)
 test(s=3)
--- many automatic simplifications
+-- symbols can be assigned a rank
+(S,T):Symbolic(Integer,None)
+smaller?(S,T)
+rank(S::Symbol,1)$SINF
+smaller?(S,T)
+
+-- domain with many automatic simplifications
 (x,y,z):SymbolicExpression Integer
 x::Expression Integer
 x+x = 2*x
@@ -119,3 +130,6 @@ rs t2
 rc t1
 rc t2
 rc rs expr
+--
+-- Anti-commutative symbols
+--
