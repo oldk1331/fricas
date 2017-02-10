@@ -57,6 +57,7 @@ x^2+2*x*y+y^2
 factor %
 expand((x+y)/z)
 expand(x*(y+z))
+x*z+y*z+x*y
 --
 exp(x+1) = %e*exp(x)
 test map(simplify, %)
@@ -106,8 +107,8 @@ simplify %
 x^n
 -- Known problems
 -- 1) need to handle %diff operator
---D(x^n,'x)
---D(p^n,'p)
+D(x^n,'x)
+D(p^n,'p)
 --
 -- Rewrite Rules
 -- Interpreter bug: to ensure proper types need _rule(x,y) instead of rule x==y
