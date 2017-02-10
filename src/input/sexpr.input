@@ -37,7 +37,7 @@ x*x = x^2
 test %
 x/x = 1
 test %
-x*(1/x) = x
+x*(1/x) = 1
 test %
 x*y = y*x
 test %
