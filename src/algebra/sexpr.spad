@@ -25,24 +25,35 @@ SINFunctions(): with
       integer? r => integer r
       0
     --null < integer < float < symbol rank < symbol rank < list
+    --null < symbol rank < symbol rank < float < integer < list
     smaller1?(x:SIN,y:SIN):Boolean ==
-      --output("smaller1? ",bracket [x::OutputForm,y::OutputForm])$OutputPackage
+      --if _$testingSystem$Lisp then
+      --  output("smaller1? ",bracket [x::OutputForm,y::OutputForm])$OutputPackage
       null? y => return false
-      integer? y => null? x --or list? x
-        or integer? x and integer x < integer y
-      float? y => null? x or integer? x --or list? x
-        or float? x and float x < float y
-      symbol? y => null? x or integer? x or float? x --or list? x
+      symbol? y => null? x
         or symbol? x and (rank symbol x < rank symbol y
           or rank symbol y = rank symbol x and -- symbol x < symbol y)
           (symbol x = '_^ => '_*; symbol x = '_* => '_^; symbol x) < (symbol y = '_^ => '_*; symbol y = '_* => '_^; symbol y) )
+      integer? y => null? x or symbol? x
+        or integer? x and integer x < integer y
+      float? y => null? x or integer? x or symbol? x
+        or float? x and float x < float y
       -- reverse lexical ordering??
-      list? y => null? x or integer? x or float? x or symbol? x
-        or list? x and
-
-          (# cdr x < # cdr y or (
-             # cdr x = # cdr y and # cdr x > 0 and (smaller?(cdr x,cdr y) or
-               not smaller?(cdr y, cdr x) and smaller?(car x,car y))))
+      if list? y then
+        if null? x or integer? x or float? x or symbol? x then return true
+        if list? x then
+          -- arguments
+          x1:=cdr x; y1:=cdr y
+          while not null? car x1 repeat
+            if null? car y1 then return true
+            if smaller?(car x1, car y1) then return true
+            if smaller?(car y1, car x1) then return false
+            x1:=cdr x1; y1:=cdr y1
+          -- operators
+          return smaller?(car x,car y)
+--          (# cdr x < # cdr y or (
+--             # cdr x = # cdr y and # cdr x > 0 and (smaller?(cdr x,cdr y) or
+--               not smaller?(cdr y, cdr x) and smaller?(car x,car y))))
 
 --          smaller?(car x,car y) or
 --            not smaller?(car y,car x) and # cdr x > 0 and smaller?(cdr x,cdr y)
@@ -73,7 +84,7 @@ SINFunctions(): with
 
 )abbrev category SYMCAT SymbolicCategory
 SymbolicCategory(R : Comparable) : Category == Exports where
-  F ==> Expression R
+  --F ==> Expression R
   Exports ==> Join(FunctionSpace R, CoercibleTo OutputForm, ConvertibleTo SIN) with
     axioms: () -> List Equation SIN
     -- Do we want these even if R not a Ring, e.g. Symbol ?
@@ -104,8 +115,8 @@ SymbolicCategory(R : Comparable) : Category == Exports where
       simplify : % -> %
     -- coercions
     coerce: Pi -> %
-    coerce: % -> F
-    coerce: F -> %
+    coerce: % -> Expression(R)
+    coerce: Expression(R) -> %
     convert: Equation % -> Equation SIN
     convert: Equation SIN -> Equation %
     coerce: SIN -> %
@@ -152,16 +163,16 @@ AssociativeAxiom(): Category == Axiom with
       x:=sin.2; y:=sin.3
       rin:SIN
       -- to the right
-      if (t:=terms(x)) case Pair SIN then
-        rin := f(t.left,f(t.right,y))
+      --if (t:=terms(x)) case Pair SIN then
+      --  rin := f(t.left,f(t.right,y))
       -- to the left
-      --if (t:=terms(y)) case Pair SIN then
-      --  rin := f(f(x,t.left),t.right)
+      if (t:=terms(y)) case Pair SIN then
+        rin := f(f(x,t.left),t.right)
       else
         return "failed"
       if _$testingSystem$Lisp then
         output("rewriteAssociative: ",infix(message " --> ",message unparse sin,message unparse rin))$OutputPackage
-        if not smaller?(rin,sin)$SINFunctions then error "not smaller"
+        if not smaller?(sin,rin)$SINFunctions then error "not smaller"
       return rin
 
 )abbrev category ASSAX+ AssociativeAxiom+
@@ -191,7 +202,7 @@ CancelsAxiom(): Category == Axiom with
             return "failed"
       if _$testingSystem$Lisp then
         output("rewriteCancels: ",infix(message " --> ",coerce(sin)@OutputForm,coerce(rin)@OutputForm))$OutputPackage
-        if not smaller?(rin,sin)$SINFunctions then error "not smaller"
+        if smaller?(sin,rin)$SINFunctions then error "not smaller"
       return rin
 
 )abbrev category COMAX CommutativeAxiom
@@ -204,19 +215,24 @@ CommutativeAxiom(): Category == Axiom with
         output("rewriteCommutative: ",message unparse sin)$OutputPackage
       x:=sin.2; y:=sin.3
       rin:SIN
-      if smaller?(y,x)$SINFunctions then
+      if smaller?(x,y)$SINFunctions then
         rin := f(y,x)
       else
-        if % has AssociativeAxiom and (ty := terms y) case Pair SIN then
-          if smaller?(ty.left,x) then
-            rin := f(f(x,ty.left),ty.right)
+        -- look on the left
+        if % has AssociativeAxiom and (tx := terms x) case Pair SIN then
+          if smaller?(tx.right,y) then
+            rin := f(tx.left,f(y,tx.right))
+        -- look on the right
+        --if % has AssociativeAxiom and (ty := terms y) case Pair SIN then
+        --  if smaller?(x,ty.left) then
+        --    rin := f(f(ty.left,x),ty.right)
           else
             return "failed"
         else
           return "failed"
       if _$testingSystem$Lisp then
         output("rewriteCommutative: ",infix(message " --> ", message unparse sin,message unparse rin))$OutputPackage
-        if not smaller?(rin,sin)$SINFunctions then error "not smaller"
+        if not smaller?(sin,rin)$SINFunctions then error "not smaller"
       return rin
 
 )abbrev category COMAX+ CommutativeAxiom+
@@ -247,17 +263,23 @@ DoublesAxiom(): Category == Axiom with
           if x = y then
             rin := times(convert(2),x)
           else
-            if % has AssociativeAxiom_+ and (ty:=terms(y)) case Pair SIN then
-              r2:=rewriteDoubles(terms,plus,times,convert [car sin,x,ty.left])
+            -- look right
+            if % has AssociativeAxiom_+ and (tx:=terms(x)) case Pair SIN then
+              r2:=rewriteDoubles(terms,plus,times,convert [car sin,tx.right,y])
               if r2 case SIN then
-                rin := plus(r2,ty.right)
+                rin := plus(tx.left,r2)
+            -- look left
+            --if % has AssociativeAxiom_+ and (ty:=terms(y)) case Pair SIN then
+            --  r2:=rewriteDoubles(terms,plus,times,convert [car sin,x,ty.left])
+            --  if r2 case SIN then
+            --    rin := plus(r2,ty.right)
               else
                 return "failed"
             else
               return "failed"
       if _$testingSystem$Lisp then
         output("rewriteDoubles: ",infix(message " --> ", message unparse sin,message unparse rin))$OutputPackage
-        if not smaller?(rin,sin)$SINFunctions then error "not smaller"
+        if not smaller?(sin,rin)$SINFunctions then error "not smaller"
       return rin
 
 )abbrev category DISAX DistributiveAxiom
@@ -279,7 +301,7 @@ DistributiveAxiom(): Category == Axiom with
           return "failed"
       if _$testingSystem$Lisp then
         output("rewriteDistributive: ",infix(message " --> ",message unparse sin,message unparse rin))$OutputPackage
-        if not smaller?(rin,sin)$SINFunctions then output("not smaller")$OutputPackage
+        if not smaller?(sin,rin)$SINFunctions then output("not smaller")$OutputPackage
       return rin
 
 )abbrev category DIVAX DividesAxiom
@@ -315,6 +337,7 @@ InverseAxiom(): Category == Axiom with
           return f(inv t.left, inv t.right)
       "failed"
     rewriteInverseBinary(inv:SIN->SIN,f:(SIN,SIN)->SIN,x:SIN,y:SIN): Maybe SIN ==
+      if list? x and inv(x) = car cdr x then return f(y,inv x)
       if list? y and inv(y) = car cdr y then return f(x,inv y)
       "failed"
 
@@ -374,11 +397,10 @@ SquaresAxiom(): Category == Axiom with
 ++ expressions if/when desired is performed by means of interpretation in the Expression domain.
 ++ Keywords: expression, evaluation, operator, function.
 Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation where
-  F ==> Expression R
+  --F ==> Expression R
   K   ==> Kernel %
   KF  ==> Kernel F
   SMP  ==> SparseMultivariatePolynomial(R, K)
-  LIFT ==> PolynomialCategoryLifting(IndexedExponents(KF),KF,R,SparseMultivariatePolynomial(R,KF),SMP)
   --AF  ==> AlgebraicFunction(R, F)
   --EF  ==> ElementaryFunction(R, F)
   CF  ==> CombinatorialFunction(R, F)
@@ -430,7 +452,7 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
     if R has ConvertibleTo SIN then
       eval(x:%):% ==
         --output("eval 0:", x::OutputForm)$OutputPackage
-        coerce(convert(x)@SIN)@%
+        interpret(convert(x)@SIN)$InputFormFunctions1(%)
     eval(x:%,a:%,b:%):% ==
       --output("eval 3:", paren [x::OutputForm, a::OutputForm, b::OutputForm])$OutputPackage
       eval(x, retract a, b)
@@ -485,10 +507,6 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
       list? x and symbol? car x and symbol car x = '_/ => [car cdr x, car cdr cdr x]
       "failed"
     if R has IntegralDomain then
-      kk2(k:KF):SMP ==
-        ak:List % := [coerce x for x in argument k]
-        return coerce kernel(operator k,ak,position k)$K
-      rr2(r:R):SMP == coerce r
       -- Symbolic is syntactical!
       numerator(x:%):% ==
         r := isDivide1 rep x
@@ -523,8 +541,6 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
         -- this test is not quite adequate
         if R is Integer and integer? rep x then
           return coerce integer rep x
-        --if atom?(rep x) and not symbol?(rep x) then
-        --  return rr2 retract x
         else
           return coerce makeKernel(x)
       numer(x:%):SparseMultivariatePolynomial(R,Kernel %) ==
@@ -563,14 +579,20 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
         else
           "failed"
 
-      factorials(x:%):%           == coerce factorials(coerce x)$CF
-      factorials(x:%, n:Symbol):% == coerce factorials(coerce x, n)$CF
+      --factorials(x:%):%           == coerce factorials(coerce x)$CF
+      --factorials(x:%, n:Symbol):% == coerce factorials(coerce x, n)$CF
+
+      if SMP has PolynomialFactorizationExplicit then
+        factor(x:%):% ==
+          (factor(numer x)::OutputForm pretend SIN /
+            factor(denom x)::OutputForm pretend SIN)$SIN
+
       expand(x:%):% ==
-        n := isPlus numerator(coerce x)$F
-        if n case List F then
+        n := isPlus numerator(x)
+        if n case List % then
           d:% := denominator(x)
-          if d=1 then return reduce("+",[coerce(s) for s in n])
-          return reduce("+",[coerce(s)/d for s in n])
+          if d=1 then return reduce("+",[s for s in n])
+          return reduce("+",[s/d for s in n])
         else
           return x
       --
@@ -615,11 +637,6 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
         else
           "failed"
 
-    if F has FunctionSpace(Integer) then
-      factor(x:%):% ==
-        (factor(numer(coerce x)$F)::OutputForm pretend SIN /
-          factor(denom(coerce x)$F)::OutputForm pretend SIN)$SIN
-
     coerce(x:Pi):% == per convert(x)$Pi
     coerce(x:Symbol):% == per convert(x)$Symbol
     --coerce(k:Kernel %):% == coerce name(k)
@@ -638,7 +655,8 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
         if s='%paren then
           return paren coerceOutputForm car cdr x
         if s='%box then
-          -- make box visible (for now)
+          -- make box invisible (for now)
+          return coerceOutputForm car cdr x
           return bracket coerceOutputForm car cdr x
         if s='float then
           return interpret(x)$InputFormFunctions1(Float)::OutputForm
@@ -680,20 +698,20 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
     -- +0 is a hack to avoid premature conversion (do we need it?)
     hack(x:%):Rep == binary(convert('_+),[rep x,0$Rep])
 
-    coerce(x:%):F ==
-      --output("coerce: ",x::OutputForm)$OutputPackage
+    coerce(x:%):Expression(R) ==
+      --output("coerce: Expression(R)",x::OutputForm)$OutputPackage
       v:List Symbol := variables x
-      if #v = 0 then return interpret(hack x)$InputFormFunctions1(F)
+      if #v = 0 then return interpret(hack x)$InputFormFunctions1(Expression(R))
       -- we need to substitute variables with unknown modes
       s:List Symbol := [new()$Symbol for vi in v]
       ks:List Equation % := [equation(coerce(vi)$%, coerce(si)$%) for vi in v for si in s]
-      sk:List Equation F := [equation(coerce(si)$F, coerce(vi)$F) for vi in v for si in s]
-      return subst(interpret(hack subst(x,ks))$InputFormFunctions1(F),sk)
+      sk:List Equation Expression(R) := [equation(coerce(si)$Expression(R), coerce(vi)$Expression(R)) for vi in v for si in s]
+      return subst(interpret(hack subst(x,ks))$InputFormFunctions1(Expression(R)),sk)
     if R has ConvertibleTo SIN then
-      coerce(x:F):% == per convert(x)$F
+      coerce(x:Expression(R)):% == per convert(x)$Expression(R)
       coerce(x:R):% == per convert(x)$R
     convert(x:%):SIN == rep x
-    coerce(x:SIN):% == interpret(hack x)$InputFormFunctions1(%)
+    coerce(x:SIN):% == per x
     --
     factorial(x:%):%          == per convert([convert('factorial)@SIN,rep x])
     binomial(n:%, m:%):%      == binary(convert('binomial),[n::Rep,m::Rep])$SIN
@@ -782,7 +800,7 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
         returnIf rewriteCommutative(isPlus1,plus,sin)
       if AxiomList has InverseAxiom then
         returnIf rewriteInverse(minus1,0,x,y)
-        --returnIf rewriteInverseBinary(minus1,minus,x,y)
+        returnIf rewriteInverseBinary(minus1,minus,x,y)
       if AxiomList has DoublesAxiom then
         returnIf rewriteDoubles(isPlus1,plus,times,sin)
       sin
@@ -872,7 +890,7 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
     tan(x:%):% == per convert([convert('tan)@SIN,rep x])
     tanh(x:%):% == per convert([convert('tanh)@SIN,rep x])
     --
-    retract(x:%):R == retract(coerce x)$F
+    retract(x:%):R == retract(coerce x)$Expression(R)
 
     variables1(x:Rep):Set Symbol ==
       if null? x then return empty()
@@ -905,9 +923,9 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
       return empty()
     kernels(x:%):List Kernel % == members kernels1(rep x)
 
-    if F has TranscendentalFunctionCategory and R has GcdDomain then
+    if Expression(R) has TranscendentalFunctionCategory and R has GcdDomain then
       simplify(x:%):% ==
-        coerce(simplify(coerce x)$TranscendentalManipulations(R,F))
+        coerce(simplify(coerce x)$TranscendentalManipulations(R,Expression R))
     convert(eq:Equation %): Equation SIN == equation(convert lhs eq, convert rhs eq)
     convert(eq:Equation SIN): Equation % == equation(convert lhs eq, convert rhs eq)
 
@@ -1056,7 +1074,7 @@ Identities():IdentityAxiom == LeftIdentity /\ RightIdentity
 ++ SymbolicExpression is a Symbolic domain with automatic rewrite rules that
 ++ approximate Expression itself.
 SymbolicExpression(R:Comparable) : SymbolicCategory(R) == Implementation where
-  F ==> Expression R
+  --F ==> Expression R
   Implementation ==> Symbolic(R,Squares /\ _
     Inverse/\Identities/\ _
     Doubles/\Divides/\Distributive/\ _
@@ -1065,7 +1083,7 @@ SymbolicExpression(R:Comparable) : SymbolicCategory(R) == Implementation where
     -- use equality from Expression(R)
     (x:% = y:%):Boolean ==
       --output("=",paren [x::OutputForm,y::OutputForm])$OutputPackage
-      coerce(x)@F = coerce(y)@F
+      coerce(x)@Expression(R) = coerce(y)@Expression(R)
 
 )abbrev package SYMPKG1 SymbolicFunctions1
 SymbolicFunctions1(R: Join(Comparable,ConvertibleTo SIN), A:SymbolicCategory R,

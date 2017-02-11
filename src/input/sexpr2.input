@@ -14,7 +14,7 @@
 )expose UnittestCount UnittestAux Unittest
 
 -- temp/devel
-)co sexpr
+)co fricas/src/algebra/sexpr
 -- remove later
 
 )expose ALTAX- ALTAX ALT AND ASSAX- ASSAX ASSAX+ ASSAXS ASS ASS+ ASSS
@@ -54,7 +54,7 @@ testEquals("sx","3::X")
 sr:=retract s
 equal?(s=3)
 test(s=3)
-testEquals(sr,"3::PositiveInteger")
+testEquals("sr","3::PositiveInteger")
 
 ---------------
 testcase  "ex2"
@@ -112,25 +112,24 @@ smaller?(x*x,x*y)
 testEquals("smaller?(x*x,x*y)","true")
 
 smaller?(x*y,y*y)
-testEquals("smaller?(x*y,y*y)","false")
+testEquals("smaller?(x*y,y*y)","true")
 
 xxxy:=x*x+x*y
 yy:=y*y
 smaller?(xxxy,yy)
 testEquals("smaller?(xxxy,yy)","false")
 
-
-x*x+x*y+y*y
 x^2+2*x*y+y^2
 factor(x^2+2*x*y+y^2)
-testEquals("factor(x^2+2*x*y+y^2)","paren(y+x)^2") -- ?
-
+testEquals("factor(x^2+2*x*y+y^2)","factor(x^2+2*x*y+y^2)")
 
 expand((x+y)/z)
 testEquals("expand((x+y)/z)","(x/z)+(y/z)")
 
 expand(x*(y+z))
-testEquals("expand(x*(y+z))","x*y+x*z")
+testEquals("expand(x*(y+z))","x*z + x*y")
+
+x*z+y*z+x*y
 
 --
 exp(x+1) = %e*exp(x)
@@ -156,7 +155,7 @@ testEquals("kernels(sin(x*y)+2*z)","[z,sin(x*y)]")
 
 -- automatic boxing of sub-expressions
 numer((1/x+1)/y*x+x^2/y)
-testEquals("numer((1/x+1)/y*x+x^2/y)","(1/x+1)/y*x+x^2/y")
+testEquals("numer((1/x+1)/y*x+x^2/y)","box((1/x+1)/y)*x+box(x^2/y)")
 
 denom((1/x+1)/y*x+x^2/y)
 testEquals("denom((1/x+1)/y*x+x^2/y)","1")
@@ -185,14 +184,12 @@ X   ==> Expression Integer
 
 
 (x,y):SEI
-(x+y)^2
 r0:=(x+y)^2
---r0::InputForm
 rs := simplify r0
-testEquals("rs","y^2+2*x*y+x^2")
+testEquals("eval rs","r0")
 
-factor rs
-testEquals("factor rs","paren(y+x)^2")
+rf:=factor rs
+testEquals("eval rs","r0")
 
 convert(r)$SEI
 testEquals("dom convert(r)$SEI","dom(1::InputForm)")
