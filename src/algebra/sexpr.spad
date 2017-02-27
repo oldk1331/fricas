@@ -27,7 +27,6 @@ SINFunctions(): with
         or integer? x and integer x < integer y
       float? y => null? x or integer? x or symbol? x
         or float? x and float x < float y
-      -- reverse lexical ordering??
       if list? y then
         if null? x or integer? x or float? x or symbol? x then return true
         if list? x then
@@ -174,7 +173,7 @@ AssociativeAxiom(): Category == Axiom with
 
 )abbrev category ASSAXP AssociativeAxiomPlus
 AssociativeAxiomPlus():Category == AssociativeAxiom
-)abbrev category ASSAXS AssociativeAxiomTimes
+)abbrev category ASSAXT AssociativeAxiomTimes
 AssociativeAxiomTimes():Category == AssociativeAxiom
 
 )abbrev category CANAX CancelsAxiom
@@ -225,12 +224,15 @@ CommutativeAxiom(): Category == Axiom with
         if % has AssociativeAxiom and (tx := terms x) case Pair SIN then
           if smaller?(tx.right,y) then
             rin := f(tx.left,f(y,tx.right))
-        -- look on the right
-        --if % has AssociativeAxiom and (ty := terms y) case Pair SIN then
-        --  if smaller?(x,ty.left) then
-        --    rin := f(f(ty.left,x),ty.right)
           else
-            return "failed"
+            -- look on the right
+            if % has AssociativeAxiom and (ty := terms y) case Pair SIN then
+              if smaller?(x,ty.left) then
+                rin := f(f(ty.left,x),ty.right)
+              else
+                return "failed"
+            else
+              return "failed"
         else
           return "failed"
       if _$testingSystem$Lisp then
@@ -240,7 +242,7 @@ CommutativeAxiom(): Category == Axiom with
 
 )abbrev category COMAXP CommutativeAxiomPlus
 CommutativeAxiomPlus():Category == CommutativeAxiom
-)abbrev category COMAXS CommutativeAxiomTimes
+)abbrev category COMAXT CommutativeAxiomTimes
 CommutativeAxiomTimes():Category == CommutativeAxiom
 )abbrev category COMAX2 CommutativeAxiomTimesTimes
 CommutativeAxiomTimesTimes():Category == CommutativeAxiom
@@ -345,16 +347,21 @@ InverseAxiom(): Category == Axiom with
     rewriteInverseBinary: (SIN->SIN,(SIN,SIN)->SIN,SIN,SIN)-> Maybe SIN
   add
     rewriteInverse(inv:SIN->SIN,u:SIN,x:SIN,y:SIN): Maybe SIN ==
+      if _$testingSystem$Lisp then
+        output("rewriteInverse: ", paren [u::OutputForm,x::OutputForm,y::OutputForm])$OutputPackage
       if inv(x) = y then return u
       if inv(y) = x then return u
       "failed"
     rewriteInverseUnary(inv:SIN->SIN,terms:SIN->Maybe Pair SIN,f:(SIN,SIN)->SIN, x:SIN) ==
-      --output("rewriteInverseUnary: ",coerce(x)@OutputForm)$OutputPackage
+      if _$testingSystem$Lisp then
+        output("rewriteInverseUnary: ",coerce(x)@OutputForm)$OutputPackage
       if list? x then
         if % has AssociativeAxiom and (t:=terms(car cdr x)) case Pair SIN then
           return f(inv t.left, inv t.right)
       "failed"
     rewriteInverseBinary(inv:SIN->SIN,f:(SIN,SIN)->SIN,x:SIN,y:SIN): Maybe SIN ==
+      if _$testingSystem$Lisp then
+        output("rewriteInverseBinary: ", paren [x::OutputForm,y::OutputForm])$OutputPackage
       if list? x and inv(x) = car cdr x then return f(y,inv x)
       if list? y and inv(y) = car cdr y then return f(x,inv y)
       "failed"
@@ -368,7 +375,8 @@ LeftIdentityAxiom(): Category == Axiom with
     rewriteIdentityLeft: (SIN,SIN,SIN)-> Maybe SIN
   add
     rewriteIdentityLeft(u:SIN,x:SIN,y:SIN): Maybe SIN ==
-      --output("rewriteIdentityLeft: ",paren [u::OutputForm,x::OutputForm,y::OutputForm])$OutputPackage
+      if _$testingSystem$Lisp then
+        output("rewriteIdentityLeft: ",paren [u::OutputForm,x::OutputForm,y::OutputForm])$OutputPackage
       if x=u then y else "failed"
 
 )abbrev category RIDAX RightIdentityAxiom
@@ -380,7 +388,8 @@ RightIdentityAxiom(): Category == Axiom with
     rewriteIdentityRight: (SIN,SIN,SIN)-> Maybe SIN
   add
     rewriteIdentityRight(u:SIN,x:SIN,y:SIN): Maybe SIN ==
-      --output("rewriteIdentityRight: ",paren [u::OutputForm,x::OutputForm,y::OutputForm])$OutputPackage
+      if _$testingSystem$Lisp then
+        output("rewriteIdentityRight: ",paren [u::OutputForm,x::OutputForm,y::OutputForm])$OutputPackage
       if y=u then x else "failed"
 
 )abbrev category IDAX IdentityAxiom
@@ -396,19 +405,28 @@ SquaresAxiom(): Category == Axiom with
     rewriteSquares: ((SIN,SIN)->SIN, SIN->Maybe Pair SIN, (SIN,SIN)->SIN, SIN->Maybe Pair SIN, SIN, SIN) -> Maybe SIN
   add
     rewriteSquares( pow:(SIN,SIN)->SIN, ispower:SIN->Maybe Pair SIN, times:(SIN,SIN)->SIN, istimes:SIN->Maybe Pair SIN, x:SIN, y:SIN ) : Maybe SIN ==
-      --output("rewriteSquares: ",paren [x::OutputForm,y::OutputForm])$OutputPackage
+      if _$testingSystem$Lisp then
+        output("rewriteSquares: ",paren [x::OutputForm,y::OutputForm])$OutputPackage
       -- constants
       if integer? x and integer? y then return convert(integer(x)*integer(y))
       if float? x and float? y then return convert(float(x)*float(y))
-      -- x*x --> x^2
-      if x = y then return pow(x,convert 2)
-      -- x*x^n --> x^(n+1)
-      if (t:=ispower(y)) case Pair SIN and t.left = x and integer? t.right then
-        return pow(t.left,convert(integer(t.right)+1))
+      -- x^n*x^m --> x^(n+m)
+      if (tx:=ispower(x)) case "failed" then tx := [x,1]$Pair(SIN)
+      if (ty:=ispower(y)) case "failed" then ty := [y,1]$Pair(SIN)
+      if tx case Pair SIN and ty case Pair SIN and ty.left = tx.left and integer? tx.right and integer? ty.right then
+        return pow(tx.left,convert(integer(tx.right)+integer(ty.right)))
+      -- look right
       if % has AssociativeAxiomTimes then
         -- (x*y)*y --> x*y^2
-        if (t:=istimes(x)) case Pair SIN and t.left = y then
-          return times(t.left,pow(t.right,convert 2))
+        if (t:=istimes(x)) case Pair SIN then
+          r1:=rewriteSquares(pow,ispower,times,istimes,t.right,y)
+          if r1 case SIN then return times(t.left,r1)
+      -- look left
+      if % has AssociativeAxiomTimes then
+        -- x*(x*y) --> x^2*y
+        if (t:=istimes(y)) case Pair SIN then
+          l1:=rewriteSquares(pow,ispower,times,istimes,x,t.left)
+          if l1 case SIN then return times(l1,t.right)
       "failed"
 
 )abbrev domain SYMB Symbolic
@@ -442,7 +460,7 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
   SMP  ==> SparseMultivariatePolynomial(R, K)
   --AF  ==> AlgebraicFunction(R, F)
   --EF  ==> ElementaryFunction(R, F)
-  CF  ==> CombinatorialFunction(R, F)
+  CF  ==> CombinatorialFunction(R, Expression R)
   --LF  ==> LiouvillianFunction(R, F)
   --AN  ==> AlgebraicNumber
   --KAN ==> Kernel AN
@@ -618,8 +636,8 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
         else
           "failed"
 
-      --factorials(x:%):%           == coerce factorials(coerce x)$CF
-      --factorials(x:%, n:Symbol):% == coerce factorials(coerce x, n)$CF
+      factorials(x:%):%           == coerce factorials(coerce x)$CF
+      factorials(x:%, n:Symbol):% == coerce factorials(coerce x, n)$CF
 
       if SMP has PolynomialFactorizationExplicit then
         factor(x:%):% ==
@@ -735,17 +753,19 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
     coerce(x:%):OutputForm == coerceOutputForm1(rep x,true)
 
     -- +0 is a hack to avoid premature conversion (do we need it?)
-    hack(x:%):Rep == binary(convert('_+),[rep x,0$Rep])
+    --hack(x:%):Rep == binary(convert('_+),[rep x,0$Rep])
+    -- better hack?
+    hack(x:%):Rep == convert([convert 'coerce,rep x])
 
     coerce(x:%):Expression(R) ==
       --output("coerce: Expression(R)",x::OutputForm)$OutputPackage
       v:List Symbol := variables x
-      if #v = 0 then return interpret(hack x)$InputFormFunctions1(Expression(R))
+      if #v = 0 then return interpret(coerceToType(rep x)$InputFormFunctions1(Expression(R)))$InputFormFunctions1(Expression(R))
       -- we need to substitute variables with unknown modes
       s:List Symbol := [new()$Symbol for vi in v]
       ks:List Equation % := [equation(coerce(vi)$%, coerce(si)$%) for vi in v for si in s]
       sk:List Equation Expression(R) := [equation(coerce(si)$Expression(R), coerce(vi)$Expression(R)) for vi in v for si in s]
-      return subst(interpret(hack subst(x,ks))$InputFormFunctions1(Expression(R)),sk)
+      return subst(interpret(coerceToType(rep subst(x,ks))$InputFormFunctions1(Expression(R)))$InputFormFunctions1(Expression(R)),sk)
     if R has ConvertibleTo SIN then
       coerce(x:Expression(R)):% == per convert(x)$Expression(R)
       coerce(x:R):% == per convert(x)$R
@@ -975,14 +995,14 @@ AntiCommutative():AntiCommutativeAxiom == add
   z:Symbolic(Integer,%):=coerce 'z
   assert("anticommutative *",y*x = -(x*y))
 
-)abbrev domain ASSP AssociativePlus
+)abbrev domain ASSOCP AssociativePlus
 AssociativePlus():AssociativeAxiomPlus == add
   x:Symbolic(Integer,%):=coerce 'x
   y:Symbolic(Integer,%):=coerce 'y
   z:Symbolic(Integer,%):=coerce 'z
   assert("associative +", x+(y+z) = (x+y)+z )
 
-)abbrev domain ASSS AssociativeTimes
+)abbrev domain ASSOCT AssociativeTimes
 AssociativeTimes():AssociativeAxiomTimes == add
   x:Symbolic(Integer,%):=coerce 'x
   y:Symbolic(Integer,%):=coerce 'y
@@ -994,13 +1014,13 @@ Cancels():CancelsAxiom == add
   x:Symbolic(Integer,%) := coerce 'x
   assert("cancels -",x-x = 0)
 
-)abbrev domain COMP CommutativePlus
+)abbrev domain COMMUTP CommutativePlus
 CommutativePlus():CommutativeAxiomPlus == add
   x:Symbolic(Integer,%) := coerce 'x
   y:Symbolic(Integer,%) := coerce 'y
   assert("commutative +",x+y = y+x)
 
-)abbrev domain COMS CommutativeTimes
+)abbrev domain COMMUTT CommutativeTimes
 CommutativeTimes():CommutativeAxiomTimes == add
   x:Symbolic(Integer,%) := coerce 'x
   y:Symbolic(Integer,%) := coerce 'y
@@ -1102,10 +1122,10 @@ join(A:Axiom,B:Axiom):Axiom with
     if % has CommutativeAxiomTimes and % has AssociativeAxiomTimes then
       assert("commutative-associative *",z*(x*y) = (x*z)*y )
 
-)abbrev domain ASS Associative
+)abbrev domain ASSOC Associative
 Associative():AssociativeAxiom == join(AssociativePlus, AssociativeTimes)
 
-)abbrev domain COM Commutative
+)abbrev domain COMMUT Commutative
 Commutative():CommutativeAxiom == join(CommutativePlus, CommutativeTimes)
 
 )abbrev domain ID Identities
@@ -1130,17 +1150,18 @@ SymbolicExpression(R:Comparable) : SymbolicCategory(R) == Implementation where
 
 )abbrev package SYMPKG1 SymbolicFunctions1
 SIN ==> InputForm
+++ Converting one Symbolic expression into another
 SymbolicFunctions1(R: Join(Comparable,ConvertibleTo SIN), A:SymbolicCategory R,
   S: Join(Comparable,ConvertibleTo SIN), B:SymbolicCategory S): with
     convert: B -> A
   == add
     -- +0 is a hack to avoid premature conversion
-    hack(x:B):SIN == binary(convert('_+),[convert x,0::SIN])
+    --hack(x:B):SIN == binary(convert('_+),[convert x,0::SIN])
     convert(x:B):A ==
       v:List Symbol := variables(x)
-      if #v = 0 then return interpret(hack x)$InputFormFunctions1(A)
+      if #v = 0 then return interpret(coerceToType(convert x)$InputFormFunctions1(A))$InputFormFunctions1(A)
       -- we need to substitute variables with unknown modes
       s:List Symbol := [new()$Symbol for vi in v]
       ks:List Equation B := [equation(coerce(vi)$B, coerce(si)$B) for vi in v for si in s]
       sk:List Equation A := [equation(coerce(si)$A, coerce(vi)$A) for vi in v for si in s]
-      return subst(interpret(hack subst(x,ks))$InputFormFunctions1(A),sk)
+      return subst(interpret(coerceToType(convert subst(x,ks))$InputFormFunctions1(A))$InputFormFunctions1(A),sk)

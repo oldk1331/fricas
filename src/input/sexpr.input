@@ -5,10 +5,10 @@ ID has IDAX
 ID has RIDAX
 ID has LIDAX
 -- separate * and + associative and commutative
-ASSS has ASSAXS
-ASSS has ASSAX
-ASS_+ has ASSAX_+
-ASS_+ has ASSAX
+ASSOCT has ASSAXT
+ASSOCT has ASSAX
+ASSOCP has ASSAXP
+ASSOCP has ASSAX
 -- domain with no automatic simplifications
 s:Symbolic(Integer,None) := 1+1+1
 simplify s
