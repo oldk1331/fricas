@@ -15,24 +15,22 @@ SINFunctions(): with
       0
     --null < integer < float < symbol rank < symbol rank < list
     --null < symbol rank < symbol rank < float < integer < list
+    --null < symbol rank < symbol rank < list < float < integer
     smaller1?(x:SIN,y:SIN):Boolean ==
-      --if _$testingSystem$Lisp then
-      --  output("smaller1? ",bracket [x::OutputForm,y::OutputForm])$OutputPackage
+      if _$testingSystem$Lisp then
+        output("smaller1? ",bracket [x::OutputForm,y::OutputForm])$OutputPackage
       null? y => return false
       symbol? y => null? x
         or symbol? x and (rank symbol x < rank symbol y
           or rank symbol y = rank symbol x and -- symbol x < symbol y)
           (symbol x = '_^ => '_*; symbol x = '_* => '_^; symbol x) < (symbol y = '_^ => '_*; symbol y = '_* => '_^; symbol y) )
-      integer? y => null? x or symbol? x
-        or integer? x and integer x < integer y
-      float? y => null? x or integer? x or symbol? x
-        or float? x and float x < float y
       if list? y then
-        if null? x or integer? x or float? x or symbol? x then return true
+        if null? x then return true
+        if atom? x then return smaller?(convert [convert([])@InputForm,x],y)
         if list? x then
           -- arguments
           x1:=cdr x; y1:=cdr y
-          while not null? car x1 repeat
+          while not null? car x1 and not null? y1 repeat
             if null? car y1 then return true
             if smaller?(car x1, car y1) then return true
             if smaller?(car y1, car x1) then return false
@@ -59,6 +57,12 @@ SINFunctions(): with
 
 --          (smaller?(cdr x,cdr y) or
 --             not smaller?(cdr y, cdr x) and smaller?(car x,car y))
+      float? y => null? x or symbol? x
+        or list? x and smaller?(x,convert [convert([])@InputForm,y])
+          or float? x and float x < float y
+      integer? y => null? x or symbol? x or float? x
+        or list? x and smaller?(x,convert [convert([])@InputForm,y])
+          or integer? x and integer x < integer y
       false
     smaller?(x:SIN,y:SIN):Boolean ==
       -- It is not yet proven that smaller? is a total order.
@@ -72,6 +76,7 @@ SINFunctions(): with
 
 )abbrev category SYMCAT SymbolicCategory
 SIN ==> InputForm
+Maybe(S) ==> Union(S,"failed")
 SymbolicCategory(R : Comparable) : Category == Exports where
   --F ==> Expression R
   Exports ==> Join(FunctionSpace R, CoercibleTo OutputForm, ConvertibleTo SIN) with
@@ -111,6 +116,7 @@ SymbolicCategory(R : Comparable) : Category == Exports where
     coerce: SIN -> %
     --
     equal?: Equation % -> Boolean
+    isMinus: % -> Maybe(List %)
 
 )abbrev category AXIOM Axiom
 ++ Properties and axioms for symbolic rewrite rules
@@ -255,40 +261,33 @@ SIN ==> InputForm
 Pair SIN ==> Record(left:SIN,right:SIN)
 ++ Doubling
 DoublesAxiom(): Category == Axiom with
-    rewriteDoubles: (SIN->Maybe Pair SIN,(SIN,SIN)->SIN,(SIN,SIN)->SIN,SIN) -> Maybe SIN
+    rewriteDoubles: ((SIN,SIN)->SIN, SIN->Maybe Pair SIN, (SIN,SIN)->SIN, SIN->Maybe Pair SIN, SIN) -> Maybe SIN
   add
-    rewriteDoubles(terms:SIN->Maybe Pair SIN, plus:(SIN,SIN)->SIN, times:(SIN,SIN)->SIN,sin:SIN):Maybe SIN ==
+    rewriteDoubles( times:(SIN,SIN)->SIN, istimes:SIN->Maybe Pair SIN, plus:(SIN,SIN)->SIN, isplus:SIN->Maybe Pair SIN, sin:SIN ) : Maybe SIN ==
+      x:=sin.2; y:=sin.3
       if _$testingSystem$Lisp then
         output("rewriteDoubles: ",message unparse sin)$OutputPackage
-      x:=sin.2; y:=sin.3
-      rin:SIN
-      if integer? x and integer? y then
-        rin := convert(integer(x)+integer(y))
-      else
-        if float? x and float? y then
-          rin := convert(float(x)+float(y))
-        else
-          if x = y then
-            rin := times(convert(2),x)
-          else
-            -- look right
-            if % has AssociativeAxiomPlus and (tx:=terms(x)) case Pair SIN then
-              r2:=rewriteDoubles(terms,plus,times,convert [car sin,tx.right,y])
-              if r2 case SIN then
-                rin := plus(tx.left,r2)
-            -- look left
-            --if % has AssociativeAxiomPlus and (ty:=terms(y)) case Pair SIN then
-            --  r2:=rewriteDoubles(terms,plus,times,convert [car sin,x,ty.left])
-            --  if r2 case SIN then
-            --    rin := plus(r2,ty.right)
-              else
-                return "failed"
-            else
-              return "failed"
-      if _$testingSystem$Lisp then
-        output("rewriteDoubles: ",infix(message " --> ", message unparse sin,message unparse rin))$OutputPackage
-        if not smaller?(sin,rin)$SINFunctions then error "not smaller"
-      return rin
+      -- constants
+      if integer? x and integer? y then return convert(integer(x)+integer(y))
+      if float? x and float? y then return convert(float(x)+float(y))
+      -- x*n+x*m --> x*(n+m)
+      if (tx:=istimes(x)) case "failed" or not integer? tx.right then tx := [x,1]$Pair(SIN)
+      if (ty:=istimes(y)) case "failed" or not integer? ty.right then ty := [y,1]$Pair(SIN)
+      if tx case Pair SIN and ty case Pair SIN and tx.left = ty.left then
+        return times(tx.left,convert(integer(tx.right)+integer(ty.right)))
+      -- look right
+      if % has AssociativeAxiomTimes then
+        -- (x+y)+y --> x+2*y
+        if (t:=isplus(x)) case Pair SIN then
+          r1:=rewriteDoubles(times,istimes,plus,isplus,convert [car sin,t.right,y])
+          if r1 case SIN then return plus(t.left,r1)
+      -- look left
+      if % has AssociativeAxiomTimes then
+        -- x+(x+y) --> 2*x+y
+        if (t:=isplus(y)) case Pair SIN then
+          l1:=rewriteDoubles(times,istimes,plus,isplus,convert [car sin,x,t.left])
+          if l1 case SIN then return plus(l1,t.right)
+      "failed"
 
 )abbrev category DISAX DistributiveAxiom
 Maybe(S) ==> Union(S,"failed")
@@ -299,9 +298,9 @@ DistributiveAxiom(): Category == Axiom with
     rewriteDistributive: (SIN->Maybe Pair SIN, (SIN,SIN)->SIN, (SIN,SIN)->SIN, SIN) -> Maybe SIN
   add
     rewriteDistributive(terms:SIN->Maybe Pair SIN, plus:(SIN,SIN)->SIN, times:(SIN,SIN)->SIN, sin:SIN): Maybe(SIN) ==
+      x:=sin.2; y:=sin.3
       if _$testingSystem$Lisp then
         output("rewriteDistributive: ",message unparse sin)$OutputPackage
-      x:=sin.2; y:=sin.3
       rin:SIN
       if (t:=terms(x)) case Pair SIN then
         rin := plus(times(t.left,y),times(t.right,y))
@@ -327,6 +326,8 @@ DividesAxiom(): Category == Axiom with
     rewriteDivides: (SIN, SIN) -> Maybe SIN
   add
     rewriteDivides(x:SIN, y:SIN): Maybe SIN ==
+      if _$testingSystem$Lisp then
+        output("rewriteDivides: ",paren [x::OutputForm,y::OutputForm])$OutputPackage
       if eq(y,0) then return "failed"
       if eq(x,0) then return 0
       if integer? x and integer? y then
@@ -342,29 +343,65 @@ SIN ==> InputForm
 Pair SIN ==> Record(left:SIN,right:SIN)
 ++ Inverse
 InverseAxiom(): Category == Axiom with
-    rewriteInverse: (SIN->SIN,SIN,SIN,SIN)-> Maybe SIN
+    rewriteInverse: (SIN->SIN,SIN,SIN)-> Maybe SIN
     rewriteInverseUnary: (SIN->SIN,SIN->Maybe Pair SIN,(SIN,SIN)->SIN,SIN) -> Maybe SIN
-    rewriteInverseBinary: (SIN->SIN,(SIN,SIN)->SIN,SIN,SIN)-> Maybe SIN
+    rewriteInverseBinary: (SIN->SIN,(SIN,SIN)->SIN,SIN)-> Maybe SIN
   add
-    rewriteInverse(inv:SIN->SIN,u:SIN,x:SIN,y:SIN): Maybe SIN ==
+    rewriteInverse(inv:SIN->SIN,u:SIN,sin:SIN): Maybe SIN ==
+      x:=sin.2; y:=sin.3
       if _$testingSystem$Lisp then
-        output("rewriteInverse: ", paren [u::OutputForm,x::OutputForm,y::OutputForm])$OutputPackage
-      if inv(x) = y then return u
-      if inv(y) = x then return u
-      "failed"
+        output("rewriteInverse: ", message unparse sin)$OutputPackage
+      if inv(x) = y or inv(y) = x then
+        rin := u
+      else
+        return "failed"
+      if _$testingSystem$Lisp then
+        output("rewriteInverse: ",infix(message " --> ",message unparse sin,message unparse rin))$OutputPackage
+      return rin
     rewriteInverseUnary(inv:SIN->SIN,terms:SIN->Maybe Pair SIN,f:(SIN,SIN)->SIN, x:SIN) ==
       if _$testingSystem$Lisp then
-        output("rewriteInverseUnary: ",coerce(x)@OutputForm)$OutputPackage
-      if list? x then
-        if % has AssociativeAxiom and (t:=terms(car cdr x)) case Pair SIN then
-          return f(inv t.left, inv t.right)
-      "failed"
-    rewriteInverseBinary(inv:SIN->SIN,f:(SIN,SIN)->SIN,x:SIN,y:SIN): Maybe SIN ==
+        output("rewriteInverseUnary: ",message unparse x)$OutputPackage
+      -- involution?
+      -- -(-x) --> x
+      -- 1/(1/x) --> x
+      if list? x and x = inv last destruct x then
+        rin := last destruct x
+      else
+        -- -(x + y) --> (-x) + (-y)
+        -- -(x - y) --> (-x) - (-y)
+        -- 1/(x * y) --> (1/x) * (1/y)
+        -- 1/(x / y) --> (1/x) / (1/y)
+        if list? x and (t:=terms(x)) case Pair SIN then
+            rin := f(inv t.left, inv t.right)
+        else
+          return "failed"
       if _$testingSystem$Lisp then
-        output("rewriteInverseBinary: ", paren [x::OutputForm,y::OutputForm])$OutputPackage
-      if list? x and inv(x) = car cdr x then return f(y,inv x)
-      if list? y and inv(y) = car cdr y then return f(x,inv y)
-      "failed"
+        output("rewriteInverseUnary: ",infix(message " --> ",message unparse x,message unparse rin))$OutputPackage
+      return rin
+    rewriteInverseBinary(inv:SIN->SIN,f:(SIN,SIN)->SIN,sin:SIN): Maybe SIN ==
+      x:=sin.2; y:=sin.3
+      if _$testingSystem$Lisp then
+        output("rewriteInverseBinary: ", message unparse sin)$OutputPackage
+      -- inverse on the right
+      -- x - (-y) --> x + y
+      -- x + (-y) --> x - y
+      -- x / (1/y) --> x * y
+      -- x * (1/y) --> x / y
+      if list? y and inv(y) = last destruct y then
+        rin :=f(x,last destruct y)
+      --else
+        -- inverse on the left
+        -- (-x) - y -->     -(x + y)
+        -- (-x) + y -->     -(x - y)
+        -- (1/x) / y -->    1/(x * y)
+        -- (1/x) * y -->x   1/(x / y)
+        --if list? x and inv(x) = last destruct x then
+        --  rin := inv f(last destruct x,y)
+      else
+        return "failed"
+      if _$testingSystem$Lisp then
+        output("rewriteInverseBinary: ",infix(message " --> ",message unparse sin,message unparse rin))$OutputPackage
+      return rin
 
 )abbrev category LIDAX LeftIdentityAxiom
 Maybe(S) ==> Union(S,"failed")
@@ -372,12 +409,18 @@ SIN ==> InputForm
 Pair SIN ==> Record(left:SIN,right:SIN)
 ++ Left Identities
 LeftIdentityAxiom(): Category == Axiom with
-    rewriteIdentityLeft: (SIN,SIN,SIN)-> Maybe SIN
+    rewriteIdentityLeft: (SIN,SIN)-> Maybe SIN
   add
-    rewriteIdentityLeft(u:SIN,x:SIN,y:SIN): Maybe SIN ==
+    rewriteIdentityLeft(u:SIN,sin:SIN): Maybe SIN ==
+      x:=sin.2; y:=sin.3
       if _$testingSystem$Lisp then
-        output("rewriteIdentityLeft: ",paren [u::OutputForm,x::OutputForm,y::OutputForm])$OutputPackage
-      if x=u then y else "failed"
+        output("rewriteIdentityLeft: ",message unparse sin)$OutputPackage
+      if x=u then
+        rin := y
+      else return "failed"
+      if _$testingSystem$Lisp then
+        output("rewriteIdentityLeft: ",infix(message " --> ",message unparse sin,message unparse rin))$OutputPackage
+      return rin
 
 )abbrev category RIDAX RightIdentityAxiom
 Maybe(S) ==> Union(S,"failed")
@@ -385,12 +428,18 @@ SIN ==> InputForm
 Pair SIN ==> Record(left:SIN,right:SIN)
 ++ Right Identities
 RightIdentityAxiom(): Category == Axiom with
-    rewriteIdentityRight: (SIN,SIN,SIN)-> Maybe SIN
+    rewriteIdentityRight: (SIN,SIN)-> Maybe SIN
   add
-    rewriteIdentityRight(u:SIN,x:SIN,y:SIN): Maybe SIN ==
+    rewriteIdentityRight(u:SIN,sin:SIN): Maybe SIN ==
+      x:=sin.2; y:=sin.3
       if _$testingSystem$Lisp then
-        output("rewriteIdentityRight: ",paren [u::OutputForm,x::OutputForm,y::OutputForm])$OutputPackage
-      if y=u then x else "failed"
+        output("rewriteIdentityRight: ",message unparse sin)$OutputPackage
+      if y=u then
+        rin := x
+      else return "failed"
+      if _$testingSystem$Lisp then
+        output("rewriteIdentityRight: ",infix(message " --> ",message unparse sin,message unparse rin))$OutputPackage
+      return rin
 
 )abbrev category IDAX IdentityAxiom
 ++ Identities
@@ -402,30 +451,31 @@ SIN ==> InputForm
 Pair SIN ==> Record(left:SIN,right:SIN)
 ++ Squares
 SquaresAxiom(): Category == Axiom with
-    rewriteSquares: ((SIN,SIN)->SIN, SIN->Maybe Pair SIN, (SIN,SIN)->SIN, SIN->Maybe Pair SIN, SIN, SIN) -> Maybe SIN
+    rewriteSquares: ((SIN,SIN)->SIN, SIN->Maybe Pair SIN, (SIN,SIN)->SIN, SIN->Maybe Pair SIN, SIN) -> Maybe SIN
   add
-    rewriteSquares( pow:(SIN,SIN)->SIN, ispower:SIN->Maybe Pair SIN, times:(SIN,SIN)->SIN, istimes:SIN->Maybe Pair SIN, x:SIN, y:SIN ) : Maybe SIN ==
+    rewriteSquares( pow:(SIN,SIN)->SIN, ispower:SIN->Maybe Pair SIN, times:(SIN,SIN)->SIN, istimes:SIN->Maybe Pair SIN, sin:SIN ) : Maybe SIN ==
+      x:=sin.2; y:=sin.3
       if _$testingSystem$Lisp then
-        output("rewriteSquares: ",paren [x::OutputForm,y::OutputForm])$OutputPackage
+        output("rewriteSquares: ",message unparse sin)$OutputPackage
       -- constants
       if integer? x and integer? y then return convert(integer(x)*integer(y))
       if float? x and float? y then return convert(float(x)*float(y))
       -- x^n*x^m --> x^(n+m)
-      if (tx:=ispower(x)) case "failed" then tx := [x,1]$Pair(SIN)
-      if (ty:=ispower(y)) case "failed" then ty := [y,1]$Pair(SIN)
-      if tx case Pair SIN and ty case Pair SIN and ty.left = tx.left and integer? tx.right and integer? ty.right then
+      if (tx:=ispower(x)) case "failed" or not integer? tx.right then tx := [x,1]$Pair(SIN)
+      if (ty:=ispower(y)) case "failed" or not integer? ty.right then ty := [y,1]$Pair(SIN)
+      if tx case Pair SIN and ty case Pair SIN and ty.left = tx.left then
         return pow(tx.left,convert(integer(tx.right)+integer(ty.right)))
       -- look right
       if % has AssociativeAxiomTimes then
         -- (x*y)*y --> x*y^2
         if (t:=istimes(x)) case Pair SIN then
-          r1:=rewriteSquares(pow,ispower,times,istimes,t.right,y)
+          r1:=rewriteSquares(pow,ispower,times,istimes,convert [car sin, t.right,y])
           if r1 case SIN then return times(t.left,r1)
       -- look left
       if % has AssociativeAxiomTimes then
         -- x*(x*y) --> x^2*y
         if (t:=istimes(y)) case Pair SIN then
-          l1:=rewriteSquares(pow,ispower,times,istimes,x,t.left)
+          l1:=rewriteSquares(pow,ispower,times,istimes,convert [car sin, x,t.left])
           if l1 case SIN then return times(l1,t.right)
       "failed"
 
@@ -557,6 +607,9 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
     isPlus1(x:SIN):Maybe(Pair SIN) ==
       list? x and symbol? car x and symbol car x = '_+ => [car cdr x, car cdr cdr x]
       "failed"
+    isMinus1(x:SIN):Maybe(Pair SIN) ==
+      list? x and symbol? car x and symbol car x = '_- => [car cdr x, car cdr cdr x]
+      "failed"
     isTimes1(x:SIN):Maybe(Pair SIN) ==
       list? x and symbol? car x and symbol car x = '_* => [car cdr x, car cdr cdr x]
       "failed"
@@ -636,6 +689,24 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
         else
           "failed"
 
+      isMinus(x:%):Maybe(List %) ==
+        r := isMinus1 rep x
+        if r case Pair SIN then
+          r1:=isMinus per(r.left)
+          r2:=isMinus per(r.right)
+          if r1 case List % then
+            if r2 case List % then
+              concat(r1,r2)
+            else
+              concat(r1, [per(r.right)])
+          else
+            if r2 case List % then
+              concat([per(r.left)],r2)
+            else
+              [per(r.left),per(r.right)]
+        else
+          "failed"
+
       factorials(x:%):%           == coerce factorials(coerce x)$CF
       factorials(x:%, n:Symbol):% == coerce factorials(coerce x, n)$CF
 
@@ -696,7 +767,6 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
 
     coerce(x:Pi):% == per convert(x)$Pi
     coerce(x:Symbol):% == per convert(x)$Symbol
-    --coerce(k:Kernel %):% == coerce name(k)
     coerce(k:Kernel %):% == per convert(k)@Rep
 
     coerceOutputForm1:(Rep,Boolean)->OutputForm
@@ -809,30 +879,31 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
     plus: (Rep,Rep) -> Rep
     minus: (Rep,Rep) -> Rep
     minus1: Rep -> Rep
-    div1 : Rep -> Rep
+    divide2: (Rep,Rep) -> Rep
+    divide1 : Rep -> Rep
 
     times(x:Rep,y:Rep):Rep ==
-      if _$testingSystem$Lisp then
-        output("times: ",paren [coerce(x)@OutputForm,coerce(y)@OutputForm])$OutputPackage
       sin:SIN:=binary(convert('_*),[x,y])$SIN
+      if _$testingSystem$Lisp then
+        output("times: ",message unparse sin)$OutputPackage
       if AxiomList has DistributiveAxiom then
         returnIf rewriteDistributive(isPlus1,plus,times,sin)
       if AxiomList has AssociativeAxiomTimes then
         returnIf rewriteAssociative(isTimes1,times,sin)
       if AxiomList has LeftIdentityAxiom then
-        returnIf rewriteIdentityLeft(1,x,y)
+        returnIf rewriteIdentityLeft(1,sin)
       if AxiomList has RightIdentityAxiom then
-        returnIf rewriteIdentityRight(1,x,y)
+        returnIf rewriteIdentityRight(1,sin)
+      if AxiomList has InverseAxiom then
+        returnIf rewriteInverse(divide1,1,sin)
+        returnIf rewriteInverseBinary(divide1,divide2,sin)
       if AxiomList has AntiCommutativeAxiom then
         returnIf rewriteAntiCommutative(minus1,times,x,y)
       if AxiomList has CommutativeAxiomTimes then
         returnIf rewriteCommutative(isTimes1,times,sin)
-      if AxiomList has InverseAxiom then
-        returnIf rewriteInverse(div1,1,x,y)
-        --returnIf rewriteInverseBinary(div1,times,x,y)
       if AxiomList has SquaresAxiom then
-        returnIf rewriteSquares(power,isPower1,times,isTimes1,x,y)
-      sin
+        returnIf rewriteSquares(power,isPower1,times,isTimes1,sin)
+      return sin
     (x:% * y:%):% == per times(rep x,rep y)
     --
     (x:PositiveInteger * y:%):% == double(x,y)$RepeatedDoubling(%)
@@ -846,68 +917,74 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
         x::NonNegativeInteger * y
     --
     plus(x:Rep,y:Rep):Rep ==
-      if _$testingSystem$Lisp then
-        output("plus: ",paren [coerce(x)@OutputForm,coerce(y)@OutputForm])$OutputPackage
       sin:SIN:=binary(convert('_+),[x,y])$SIN
+      if _$testingSystem$Lisp then
+        output("plus: ",message unparse sin)$OutputPackage
       if AxiomList has AssociativeAxiomPlus then
         returnIf rewriteAssociative(isPlus1,plus,sin)
       if AxiomList has LeftIdentityAxiom then
-        returnIf rewriteIdentityLeft(0,x,y)
+        returnIf rewriteIdentityLeft(0,sin)
       if AxiomList has RightIdentityAxiom then
-        returnIf rewriteIdentityRight(0,x,y)
+        returnIf rewriteIdentityRight(0,sin)
+      if AxiomList has InverseAxiom then
+        returnIf rewriteInverse(minus1,0,sin)
+        returnIf rewriteInverseBinary(minus1,minus,sin)
       if AxiomList has CommutativeAxiomPlus then
         returnIf rewriteCommutative(isPlus1,plus,sin)
-      if AxiomList has InverseAxiom then
-        returnIf rewriteInverse(minus1,0,x,y)
-        returnIf rewriteInverseBinary(minus1,minus,x,y)
       if AxiomList has DoublesAxiom then
-        returnIf rewriteDoubles(isPlus1,plus,times,sin)
-      sin
+        returnIf rewriteDoubles(times,isTimes1,plus,isPlus1,sin)
+      return sin
     (x:% + y:%):% == per plus(rep x,rep y)
 
     minus(x:Rep,y:Rep):Rep ==
-      if _$testingSystem$Lisp then
-        output("minus: ",paren [coerce(x)@OutputForm,coerce(y)@OutputForm])$OutputPackage
       sin:SIN := binary(convert('_-),[x,y])$SIN
+      if _$testingSystem$Lisp then
+        output("minus: ",message unparse sin)$OutputPackage
+      if AxiomList has LeftIdentityAxiom and x = 0$Rep then
+        return minus1(y)
       if AxiomList has RightIdentityAxiom then
-        returnIf rewriteIdentityRight(0,x,y)
+        returnIf rewriteIdentityRight(0,sin)
       if AxiomList has CancelsAxiom then
         returnIf rewriteCancels(sin)
       if AxiomList has InverseAxiom then
-        returnIf rewriteInverseBinary(minus1,plus,x,y)
+        returnIf rewriteInverseBinary(minus1,plus,sin)
       return sin
     (x:% - y:%):% == per minus(rep x,rep y)
 
     minus1(x:Rep):Rep ==
+      if _$testingSystem$Lisp then
+        output("minus1: ",coerce(x)@OutputForm)$OutputPackage
       if AxiomList has InverseAxiom then
-        -- involution?
-        if list? x and # cdr x = 1 and symbol? car x and symbol car x = '_- then
-          return car cdr x
-        returnIf rewriteInverseUnary(minus1,isPlus1,plus,x)
+        --returnIf rewriteInverseUnary(minus1,isPlus1,plus,x)
+        returnIf rewriteInverseUnary(minus1,isMinus1,minus,x)
       convert([convert('_-)@SIN,x])
     _-(x:%):% == per minus1 rep x
 
-    div(x:Rep,y:Rep):Rep ==
+    divide2(x:Rep,y:Rep):Rep ==
+      sin:SIN:=binary(convert('_/),[x,y])
       if _$testingSystem$Lisp then
-        output("divide: ",paren [coerce(x)@OutputForm,coerce(y)@OutputForm])$OutputPackage
+        output("divide: ",message unparse sin)$OutputPackage
+      if AxiomList has LeftIdentityAxiom and x = 1$Rep then
+        return divide1(y)
       if AxiomList has RightIdentityAxiom then
-        returnIf rewriteIdentityRight(1,x,y)
+        returnIf rewriteIdentityRight(1,sin)
       if AxiomList has DividesAxiom then
         returnIf rewriteDivides(x,y)
-      binary(convert('_/),[x,y])$SIN
-    (x:% / y:%):% == per div(rep x,rep y)
-
-    div1(x:Rep):Rep ==
       if AxiomList has InverseAxiom then
-        -- involution?
-        if list? x and # cdr x = 2 and symbol? car x and symbol car x = '_/ and car cdr x = 1 then
-          return car cdr cdr x
-        returnIf rewriteInverseUnary(div1,isTimes1,times,x)
-      1$Rep/x
+        returnIf rewriteInverseBinary(divide1,times,sin)
+      return sin
+    (x:% / y:%):% == per divide2(rep x,rep y)
+
+    divide1(x:Rep):Rep ==
+      if AxiomList has InverseAxiom then
+        --returnIf rewriteInverseUnary(divide1,isTimes1,times,x)
+        returnIf rewriteInverseUnary(divide1,isDivide1,divide2,x)
+      --1$Rep/x
+      binary(convert('_/),[1$SIN,x])
     inv(x:%):% ==
       if _$testingSystem$Lisp then
         output("inv: ",x::OutputForm)$OutputPackage
-      per div1 rep x
+      per divide1 rep x
 
     elt(f:BasicOperator,x:List %):% ==
       --output("elt: ", paren [f::OutputForm,x::OutputForm])$OutputPackage
