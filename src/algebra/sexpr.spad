@@ -17,8 +17,8 @@ SINFunctions(): with
     --null < symbol rank < symbol rank < float < integer < list
     --null < symbol rank < symbol rank < list < float < integer
     smaller1?(x:SIN,y:SIN):Boolean ==
-      --if _$testingSystem$Lisp then
-      --  output("smaller1? ",bracket [x::OutputForm,y::OutputForm])$OutputPackage
+      if _$testingSystem$Lisp then
+        output("smaller1? ",bracket [x::OutputForm,y::OutputForm])$OutputPackage
       null? y => return false
       symbol? y => null? x
         or symbol? x and (rank symbol x < rank symbol y
@@ -491,7 +491,7 @@ Pair SIN ==> Record(left:SIN,right:SIN)
 ++ expressions if/when desired is performed by means of interpretation in
 ++ the Expression domain.
 ++ Keywords: expression, evaluation, operator, function.
-Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation where
+Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(R) == Implementation where
   --F ==> Expression R
   K   ==> Kernel %
   KF  ==> Kernel F
@@ -531,9 +531,13 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
       if #es > 1 then return subst(subst(x, first es),rest es)
       else subst(x, first es)
     --
+    --if R has ConvertibleTo SIN then
+    eval(x:%):% ==
+      --output("eval 0:", x::OutputForm)$OutputPackage
+      interpret(convert(x)@SIN)$InputFormFunctions1(%)
     eval(x:%,k:Kernel(%),s:%):% ==
       --output("eval 1:", paren [x::OutputForm, k::OutputForm, s::OutputForm])$OutputPackage
-      coerce rep subst(x,[k],[s])
+      eval subst(x,[k],[s])
     eval(x:%,ks:List Kernel %, vs:List %) ==
       --output("eval 2:", paren [x::OutputForm, ks::OutputForm, vs::OutputForm])$OutputPackage
       r:=x
@@ -544,10 +548,6 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
       for t in ts for v in vs repeat
         r:=eval(r,t,v)
       return r
-    if R has ConvertibleTo SIN then
-      eval(x:%):% ==
-        --output("eval 0:", x::OutputForm)$OutputPackage
-        interpret(convert(x)@SIN)$InputFormFunctions1(%)
     eval(x:%,a:%,b:%):% ==
       --output("eval 3:", paren [x::OutputForm, a::OutputForm, b::OutputForm])$OutputPackage
       eval(x, retract a, b)
@@ -843,6 +843,12 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
 
     -- We don't want the InputForm auto-simplifications because we may or
     -- may not be doing our own simplifications.
+    nthRoot2(x:Rep,n:Rep):Rep ==
+      if n=1 then return x
+      return binary(convert('nthRoot),[x,n])$SIN
+    nthRoot(x:%, n:Integer):% == per nthRoot2(rep x,n::Rep)
+    nthRoot(x:%, n:%):% == per nthRoot2(rep x,n::Rep)
+    --
     power: (Rep,Rep) -> Rep
     power(x:Rep,y:Rep):Rep == binary(convert('_^),[x,y])$SIN
     (x:% ^ y:%):% == per power(rep x,rep y)
@@ -876,6 +882,7 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
         output("times: ",message unparse sin)$OutputPackage
       if AxiomList has DistributiveAxiom then
         returnIf rewriteDistributive(isPlus2,plus,times,sin)
+        returnIf rewriteDistributive(isMinus2,minus,times,sin)
       if AxiomList has AssociativeAxiomTimes then
         returnIf rewriteAssociative(isTimes2,times,sin)
       if AxiomList has LeftIdentityAxiom then
@@ -1009,9 +1016,7 @@ Symbolic(R:Comparable, AxiomList:Type):SymbolicCategory(R) == Implementation whe
     csch(x:%):% == per convert([convert('csch)@SIN,rep x])
     exp(x:%):% == per convert([convert('exp)@SIN,rep x])
     log(x:%):% == per convert([convert('log)@SIN,rep x])
-    nthRoot(x:%, n:Integer) == binary(convert('nthRoot),[rep x,n::Rep])$SIN
-    nthRoot(x:%, n:%) == binary(convert('nthRoot),[rep x,n::Rep])$SIN
-    --pi():% == per convert([convert('pi)@SIN])
+    pi():% == per convert([convert('pi)@SIN])
     sec(x:%):% == per convert([convert('sec)@SIN,rep x])
     sech(x:%):% == per convert([convert('sech)@SIN,rep x])
     sin(x:%):% == per convert([convert('sin)@SIN,rep x])
@@ -1107,7 +1112,10 @@ Distributive():DistributiveAxiom == add
     x:Symbolic(Integer,%) := coerce 'x
     y:Symbolic(Integer,%) := coerce 'y
     z:Symbolic(Integer,%) := coerce 'z
-    assert("distributive", x*(y+z)=(x*y)+(x*z) )
+    assert("distributive left +", x*(y+z)=(x*y)+(x*z) )
+    assert("distributive left -", x*(y-z)=(x*y)-(x*z) )
+    assert("distributive right +", (y+z)*x=(y*x)+(z*x) )
+    assert("distributive right -", (y-z)*x=(y*x)-(z*x) )
 
 )abbrev domain DIV Divides
 Divides():DividesAxiom == add
@@ -1138,7 +1146,6 @@ Inverse():InverseAxiom == add
   assert("inverse inverse /",1/(1/x) = x)
   -- left
   assert("LeftInverse +", (-x) + y = -(x - y) )
-  --assert("LeftInverse -", (-x) - y = -(x + y) )
   assert("LeftInverse *", (1/x) * y = 1/(x * (1/y)) )  -- y ~= 0
   assert("LeftInverse /", (1/x) / y = 1/(x * y) )
   -- right
@@ -1203,10 +1210,11 @@ Commutative():CommutativeAxiom == join(CommutativePlus, CommutativeTimes)
 Identities():IdentityAxiom == join(LeftIdentity, RightIdentity)
 
 )abbrev domain SEXPR SymbolicExpression
+SIN ==> InputForm
 ++ Description:
 ++ SymbolicExpression is a Symbolic domain with automatic rewrite rules that
 ++ approximate Expression itself.
-SymbolicExpression(R:Comparable) : SymbolicCategory(R) == Implementation where
+SymbolicExpression(R:Join(Comparable,ConvertibleTo SIN)) : SymbolicCategory(R) == Implementation where
   --F ==> Expression R
   Implementation ==> Symbolic(R, _
     join(join(join(join(join(join(join(join(join(join( _
