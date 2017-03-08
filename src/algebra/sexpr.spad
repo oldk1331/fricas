@@ -666,16 +666,32 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
           r2:=isPlus per(r.right)
           if r1 case List % then
             if r2 case List % then
-              concat(r1,r2)
+              return concat(r1,r2)
             else
-              concat(r1, [per(r.right)])
+              return concat(r1, [per(r.right)])
           else
             if r2 case List % then
-              concat([per(r.left)],r2)
+              return concat([per(r.left)],r2)
             else
-              [per(r.left),per(r.right)]
+              return [per(r.left),per(r.right)]
         else
-          "failed"
+          -- treat x - y as x + -y
+          r := isMinus2 rep x
+          if r case Pair SIN then
+            r1:=isPlus per(r.left)
+            r2:=isPlus per(r.right)
+            if r1 case List % then
+              if r2 case List % then
+                return concat(r1,[-ri for ri in r2])
+              else
+                return concat(r1, [per(-r.right)])
+            else
+              if r2 case List % then
+                return concat([per(r.left)],[-ri for ri in r2])
+              else
+                return [per(r.left),per(-r.right)]
+          else
+            return "failed"
 
       isMinus(x:%):Maybe(List %) ==
         r := isMinus2 rep x
@@ -742,16 +758,31 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
           r2:=isTimes per(r.right)
           if r1 case List % then
             if r2 case List % then
-              concat(r1,r2)
+              return concat(r1,r2)
             else
-              concat(r1, per(r.right))
+              return concat(r1, per(r.right))
           else
             if r2 case List % then
-              concat(per(r.left),r2)
+              return concat(per(r.left),r2)
             else
-              [per(r.left),per(r.right)]
+              return [per(r.left),per(r.right)]
         else
-          "failed"
+          r := isDivide2 rep x
+          if r case Pair SIN then
+            r1:=isTimes per(r.left)
+            r2:=isTimes per(r.right)
+            if r1 case List % then
+              if r2 case List % then
+                return concat(r1,[1/ri for ri in r2])
+              else
+                return concat(r1, per(1/r.right))
+            else
+              if r2 case List % then
+                return concat(per(r.left),[1/ri for ri in r2])
+              else
+                return [per(r.left),per(1/r.right)]
+          else
+            return "failed"
 
     coerce(x:Pi):% == per convert(x)$Pi
     coerce(x:Symbol):% == per convert(x)$Symbol
@@ -1045,7 +1076,7 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
       if list? x and symbol? car x then
           if list? cdr x then
             s := symbol car x
-            if member?(s,['_+,'_-,'_*,'_/])$List(Symbol) then
+            if member?(s,['_+,'_-,'_*,'_/,'_^])$List(Symbol) then
               r:Set Kernel % := reduce("union",
                 [kernels1(i) for i in destruct cdr x])
               return r
