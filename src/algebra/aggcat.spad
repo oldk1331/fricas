@@ -1328,12 +1328,12 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
       ++ Note: \spad{rest(u, 0) = u}.
    last : % -> S
       ++ last(u) returns the last element of u.
-      ++ Note: for lists, \spad{last(u) = u . (maxIndex u) = u . (# u - 1)}.
+      ++ Note: for lists, \spad{last(u) = u.(maxIndex u) = u.(#u)}.
    elt : (%,"last") -> S
-      ++ elt(u,"last") (also written: \spad{u . last}) is equivalent to last u.
-   last : (%, NonNegativeInteger) -> %
-      ++ last(u, n) returns a copy of the last n (\spad{n >= 0}) nodes of u.
-      ++ Note: \spad{last(u, n)} is a list of n elements.
+      ++ elt(u,"last") (also written: \spad{u.last}) is equivalent to \spad{last u}.
+   tail : (%, NonNegativeInteger) -> %
+      ++ tail(u, n) returns a copy of the last n (\spad{n >= 0}) nodes of u.
+      ++ Note: \spad{tail(u, n)} is a list of n elements.
    tail : % -> %
       ++ tail(u) returns the last node of u.
       ++ Note: if u is \spad{shallowlyMutable},
@@ -1500,7 +1500,8 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
       x
 
   if % has finiteAggregate then
-      last(x, n) ==
+      tail(x, n) ==
+          n = 0 => empty()
           n > (m := #x) => error "index out of range"
           copy rest(x, (m - n)::NonNegativeInteger)
 

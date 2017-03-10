@@ -1613,7 +1613,7 @@ FiniteGraph(S) : Category == Definition where
        if i < 1 then return [loop(visited)]
        afterIndex := (#visited+1)-i
        if afterIndex < 1 then return [loop(visited)]
-       return [loop(last(visited, afterIndex::NNI)$List(NNI))]
+       return [loop(tail(visited, afterIndex::NNI)$List(NNI))]
      res : List Loop := []
      for x in c repeat
        ll := loopsNodesRecursive(x, concat(visited, v::NNI))
@@ -1648,7 +1648,7 @@ FiniteGraph(S) : Category == Definition where
        if i < 1 then return [loop(visited)]
        afterIndex := (#visited+1)-i
        if afterIndex < 1 then return [loop(visited)]
-       return [loop(last(visited, afterIndex::NNI)$List(NNI))]
+       return [loop(tail(visited, afterIndex::NNI)$List(NNI))]
      res : List Loop := []
      for x in c repeat
        ll := loopsArrowsRecursive(x, concat(visited, v::NNI))
