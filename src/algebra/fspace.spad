@@ -556,6 +556,9 @@ FunctionSpace(R : Comparable) : Category == Definition where
     ODD  := 'odd
     EVEN := 'even
     SPECIALDIFF  := '%specialDiff
+    PAREN  ==> '%paren
+    BOX    ==> '%box
+
 
     -- these are needed in Ring only, but need to be declared here
     -- because of compiler bug: if they are declared inside the Ring
@@ -829,7 +832,9 @@ FunctionSpace(R : Comparable) : Category == Definition where
       kgrad k ==
         zero?(n := #(args := argument k)) => empty()
         op := operator k
-        grad :=
+        grad:List(List % -> %) :=
+          -- paren is identify function
+          name(op) = PAREN => [(x:List %):% +-> 1]
           (u := derivative op) case "failed" => opderiv(op, n)
           u::List(List % -> %)
         #grad ~= n => opderiv(op, n)
