@@ -485,7 +485,6 @@ Pair SIN ==> Record(left:SIN,right:SIN)
 Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(R) == Implementation where
   --F ==> Expression R
   K   ==> Kernel %
-  KF  ==> Kernel F
   SMP  ==> SparseMultivariatePolynomial(R, K)
   AF  ==> AlgebraicFunction(R, %)
   EF  ==> ElementaryFunction(R, %)
@@ -528,7 +527,7 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
       --not smaller?(x,y) and not smaller?(y,x)
 
     subst(x:%,e:Equation %):% == per SUBST(rep rhs e,rep lhs e,rep x)$Lisp
-    subst(x:%,ks:List Kernel %, vs:List %) ==
+    subst(x:%,ks:List K, vs:List %) ==
       if #ks > 1 then return subst(subst(x,equation(first(ks)::%,first(vs))),rest ks, rest vs)
       else return subst(x,equation(first(ks)::%,first(vs)))
     subst(x:%, es:List Equation %):% ==
@@ -559,14 +558,14 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
       else
         return sin
 
-    eval(x:%,k:Kernel(%),s:%):% ==
+    eval(x:%,k:K,s:%):% ==
       --output("eval 1:", paren [x::OutputForm, k::OutputForm, s::OutputForm])$OutputPackage
       eval subst(x,[k],[s])
-    eval(x:%,ks:List Kernel %, vs:List %) ==
+    eval(x:%,ks:List K, vs:List %) ==
       --output("eval 2:", paren [x::OutputForm, ks::OutputForm, vs::OutputForm])$OutputPackage
       r:=x
       -- Use temporary symbols in case of parallel substitutions
-      ts:List Kernel % := [kernel(new()$Symbol) for k in ks]
+      ts:List K := [kernel(new()$Symbol) for k in ks]
       for k in ks for t in ts repeat
         r:=eval(r,k,coerce t)
       for t in ts for v in vs repeat
@@ -578,7 +577,7 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
     eval(x:%,e:Equation %):% == eval(x,lhs e,rhs e)
     --
     -- need to handle subscripted Symbol
-    retractIfCan(x:%):Maybe(Kernel %) ==
+    retractIfCan(x:%):Maybe(K) ==
       --output("retractIfCan Kernel: ",x::OutputForm)$OutputPackage
       if atom? rep x and symbol? rep x then return kernel symbol rep x
       if list? rep x and symbol? car rep x then
@@ -586,7 +585,7 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
           s := symbol car rep x
           -- Why not '_- ??
           if not member?(s,['_+,'_*,'_/])$List(Symbol) then
-            k:Kernel(%) := kernel(operator(s)$CommonOperators,
+            k:K := kernel(operator(s)$CommonOperators,
               destruct cdr rep x, #cdr(rep x)::NonNegativeInteger)
             return k
           else
@@ -671,24 +670,24 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
         operator(name op, n::NonNegativeInteger)
       --
       -- still need to handle non symbols and scripted symbols
-      kernels1(x:Rep):Set Kernel % ==
+      kernels1(x:Rep):Set K ==
         if null? x then return empty()
         if atom? x and symbol? x then return set [kernel symbol x]
         if list? x and symbol? car x then
             if list? cdr x then
               s := symbol car x
               if member?(s,['_+,'_-,'_*,'_/,'_^])$List(Symbol) then
-                r:Set Kernel % := reduce("union",
+                r:Set K := reduce("union",
                   [kernels1(i) for i in destruct cdr x])
                 return r
               else
-                k:Kernel(%) := kernel(operator(operator s)$%,
-                  destruct cdr x, #cdr(x)::NonNegativeInteger)
+                k:K := kernel(operator(operator(s)$CommonOperators)$%,
+                  destruct cdr x, #cdr(x)::NonNegativeInteger)$K
                 return set [k]
             else
               return kernels1 car cdr x
         return empty()
-      kernels(x:%):List Kernel % == members kernels1(rep x)
+      kernels(x:%):List K == members kernels1(rep x)
 
       -- Symbolic is syntactical!
       numerator(x:%):% ==
@@ -703,16 +702,16 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
           return per r.right
         else
           return 1
-      makeKernel(x:%):Kernel % ==
+      makeKernel(x:%):K ==
         --output("makeKernel: ",x::OutputForm)$OutputPackage
         if symbol? rep x then return kernel symbol rep x
-        k:Maybe(Kernel %):=retractIfCan(x)
-        if k case Kernel % then
+        k:Maybe K := retractIfCan(x)
+        if k case K then
           return k
         else
           -- We must wrap up this term in a paren box for SMP.
           return coerce kernel(oppren,[x],1)$K
-      smpTerm(x:%):SparseMultivariatePolynomial(R,Kernel %) ==
+      smpTerm(x:%):SparseMultivariatePolynomial(R,K) ==
         --output("smpTerm: ",x::OutputForm)$OutputPackage
         t:=isTimes x
         if t case List % then
@@ -726,7 +725,7 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
           return coerce integer rep x
         else
           return coerce makeKernel(x)
-      numer(x:%):SparseMultivariatePolynomial(R,Kernel %) ==
+      numer(x:%):SparseMultivariatePolynomial(R,K) ==
         --output("numer: ",x::OutputForm)$OutputPackage
         r:=numerator(x)
         s:=isPlus r
@@ -734,7 +733,7 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
           return reduce("+",[smpTerm(i) for i in s])
         else
           return smpTerm(r)
-      denom(x:%):SparseMultivariatePolynomial(R,Kernel %) ==
+      denom(x:%):SparseMultivariatePolynomial(R,K) ==
         --output("denom: ",x::OutputForm)$OutputPackage
         r:=denominator(x)
         s:=isPlus r
@@ -820,11 +819,13 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
       if R has RetractableTo Integer or R has RetractableTo Fraction Integer then
         retractIfCan(x:%):Maybe(Fraction Integer) ==
           r:Maybe(R):=retractIfCan(x)
-          if R has RetractableTo Fraction Integer then
-            return retractIfCan(r::R)@Maybe(Fraction Integer)
-          if R has RetractableTo Integer then
-            r2:Maybe(Integer):=retractIfCan(r::R)
-            if r2 case Integer then return r2::Integer::Fraction Integer
+          if r case R then
+            if R has RetractableTo Fraction Integer then
+              return retractIfCan(r::R)@Maybe(Fraction Integer)
+            if R has RetractableTo Integer then
+              r2:Maybe(Integer):=retractIfCan(r::R)
+              if r2 case Integer then
+                return r2::Integer::Fraction Integer
           return "failed"
       if R has PatternMatchable Integer then
         patternMatch(x : %, p : Pattern Integer, l : PatternMatchResult(Integer, %)) ==
@@ -872,7 +873,7 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
 
     coerce(x:Pi):% == per convert(x)$Pi
     coerce(x:Symbol):% == per convert(x)$Symbol
-    coerce(k:Kernel %):% == per convert(k)@Rep
+    coerce(k:K):% == per convert(k)@Rep
 
     coerceOutputForm1:(Rep,Boolean)->OutputForm
     coerceOutputForm(x:Rep):OutputForm ==coerceOutputForm1(x,false)
@@ -1111,6 +1112,7 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
         return sin
     (x:% - y:%):% == per minus(rep x,rep y)
 
+    -- WSP:1 Should unary minus x be -1 * x ?
     minus1(x:Rep):Rep ==
       if _$testingSystem$Lisp then
         output("minus1: ",coerce(x)@OutputForm)$OutputPackage
