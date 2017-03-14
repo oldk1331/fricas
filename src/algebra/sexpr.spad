@@ -504,9 +504,12 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
     smaller?(x:%,y:%):Boolean == smaller?(rep x, rep y)$SINFunctions
 
     -- paren is an unevaluated kernel in SMP but evaluates as identity
-    --oppren := operator('paren,1)$BasicOperator
     oppren := operator(operator('%paren))$ESD
+    -- fix InputForm and derivative
+    input(oppren, (z:List InputForm):InputForm +-> convert concat(convert 'paren, z))$BasicOperator
+    derivative(oppren,(x:%):%+->1)$BasicOperatorFunctions1(%)
     paren(x:%):% == x
+    --
     belong? op == true
     if R has AbelianSemiGroup then
       0:% == per 0$Rep
@@ -514,7 +517,6 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
     if R has SemiGroup then
       1:% == per 1$Rep
       one? x  == x = 1
-      derivative(oppren,(x:%):%+->1)$BasicOperatorFunctions1(%)
 
     hash(x:%):SingleInteger == hash(rep x)$SIN
     equal?(eq:Equation %):Boolean == ((lhs eq) = (rhs eq))$Rep
