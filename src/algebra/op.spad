@@ -579,8 +579,9 @@ CommonOperators() : Exports == Implementation where
       display(opprod, (z1 : List O) : O +-> prod(first z1, second z1, third z1))
       display(opint, (z1 : List O) : O +-> int(first z1 * hconcat('d::O, second z1),
                                                    empty(), third z1))
-      input(oppren, (z1 : List InputForm) : InputForm +-> convert concat(convert("("::Symbol)@InputForm,
-                            concat(z1, convert(")"::Symbol)@InputForm)))
+      --input(oppren, (z1 : List InputForm) : InputForm +-> convert concat(convert("("::Symbol)@InputForm,
+      --                      concat(z1, convert(")"::Symbol)@InputForm)))
+      input(oppren, (z1 : List InputForm) : InputForm +-> convert concat(convert("paren"::Symbol)@InputForm, z1))
       input(oppow, (z1 : List InputForm) : InputForm +-> convert concat(convert("^"::Symbol)@InputForm, z1))
       input(oproot,
             (z1 : List InputForm) : InputForm +-> convert [convert("^"::Symbol)@InputForm, first z1, 1 / second z1])
