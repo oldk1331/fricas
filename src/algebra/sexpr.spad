@@ -28,6 +28,9 @@ SINFunctions(): with
         if null? x then return true
         if atom? x then return smaller1?(convert [convert([])@InputForm,x],y)
         if list? x then
+          -- operators
+          if smaller1?(car x,car y) then true
+          if smaller1?(car y,car x) then false
           -- arguments
           x1:=cdr x; y1:=cdr y
           while not null? y1 repeat
@@ -35,8 +38,8 @@ SINFunctions(): with
             if smaller1?(car x1, car y1) then return true
             if car y1 ~= car x1 then return false
             x1:=cdr x1; y1:=cdr y1
-          -- operators
-          return smaller1?(car x,car y)
+          return false
+
       float? y => null? x or symbol? x
         or list? x and smaller1?(x,convert [convert([])@InputForm,y])
           or float? x and float x < float y
@@ -91,6 +94,7 @@ SymbolicCategory(R : Comparable) : Category == Exports where
       coerce: Polynomial R -> %
       -- transformations
       expand: % -> %
+    simplify: % -> %
     if % has FunctionSpace(Integer) then
       factor: % -> %
     if % has TranscendentalFunctionCategory and R has GcdDomain then
@@ -103,7 +107,6 @@ SymbolicCategory(R : Comparable) : Category == Exports where
     convert: Equation SIN -> Equation %
     coerce: SIN -> %
     --
-    equal?: Equation % -> Boolean
     isMinus: % -> Maybe(List %)
     paren: % -> %
 
@@ -344,7 +347,7 @@ InverseAxiom(): Category == Axiom with
       -- involution?
       -- -(-x) --> x
       -- 1/(1/x) --> x
-      if list? x and x = inv last destruct x then
+      if list? x and (x = inv last destruct x)$SIN then
         rin := last destruct x
       else
         return "failed"
@@ -360,7 +363,7 @@ InverseAxiom(): Category == Axiom with
       -- x + (-y) --> x - y
       -- x / (1/y) --> x * y
       -- x * (1/y) --> x / y
-      if list? y and inv(y) = last destruct y then
+      if list? y and (inv(y) = last destruct y)$SIN then
         rin :=f(x,last destruct y)
       else
         return "failed"
@@ -376,7 +379,7 @@ InverseAxiom(): Category == Axiom with
       -- (-x) + y -->     -(x - y)   ??
       -- (1/x) / y -->    1/(x * y)
       -- (1/x) * y -->x   1/(x / y)
-      if list? x and inv(x) = last destruct x then
+      if list? x and (inv(x) = last destruct x)$SIN then
         rin := inv f(last destruct x,y)
       else
         return "failed"
@@ -442,7 +445,7 @@ SquaresAxiom(): Category == Axiom with
       -- x^n*x^m --> x^(n+m)
       if (tx:=ispower(x)) case "failed" or not integer? tx.right then tx := [x,1]$Pair(SIN)
       if (ty:=ispower(y)) case "failed" or not integer? ty.right then ty := [y,1]$Pair(SIN)
-      if tx case Pair SIN and ty case Pair SIN and ty.left = tx.left then
+      if tx case Pair SIN and ty case Pair SIN and (ty.left = tx.left)$SIN then
         return pow(tx.left,convert(integer(tx.right)+integer(ty.right)))
       -- look right
       if % has AssociativeAxiomTimes then
@@ -498,8 +501,7 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
 
   Implementation ==> add
     Rep := SIN
-    --rep(x:%):Rep == x pretend Rep
-    --per(x:Rep):% == x pretend %
+
     smaller?(x:%,y:%):Boolean == smaller?(rep x, rep y)$SINFunctions
 
     -- paren is an unevaluated kernel in SMP but evaluates as identity
@@ -518,8 +520,6 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
       one? x  == x = 1
 
     hash(x:%):SingleInteger == hash(rep x)$SIN
-    equal?(eq:Equation %):Boolean == ((lhs eq) = (rhs eq))$Rep
-      --not smaller?(lhs eq,rhs eq) and not smaller?(rhs eq,lhs eq)
     (x:% = y:%):Boolean ==
       if _$testingSystem$Lisp then
         output(" = ",paren [x::OutputForm,y::OutputForm])$OutputPackage
@@ -536,27 +536,26 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
 
     --if R has ConvertibleTo SIN then
     -- +0 is a hack to avoid premature conversion (do we need it?)
-    hack(x:%):Rep == binary(convert('_+),[rep x,0$Rep])
+    --hack(x:%):Rep == binary(convert('_+),[rep x,0$Rep])
     -- better hack?
     --hack(x:%):Rep == convert([convert 'coerce,rep x])
 
-    eval(x:%):% ==
-      sin := rep x
+    eval(x:%):% == coerce rep x
+)if false
       if _$testingSystem$Lisp then
         output("eval: ",message unparse sin)$OutputPackage
-      if not symbol? sin then
-        v:List Symbol := variables x
-        if #v = 0 then return interpret(coerceToType(rep x)$InputFormFunctions1(%))$InputFormFunctions1(%)
-        -- we need to substitute variables with unknown modes
-        s:List Symbol := [new()$Symbol for vi in v]
-        ks:List Equation % := [equation(coerce(vi)$%, coerce(si)$%) for vi in v for si in s]
-        sk:List Equation % := [equation(coerce(si)$%, coerce(vi)$%) for vi in v for si in s]
-        rin := subst(interpret(atType(rep subst(x,ks))$InputFormFunctions1(%))$InputFormFunctions1(%),sk)
-        if _$testingSystem$Lisp then
-          output("eval: ",infix(message " --> ", message unparse sin,message unparse rin))$OutputPackage
-        return rin
-      else
-        return sin
+      if atom? rep x then return x
+      v:List Symbol := variables x
+      if #v = 0 then return coerce rep x
+      -- we need to substitute variables with unknown modes
+      s:List Symbol := [new()$Symbol for vi in v]
+      ks:List Equation % := [equation(coerce(vi)$%, coerce(si)$%) for vi in v for si in s]
+      sk:List Equation % := [equation(coerce(si)$%, coerce(vi)$%) for vi in v for si in s]
+      rin := subst(coerce(rep subst(x,ks)),sk)
+      if _$testingSystem$Lisp then
+        output("eval: ",infix(message " --> ", message unparse sin,message unparse rin))$OutputPackage
+      return rin
+)endif
 
     eval(x:%,k:K,s:%):% ==
       --output("eval 1:", paren [x::OutputForm, k::OutputForm, s::OutputForm])$OutputPackage
@@ -585,8 +584,8 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
           s := symbol car rep x
           -- Why not '_- ??
           if not member?(s,['_+,'_*,'_/])$List(Symbol) then
-            k:K := kernel(operator(s)$CommonOperators,
-              destruct cdr rep x, #cdr(rep x)::NonNegativeInteger)
+            k:K := kernel(operator(operator(s)$CommonOperators)$%,
+              destruct cdr x, #cdr(x)::NonNegativeInteger)$K
             return k
           else
             return "failed"
@@ -938,10 +937,18 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
       sk:List Equation Expression(R) := [equation(coerce(si)$Expression(R), coerce(vi)$Expression(R)) for vi in v for si in s]
       return subst(interpret(coerceToType(rep subst(x,ks))$InputFormFunctions1(Expression(R)))$InputFormFunctions1(Expression(R)),sk)
     if R has ConvertibleTo SIN then
-      coerce(x:Expression(R)):% == eval per convert(x)$Expression(R)
+      coerce(x:Expression(R)):% == coerce convert x
       coerce(x:R):% == per convert(x)$R
     convert(x:%):SIN == rep x
-    coerce(x:SIN):% == eval per x
+    coerce(sin:SIN):% ==
+      --output("coerce(sin:SIN):% ",sin::OutputForm)$OutputPackage
+      -- avoid interpreting some special cases
+      if atom? sin then return per sin
+      -- unary inverse
+      if list? sin and # sin = 2 and car sin = convert '_- and atom? car cdr sin then
+        return per sin
+      -- otherwise take a change and interpret it
+      return interpret(atType(sin)$InputFormFunctions1(%))$InputFormFunctions1(%)
     --
     factorial(x:%):%          == per convert([convert('factorial)@SIN,rep x])
     binomial(n:%, m:%):%      == binary(convert('binomial),[n::Rep,m::Rep])$SIN
@@ -1054,14 +1061,14 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
         (x::%) * y
       else
         double(x,y)$RepeatedDoubling(%)
-    (x:NonNegativeInteger * y:%):% ==
-      if x=0 then 0*y
-      else x::PositiveInteger * y
-    (x:Integer * y:%):% ==
-      if x < 0 then
-        (-x)::PositiveInteger * y
-      else
-        x::NonNegativeInteger * y
+    (x:NonNegativeInteger * y:%):% == (x::%) * y
+    --  if x=0 then 0*y
+    --  else x::PositiveInteger * y
+    (x:Integer * y:%):% == (x::%) * y
+    --  if x < 0 then
+    --    (-x)::PositiveInteger * y
+    --  else
+    --    x::NonNegativeInteger * y
     (x:% * y:Integer):% == x * (y::%)
     --
     plus(x:Rep,y:Rep):Rep ==
@@ -1162,13 +1169,13 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
         output("inv: ",x::OutputForm)$OutputPackage
       per divide1 rep x
 
-    elt(f:BasicOperator,x:List %):% ==
-      --output("elt: ", paren [f::OutputForm,x::OutputForm])$OutputPackage
-      if not property(f,'%symbol) case "failed" then
-        return per convert name f
-      else
-        -- Should we actually evaluate the operator??
-        return per convert(concat(convert(name f)@SIN,[rep i for i in x]))
+    --elt(f:BasicOperator,x:List %):% ==
+    --  --output("elt: ", paren [f::OutputForm,x::OutputForm])$OutputPackage
+    --  if not property(f,'%symbol) case "failed" then
+    --    return per convert name f
+    --  else
+    --    -- Should we actually evaluate the operator??
+    --    return per convert(concat(convert(name f)@SIN,[rep i for i in x]))
 
     retract(x:%):R == retract(coerce x)$Expression(R)
 
@@ -1185,7 +1192,12 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
 
     if Expression(R) has TranscendentalFunctionCategory and R has GcdDomain then
       simplify(x:%):% ==
-        coerce(simplify(coerce x)$TranscendentalManipulations(R,Expression R))
+        coerce(simplify(coerce(x)@Expression R)$TranscendentalManipulations(R,Expression R))
+    else
+      simplify(x:%):% ==
+       output("simplify: ", x::OutputForm)$OutputPackage
+       coerce(convert(coerce(x)@Expression R))
+
     convert(eq:Equation %): Equation SIN == equation(convert lhs eq, convert rhs eq)
     convert(eq:Equation SIN): Equation % == equation(convert lhs eq, convert rhs eq)
 
