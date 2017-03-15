@@ -14,7 +14,6 @@ s:Symbolic(Integer,None) := 1+1+1
 simplify s
 s::Expression Integer
 retract s
-equal?(s=3)
 test(s=3)
 -- symbols can be assigned a rank
 (S,T):Symbolic(Integer,None)
