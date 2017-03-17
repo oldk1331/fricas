@@ -109,6 +109,9 @@ SymbolicCategory(R : Comparable) : Category == Exports where
     --
     isMinus: % -> Maybe(List %)
     paren: % -> %
+    if R has ConvertibleTo Pattern R then
+      convert: % -> Pattern R
+
 
 )abbrev category AXIOM Axiom
 ++ Properties and axioms for symbolic rewrite rules
@@ -624,9 +627,13 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
     isTimes2(x:SIN):Maybe(Pair SIN) ==
       list? x and # cdr x = 2 and symbol? car x and symbol car x = '_* => [car cdr x, car cdr cdr x]
       "failed"
-    isDivide2(x:SIN):Maybe(Pair SIN) ==
+    isQuotient2(x:SIN):Maybe(Pair SIN) ==
       list? x and # cdr x = 2 and symbol? car x and symbol car x = '_/ => [car cdr x, car cdr cdr x]
       "failed"
+    isPower2(x:SIN):Maybe(Pair SIN) ==
+      list? x and symbol? car x and symbol car x = '_^ => [car cdr x, car cdr cdr x]
+      "failed"
+
     if R has IntegralDomain then
       -- Elementary Functions
       pi()                      == pi()$EF
@@ -673,7 +680,7 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
       kernels1(x:Rep):Set K ==
         AL ==> AssociationList(Symbol,None)
         if null? x then return empty()
-        if atom? x and symbol? x then
+        if symbol? x then
           -- WSP: Should we recover properties/assertions from symbols? id:100
           k:K := kernel symbol x
           op:=operator k
@@ -706,13 +713,13 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
 
       -- Symbolic is syntactical!
       numerator(x:%):% ==
-        r := isDivide2 rep x
+        r := isQuotient2 rep x
         if r case Pair SIN then
           return per r.left
         else
           return x
       denominator(x:%):% ==
-        r := isDivide2 rep x
+        r := isQuotient2 rep x
         if r case Pair SIN then
           return per r.right
         else
@@ -741,7 +748,7 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
         else
           return coerce makeKernel(x)
       numer(x:%):SparseMultivariatePolynomial(R,K) ==
-        output("numer: ",x::OutputForm)$OutputPackage
+        --output("numer: ",x::OutputForm)$OutputPackage
         r:=numerator(x)
         s:=isPlus r
         if s case List % then
@@ -853,6 +860,28 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
         patternMatch(x : %, p : Pattern Float, l : PatternMatchResult(Float, %)) ==
           patternMatch(x, p, l)$PatternMatchFunctionSpace(Float, R, %)
 
+      if R has ConvertibleTo Pattern R then
+        convert(x:%):Pattern R ==
+          if (t:=isPlus(x)) case List % then
+            return reduce("+",[convert(i)@Pattern R for i in t])
+          if (q:=isQuotient2(rep x)) case Pair SIN then
+            return convert(per q.left)/convert(per q.right)
+          if (t:=isTimes(x)) case List % then
+            return reduce("*",[convert(i)@Pattern R for i in t])
+          if (e:=isPower(x)) case Record(val:%,exponent:Integer) then
+            if e.exponent >= 0 then
+              return convert(e.val)^(e.exponent::NonNegativeInteger)
+            else
+              return (1$Pattern(R))/(convert(e.val)^((-e.exponent)::NonNegativeInteger))
+          if (p:=isPower2(rep x)) case Pair SIN then
+            return convert(per p.left)^convert(per p.right)
+          if (r:=retractIfCan(x)@Maybe(R)) case R then
+            return coerce r
+          if (s:=retractIfCan(x)@Maybe(Symbol)) case Symbol then
+            return coerce s
+          k:=makeKernel(x)
+          return elt(operator(k),[convert i for i in argument(k)])
+
     if R has SemiGroup then
       isTimes(x:%):Maybe(List %) ==
         r := isTimes2 rep x
@@ -870,7 +899,7 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
             else
               return [per(r.left),per(r.right)]
         else
-          r := isDivide2 rep x
+          r := isQuotient2 rep x
           if r case Pair SIN then
             r1:=isTimes per(r.left)
             r2:=isTimes per(r.right)
@@ -880,7 +909,11 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
               else
                 return concat(r1, per(1/r.right))
             else
-              if r.left = 1 then return "failed"
+              if r.left = 1 then
+                if r2 case List % then
+                  return [1/ri for ri in r2]
+                else
+                  return [x]
               if r2 case List % then
                 return concat(per(r.left),[1/ri for ri in r2])
               else
@@ -1030,12 +1063,10 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
       if y < 0 then 1/(x ^ (-y)::PositiveInteger)
       else x ^ y::NonNegativeInteger
     (x:% ^ y:Fraction Integer):% == nthRoot(x,denom(y))^numer(y)
-    isPower1(x:SIN):Maybe(Pair SIN) ==
-      list? x and symbol? car x and symbol car x = '_^ => [car cdr x, car cdr cdr x]
-      "failed"
     isPower(x:%):Maybe(Record(val:%,exponent:Integer)) ==
-      r:=isPower1(rep x)
+      r:=isPower2(rep x)
       if r case Pair SIN then
+        -- WSP: Should we convert unary minus to negative value here or perhaps in integer?
         if integer?(r.right) then
           return [per r.left,integer(r.right)]
       "failed"
@@ -1043,8 +1074,8 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
     plus: (Rep,Rep) -> Rep
     minus: (Rep,Rep) -> Rep
     minus1: Rep -> Rep
-    divide2: (Rep,Rep) -> Rep
-    divide1 : Rep -> Rep
+    quotient: (Rep,Rep) -> Rep
+    inv1 : Rep -> Rep
 
     times(x:Rep,y:Rep):Rep ==
       sin:Rep:=binary(convert('_*),[x,y])
@@ -1064,15 +1095,15 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
       if AxiomList has RightIdentityAxiom and rin case "failed" then
         rin := rewriteRightIdentity(1,sin)
       if AxiomList has InverseAxiom and rin case "failed" then
-        rin := rewriteRightInverse(divide1,divide2,sin)
+        rin := rewriteRightInverse(inv1,quotient,sin)
       if AxiomList has InverseAxiom and rin case "failed" then
-        rin := rewriteLeftInverse(divide1,divide2,sin)
+        rin := rewriteLeftInverse(inv1,quotient,sin)
       if AxiomList has AntiCommutativeAxiom and rin case "failed" then
         rin := rewriteAntiCommutative(minus1,times,x,y)
       if AxiomList has CommutativeAxiomTimes and rin case "failed" then
         rin := rewriteCommutative(isTimes2,times,sin)
       if AxiomList has SquaresAxiom and rin case "failed" then
-        rin := rewriteSquares(power,isPower1,times,isTimes2,sin)
+        rin := rewriteSquares(power,isPower2,times,isTimes2,sin)
       if rin case Rep then
         if _$testingSystem$Lisp then
           output("times: ",infix(message " --> ", message unparse sin,message unparse rin))$OutputPackage
@@ -1161,42 +1192,42 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
       convert([convert('_-)@SIN,x])
     _-(x:%):% == per minus1 rep x
 
-    divide2(x:Rep,y:Rep):Rep ==
+    quotient(x:Rep,y:Rep):Rep ==
       sin:Rep:=binary(convert('_/),[x,y])
       rin:Maybe Rep := "failed"
       if _$testingSystem$Lisp then
-        output("divide: ",message unparse sin)$OutputPackage
-      if (x = 1)$Rep then rin := divide1(y)
+        output("quotient: ",message unparse sin)$OutputPackage
+      if (x = 1)$Rep then rin := inv1(y)
       if AxiomList has RightIdentityAxiom and rin case "failed" then
         rin := rewriteRightIdentity(1,sin)
       if AxiomList has DividesAxiom and rin case "failed" then
         rin := rewriteDivides(x,y)
       if AxiomList has InverseAxiom and rin case "failed" then
-        rin := rewriteRightInverse(divide1,times,sin)
+        rin := rewriteRightInverse(inv1,times,sin)
       if AxiomList has InverseAxiom and rin case "failed" then
-        rin := rewriteLeftInverse(divide1,times,sin)
+        rin := rewriteLeftInverse(inv1,times,sin)
       if rin case Rep then
         if _$testingSystem$Lisp then
           output("divide: ",infix(message " --> ", message unparse sin,message unparse rin))$OutputPackage
         return rin
       else
         return sin
-    (x:% / y:%):% == per divide2(rep x,rep y)
+    (x:% / y:%):% == per quotient(rep x,rep y)
 
-    divide1(x:Rep):Rep ==
+    inv1(x:Rep):Rep ==
       if _$testingSystem$Lisp then
-        output("divide1: ",coerce(x)@OutputForm)$OutputPackage
+        output("inv1: ",coerce(x)@OutputForm)$OutputPackage
       if AxiomList has LeftIdentityAxiom and (x = 1)$Rep then
         return 1$Rep
       if AxiomList has InverseAxiom then
-        returnIf rewriteInverseUnary(divide1,isDivide2,divide2,x)
-      if (t:=isDivide2(x)) case Pair SIN then return divide2(t.right,t.left)
+        returnIf rewriteInverseUnary(inv1,isQuotient2,quotient,x)
+      if (t:=isQuotient2(x)) case Pair SIN then return quotient(t.right,t.left)
       binary(convert('_/),[1$SIN,x])
 
     inv(x:%):% ==
       if _$testingSystem$Lisp then
         output("inv: ",x::OutputForm)$OutputPackage
-      per divide1 rep x
+      per inv1 rep x
 
     --elt(f:BasicOperator,x:List %):% ==
     --  --output("elt: ", paren [f::OutputForm,x::OutputForm])$OutputPackage
@@ -1224,7 +1255,6 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
         coerce(simplify(coerce(x)@Expression R)$TranscendentalManipulations(R,Expression R))
     else
       simplify(x:%):% ==
-       output("simplify: ", x::OutputForm)$OutputPackage
        coerce(convert(coerce(x)@Expression R))
 
     convert(eq:Equation %): Equation SIN == equation(convert lhs eq, convert rhs eq)
