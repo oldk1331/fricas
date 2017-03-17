@@ -99,7 +99,7 @@ GeneralPolynomialGcdPackage(E, OV, R, P) : C == T where
             randomCount := init()
             randomCount
       else
--- FIXME: strange random distribution used (#227).
+-- FIXME:0 strange random distribution used (#227). id:21
             randomR() == (random(100)$Integer)::R
                      ---- JHD's local functions ---
       gcdSameVariables(p1 : SUPP, p2 : SUPP, lv : List OV) ==

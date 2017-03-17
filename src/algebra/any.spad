@@ -93,7 +93,7 @@ Any() : SetCategory with
          Dx : Type := evalType(dx)$Lisp
          Dx has BasicType =>
              (obj x) pretend Dx = (obj y) pretend Dx
-         -- FIXME: we want
+         -- FIXME:0 we want id:12
          -- error "Comparison in domain which is not a BasicType"
          -- but currently pattern matching needs
          EQ(obj x, obj y)$Lisp

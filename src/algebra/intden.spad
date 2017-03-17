@@ -68,7 +68,7 @@ DenominatorIntegration(R, F) : Exports == Implementation where
 
     Q ==> Fraction(Integer)
 
-    -- 1. Find li-capable factors.  FIXME: In principle when
+    -- 1. Find li-capable factors.  FIXME:0 In principle when id:27
     -- factoring df we should consider all kernels.
     li_factors(df : UP, k : K, lk : List(K), x : SY) : List(FREC) ==
         lfac := factors(factorPolynomial(df)$ExpressionFactorPolynomial(R, F))

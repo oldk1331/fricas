@@ -1222,7 +1222,7 @@ TexmacsFormat() : public == private where
                 op = ">"::Sy => "<gtr>"
                 op = ">="::Sy => "<geq>"
                 op = "+->"::Sy => "<mapsto>"
-                -- FIXME how to do this properly ???
+                -- FIXME:0 how to do this properly ??? id:61
                 op = 'LET   => ":="
                 string(op)
             concat ["(concat ", s1, " _"", ops, "_" ", s2, ")"]
@@ -1331,7 +1331,7 @@ TexmacsFormat() : public == private where
         -- ImaginaryI
         len > 0 and str.1 = char "%" => concat [" _"", str, "_" "]
         -- presumably this is a literal string
-        -- WSP: preserve "..." and encode <less> symbols
+        -- WSP:0 preserve "..." and encode <less> symbols id:62
         len > 0 and str.1 = char "_"" =>
           --concat ["(concat ", str, ")"]
           concat ["(text (concat ", "_"_\_"_" ",concat ["(math ",utf2cork str, ")"], " _"_\_"_") )"]

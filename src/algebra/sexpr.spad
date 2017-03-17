@@ -574,45 +574,46 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
       --output("eval 3:", paren [x::OutputForm, a::OutputForm, b::OutputForm])$OutputPackage
       eval(x, retract a, b)
     eval(x:%,e:Equation %):% == eval(x,lhs e,rhs e)
-    --
-    -- need to handle subscripted Symbol
-    retractIfCan(x:%):Maybe(K) ==
-      --output("retractIfCan Kernel: ",x::OutputForm)$OutputPackage
-      if atom? rep x and symbol? rep x then return kernel symbol rep x
-      if list? rep x and symbol? car rep x then
-        if list? cdr rep x then
-          s := symbol car rep x
-          -- Why not '_- ??
-          if not member?(s,['_+,'_*,'_/])$List(Symbol) then
-            k:K := kernel(operator(operator(s)$CommonOperators)$%,
-              destruct cdr x, #cdr(x)::NonNegativeInteger)$K
-            return k
-          else
-            return "failed"
-        else
-          return "failed"
-      else
-        return "failed"
-    retractIfCan(x:%):Maybe(R) ==
-      --output("retractIfCan R: ",x::OutputForm)$OutputPackage
-      if list? rep x and # cdr rep x = 0 then error "stop"
-      if R is Integer then
-        if integer? rep x then return (integer rep x) pretend R
-      if R is DoubleFloat then
-        if float? rep x then return (float rep x) pretend R
-      if R is Symbol then
-        if symbol? rep x then return (symbol rep x) pretend R
-      --
-      return "failed"
-    retractIfCan(x:%):Maybe(Symbol) ==
-      --output("retractIfCan Symbol: ",x::OutputForm)$OutputPackage
-      if symbol? rep x then symbol rep x
-      else "failed"
-    retract(x:%):Symbol ==
-      --output("retract Symbol: ",x::OutputForm)$OutputPackage
-      s:=retractIfCan(x)@Maybe(Symbol)
-      if s case Symbol then return s
-      error "not a Symbol"
+
+    -- WSP: need to handle subscripted Symbol id:99
+
+    --retractIfCan(x:%):Maybe(K) ==
+    --  --output("retractIfCan Kernel: ",x::OutputForm)$OutputPackage
+    --  if atom? rep x and symbol? rep x then return kernel symbol rep x
+    --  if list? rep x and symbol? car rep x then
+    --    if list? cdr rep x then
+    --      s := symbol car rep x
+    --      -- Why not '_- ??
+    --      if not member?(s,['_+,'_*,'_/])$List(Symbol) then
+    --        k:K := kernel(operator(operator(s)$CommonOperators)$%,
+    --          destruct cdr x, #cdr(x)::NonNegativeInteger)$K
+    --        return k
+    --      else
+    --        return "failed"
+    --    else
+    --      return "failed"
+    --  else
+    --    return "failed"
+    --retractIfCan(x:%):Maybe(R) ==
+    --  --output("retractIfCan R: ",x::OutputForm)$OutputPackage
+    --  if list? rep x and # cdr rep x = 0 then error "stop"
+    --  if R is Integer then
+    --    if integer? rep x then return (integer rep x) pretend R
+    --  if R is DoubleFloat then
+    --    if float? rep x then return (float rep x) pretend R
+    --  if R is Symbol then
+    --    if symbol? rep x then return (symbol rep x) pretend R
+    --  --
+    --  return "failed"
+    --retractIfCan(x:%):Maybe(Symbol) ==
+    --  --output("retractIfCan Symbol: ",x::OutputForm)$OutputPackage
+    --  if symbol? rep x then symbol rep x
+    --  else "failed"
+    --retract(x:%):Symbol ==
+    --  --output("retract Symbol: ",x::OutputForm)$OutputPackage
+    --  s:=retractIfCan(x)@Maybe(Symbol)
+    --  if s case Symbol then return s
+    --  error "not a Symbol"
     --
     isPlus2(x:SIN):Maybe(Pair SIN) ==
       list? x and # cdr x = 2 and symbol? car x and symbol car x = '_+ => [car cdr x, car cdr cdr x]
@@ -668,10 +669,20 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
         (n := arity op) case "failed" => operator name op
         operator(name op, n::NonNegativeInteger)
       --
-      -- still need to handle non symbols and scripted symbols
+      -- WSP: still need to handle non symbols and scripted symbols id:103
       kernels1(x:Rep):Set K ==
+        AL ==> AssociationList(Symbol,None)
         if null? x then return empty()
-        if atom? x and symbol? x then return set [kernel symbol x]
+        if atom? x and symbol? x then
+          -- WSP: Should we recover properties/assertions from symbols? id:100
+          k:K := kernel symbol x
+          op:=operator k
+          opl:List Record(key:Symbol,entry:None):=entries properties op
+          pl := destruct SYMBOL_-PLIST(x)$Lisp
+          npl:=[[symbol pl(i),pl(i+1) pretend None]$Record(key:Symbol,entry:None)
+            for i in 1..#pl by 2]
+          setProperties(op,dictionary(concat(opl,npl)))$BasicOperator
+          return set [k]
         if list? x and symbol? car x then
             if list? cdr x then
               s := symbol car x
@@ -680,13 +691,18 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
                   [kernels1(i) for i in destruct cdr x])
                 return r
               else
-                k:K := kernel(operator(operator(s)$CommonOperators)$%,
-                  destruct cdr x, #cdr(x)::NonNegativeInteger)$K
+                op:=operator(operator(s)$CommonOperators)$%
+                k:K := kernel(op, destruct cdr x, #cdr(x)::NonNegativeInteger)$K
                 return set [k]
             else
               return kernels1 car cdr x
         return empty()
       kernels(x:%):List K == members kernels1(rep x)
+
+      mainKernel(x:%):Maybe Kernel % ==
+        k := kernels x
+        if empty? k then return "failed"
+        return last k
 
       -- Symbolic is syntactical!
       numerator(x:%):% ==
@@ -703,7 +719,7 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
           return 1
       makeKernel(x:%):K ==
         --output("makeKernel: ",x::OutputForm)$OutputPackage
-        if symbol? rep x then return kernel symbol rep x
+        --if symbol? rep x then return kernel symbol rep x
         k:Maybe K := retractIfCan(x)
         if k case K then
           return k
@@ -725,7 +741,7 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
         else
           return coerce makeKernel(x)
       numer(x:%):SparseMultivariatePolynomial(R,K) ==
-        --output("numer: ",x::OutputForm)$OutputPackage
+        output("numer: ",x::OutputForm)$OutputPackage
         r:=numerator(x)
         s:=isPlus r
         if s case List % then
@@ -740,6 +756,8 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
           return reduce("+",[smpTerm(i) for i in s])
         else
           return smpTerm(r)
+
+      -- WSP: replace univariate$QF id:104
 
       (x:SMP / y:SMP):% == coerce(x) / coerce(y)
       isPlus(x:%):Maybe(List %) ==
@@ -872,7 +890,14 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
 
     coerce(x:Pi):% == per convert(x)$Pi
     coerce(x:Symbol):% == per convert(x)$Symbol
-    coerce(k:K):% == per convert(k)@Rep
+    -- WSP: We need to do something about properties! id:101
+    coerce(k:K):% ==
+      s := name operator k
+      props:List(Record(key: Symbol,entry: None)) := entries properties operator k
+      -- copy operator properties to symbol property list
+      for p in props repeat
+        PUT(s,p.key,(p.entry) pretend SIN)$Lisp
+      per convert(k)@Rep
 
     coerceOutputForm1:(Rep,Boolean)->OutputForm
     coerceOutputForm(x:Rep):OutputForm ==coerceOutputForm1(x,false)
@@ -1119,12 +1144,16 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
         return sin
     (x:% - y:%):% == per minus(rep x,rep y)
 
-    -- WSP:1 Should unary minus x be -1 * x ?
+    -- WSP: Should unary minus x be -1 * x ? id:102
     minus1(x:Rep):Rep ==
       if _$testingSystem$Lisp then
         output("minus1: ",coerce(x)@OutputForm)$OutputPackage
       if AxiomList has LeftIdentityAxiom and (x = 0)$Rep then
         return 0$Rep
+      --if AxiomList has CancelsAxiom and R has AbelianGroup then
+      --  if integer? x then return convert(-integer(x))
+      --  else
+      --    if float? x then return convert(-float(x))
       if AxiomList has InverseAxiom then
         returnIf rewriteInverseUnary(minus1,isMinus2,minus,x)
       if (t:=isMinus2(x)) case Pair SIN then return minus(t.right,t.left)

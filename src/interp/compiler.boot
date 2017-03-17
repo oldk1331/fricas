@@ -416,7 +416,7 @@ compArgumentsAndTryAgain(form is [.,:argl],m,e) ==
   u="failed" => nil
   compForm1(form,m,e)
 
--- FIXME: we should check the argument.
+-- FIXME:0 we should check the argument. id:81
 outputComp(x,e) ==
   u:=comp(['_:_:, x, $OutputForm], $OutputForm, e) => u
   x is ['construct,:argl] =>

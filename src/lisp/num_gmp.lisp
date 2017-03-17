@@ -406,7 +406,7 @@
          (rlb 0)
          (res (ccl::%alloc-misc rl2 (bignum_subtag))))
         (declare (type fixnum xl yl rl rl2 xlb ylb rlb itmp))
-        ;;; XXX Does not work
+        ;;; XXX:0 Does not work id:96
         ;;; (declare (dynamic-extent res))
       (if (< xl yl)
           (progn
@@ -452,7 +452,7 @@
          (rlb (+ xlb ylb))
          (res nil))
         (declare (type fixnum xl yl rl xlb ylb rlb))
-        ;;; XXX Does not work
+        ;;; XXX:0 Does not work id:97
         ;;; (declare (dynamic-extent res))
       (ccl::%stack-block ((tx xlb)
                           (ty ylb)

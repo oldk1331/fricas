@@ -406,7 +406,7 @@ get_graph_output(char *command,char *pagename,int com_type)
 
     send_command(command, com_type);
     n = get_int(spad_socket);
-    /* FIXME: this looks crazy */
+    /* FIXME:0 this looks crazy  id:69*/
     for (i = 0; i < n; i++) {
         get_string_buf(spad_socket, buf, 1024);
     }

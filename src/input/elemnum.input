@@ -189,7 +189,7 @@ testsuite "singularities"
 
 testcaseNoClear "log"
 testLibraryError("log(0.0::Complex Float)")
--- FIXME: Clisp 2.47 goes here into infinite loop
+-- FIXME:0 Clisp 2.47 goes here into infinite loop id:71
 -- testLibraryError("log(1.0::Complex DFLOAT)")
 testLibraryError("log(0::EXPR Complex INT)")
 testLibraryError("log(0::EXPR INT)")

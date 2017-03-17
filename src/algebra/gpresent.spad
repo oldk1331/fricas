@@ -598,7 +598,7 @@ GroupPresentation() : Exports == Impl where
    -- compare very simple presentations in the validation code which
    -- is useful to give some level of confidence that the
    -- correct presentation was generated.
-   -- TODO result can be dependent on initial generator order, for
+   -- TODO:0 result can be dependent on initial generator order, for id:22
    -- example <a, b | a*a, b*b*b> = <b, a | a*a, b*b*b> would be false
    -- should really check all permutations of generators and return
    -- true if any of them gives equality.
@@ -1708,7 +1708,7 @@ Homology() : Exports == Impl where
        #(a.freePart) = #(b.freePart)
 
    -- output in terms of Z (free) and C (cycles)
-   -- TODO perhaps this should check if vectors are independant
+   -- TODO:0 perhaps this should check if vectors are independant id:23
    coerce(s : %) : OutputForm ==
        res : OutputForm := empty()$OutputForm
        firstTermRead : Boolean := false
@@ -1718,7 +1718,7 @@ Homology() : Exports == Impl where
        --      " freePart : " << s1.freePart)
        nFree := #(s1.freePart)
        if nFree > 0 then
-           -- TODO should check for empty list here
+           -- TODO:0 should check for empty list here id:24
            res := hconcat(res, message("Z"))
            if nFree > 1 then
                res := hconcat([res, message("*"),

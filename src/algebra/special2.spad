@@ -218,7 +218,7 @@ FloatSpecialFunctions() : Exports == Implementation where
         l0 := bits()
         l1 := max(30, l0 + 10)
         bits(l1)
-        -- FIXME : compensate for error in Gamma(x + y)
+        -- FIXME:0 : compensate for error in Gamma(x + y) id:57
         res := Gamma(x)*Gamma(y)/Gamma(x + y)
         bits(l0)
         res

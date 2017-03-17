@@ -330,7 +330,7 @@ Fraction(S : IntegralDomain) : QuotientFieldCategory S with
         1 + wholePart x
 
       if S has OpenMath then
-        -- TODO: somwhere this file does something which redefines the division
+        -- TODO:0 somwhere this file does something which redefines the division id:18
         -- operator. Doh!
 
         writeOMFrac(dev : OpenMathDevice, x : %) : Void ==

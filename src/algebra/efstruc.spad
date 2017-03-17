@@ -619,7 +619,7 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
                 ]$List(Z))
       c := z^dd / (*/[x^(dd*qelt(v, i))
                    for x in toZ lk for i in minIndex v .. maxIndex v])
--- CHANGED log ktoZ x TO ktoY x SINCE WE WANT log exp f TO BE REPLACED BY f.
+-- CHANGED:0 log ktoZ x TO ktoY x SINCE WE WANT log exp f TO BE REPLACED BY f. id:15
       g := +/[qelt(v, i) * x
               for i in minIndex v .. maxIndex v for x in toY lk]
                 + log(c)/(dd::R::F)

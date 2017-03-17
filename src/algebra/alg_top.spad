@@ -1837,7 +1837,7 @@ FiniteSimplicialComplex(VS : AbelianGroup) : Exports == Impl where
       ++ which are not used.
       ++ This will attempt to simplify the group presentation, if you
       ++ don't want this use alternative function of same name.
-      -- TODO write a faster implemetation which only generates edge and
+      -- TODO:0 write a faster implemetation which only generates edge and id:0
       -- triangle faceMaps.
       ++ For more information:
       ++ \url{http://www.euclideanspace.com/prog/scratchpad/mycode/topology/homotopy/index.htm}
@@ -1847,7 +1847,7 @@ FiniteSimplicialComplex(VS : AbelianGroup) : Exports == Impl where
       ++ fundamentalGroup from that. This is not the most efficient method
       ++ because the conversion generates lots of higher order faceMaps
       ++ which are not used.
-      -- TODO write a faster implementation which only generates edge and
+      -- TODO:0 write a faster implementation which only generates edge and id:1
       -- triangle faceMaps.
       ++ This version has options to:
       ++ simplify - if true attempts to simplify the group presentation
@@ -2060,7 +2060,7 @@ FiniteSimplicialComplex(VS : AbelianGroup) : Exports == Impl where
    -- i) is a permutation of the input list
    -- ii) contains integers in ascending order
    -- iii) is of the specified length
-   -- TODO this is in both simplicial and delta complexes so need to find common
+   -- TODO:0 this is in both simplicial and delta complexes so need to find common id:2
    -- home for it.
    orderedPermutation(lst : List(Integer), len :  NNI) : List(List(Integer)) ==
        if len < 1 then return []$List(List(Integer))
@@ -2132,7 +2132,7 @@ FiniteSimplicialComplex(VS : AbelianGroup) : Exports == Impl where
            newFaces := []
            --print("addImpliedFaces res.grn=" << res.grn)
            for face in all_faces repeat
-               -- FIXME: handle order 1 too
+               -- FIXME:0 handle order 1 too id:3
                len : NNI := (order(face) -1) pretend NNI
                if len > 0 then
                    newFaces := unorientedUnion(newFaces,
@@ -2295,7 +2295,7 @@ FiniteSimplicialComplex(VS : AbelianGroup) : Exports == Impl where
    -- which are not used.
    -- This will attempt to simplify the group presentation, if you
    -- don't want this use alternative function of same name.
-   -- TODO write a faster implementation which only generates edge and
+   -- TODO:0 write a faster implementation which only generates edge and id:4
    -- triangle faceMaps.
    fundamentalGroup(s : %) : GroupPresentation ==
        fundamentalGroup(s, true, false)
@@ -2305,7 +2305,7 @@ FiniteSimplicialComplex(VS : AbelianGroup) : Exports == Impl where
    -- fundamentalGroup from that. This is not the most efficient method
    -- because the conversion generates lots of higher order faceMaps
    -- which are not used.
-   -- TODO write a faster implementation which only generates edge and
+   -- TODO:0 write a faster implementation which only generates edge and id:5
    -- triangle faceMaps.
    -- This version has options to:
    -- simplify - if true attempts to simplify the group presentation
@@ -2420,7 +2420,7 @@ FiniteSimplicialComplex(VS : AbelianGroup) : Exports == Impl where
    -- Returns true if x equals y.
    -- That is, they contain the same simplexes, although not necessarily
    -- in the same order.
-   -- TODO - Assumes point set is exactly the same, for more generality
+   -- TODO:0 - Assumes point set is exactly the same, for more generality id:6
    -- we should allow the points to be defined in a different order.
    _=(a : %, b : %) : Boolean ==
        as : List(OrientedFacet) := a.SIMP
@@ -2753,7 +2753,7 @@ FiniteCubicalComplex(VS : AbelianGroup) : Exports == Impl where
    -- which are not used.
    -- This will attempt to simplify the group presentation, if you
    -- don't want this use alternative function of same name.
-   -- TODO write a faster implemetation which only generates edge and
+   -- TODO:0 write a faster implemetation which only generates edge and id:7
    -- square faceMaps.
    fundamentalGroup(s : %) : GroupPresentation ==
        fundamentalGroup(s, true, false)
@@ -2763,7 +2763,7 @@ FiniteCubicalComplex(VS : AbelianGroup) : Exports == Impl where
    -- fundamentalGroup from that. This is not the most efficient method
    -- because the conversion generates lots of higher order faceMaps
    -- which are not used.
-   -- TODO write a faster implementation which only generates edge and
+   -- TODO:0 write a faster implementation which only generates edge and id:8
    -- square faceMaps.
    -- This version has options to:
    -- simplify - if true attempts to simplify the group presentation
@@ -2788,7 +2788,7 @@ FiniteCubicalComplex(VS : AbelianGroup) : Exports == Impl where
    -- Returns true if x equals y.
    -- That is, they contain the same simplexes, although not
    -- necessarily in the same order.
-   -- TODO - Assumes point set is exactly the same, for more generality
+   -- TODO:0 - Assumes point set is exactly the same, for more generality id:9
    -- we should allow the points to be defined in a different order.
    _=(a : %, b : %) : Boolean ==
        as : List(CubicalFacet) := a.CUBE
@@ -3442,7 +3442,7 @@ DeltaComplex(VS : AbelianGroup) : Exports == Impl where
    -- Returns true if x equals y.
    -- That is, they contain the same simplexes, although not
    -- necessarily in the same order.
-   -- TODO - Assumes point set is exactly the same, for more
+   -- TODO:0 - Assumes point set is exactly the same, for more id:10
    -- generality we should allow the points to be defined in a
    -- different order.
    _=(a : %, b : %) : Boolean ==
@@ -3775,7 +3775,7 @@ CubicalComplexFactory() : with
       ASIMP := FiniteCubicalComplex(Integer)
       if dim ~= 2 then
           error "projectiveSpace only defined for plane"
-      -- TODO define for other dimensions
+      -- TODO:0 define for other dimensions id:11
       v1 : List(List(List(Integer))) := ([[[1, 2], [1, 1], [1, 1], [1, 2],
           [1, 1]], [[1, 2], [1, 1], [1, 1], [1, 1], [1, 2]], _
                     [[1, 1], [1, 2], [1, 2], [1, 1], [1, 1]], _

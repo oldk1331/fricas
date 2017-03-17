@@ -429,7 +429,7 @@ shoeRemoveStringIfNec(str,s)==
 
 -- DEFUSE prints the definitions not used and the words used and
 -- not defined in the input file and common lisp.
--- FIXME: seem to mishandle packages
+-- FIXME:0 seem to mishandle packages id:63
 
 DEFUSE fn==
   infn:=CONCAT(fn,'".boot")
@@ -547,7 +547,7 @@ bootOutLines(l,outfn,s)==
 -- (xref "fn") produces a cross reference listing in "fn.xref"
 -- It contains each name
 -- used in "fn.boot", together with a list of functions that use it.
--- FIXME: seem to mishandle packages
+-- FIXME:0 seem to mishandle packages id:64
 
 XREF fn==
   infn:=CONCAT(fn,'".boot")

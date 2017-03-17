@@ -341,7 +341,7 @@ DescendantP(a,b) ==
 
 
 simplify_cond1(catname, cond) ==
-    -- FIXME: this is ugly hack to get around compiler bug.
+    -- FIXME:0 this is ugly hack to get around compiler bug. id:80
     -- Namely, sometimes '$' is not what it should be...
     $compForModeIfTrue => cond
     cond is ["has", "$", =catname] => nil

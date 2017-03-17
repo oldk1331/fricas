@@ -799,7 +799,7 @@ Poset(S) : Category == Definition where
           arrows := concat(arrows, emptyRow)
           finitePoset(obs, arrows)
 
-      -- TODO - make this non-mutable
+      -- TODO:0 - make this non-mutable id:37
       -- adds an arrow to this graph, where:
       -- s is the graph where the arrow is to be added
       -- n1 is the index of the start object
@@ -3576,7 +3576,7 @@ LatticeMeetOfJoins() : Exports == Implementation where
    -- absorptionMeetOverJoin for all(x, y): x/\(x\/y)=x
    -- absorptionJoinOverMeet for all(x, y): x\/(x/\y)=x
    --
-   -- TODO add rules for top and bottom
+   -- TODO:0 add rules for top and bottom id:38
    --
    redux(n : %) : % ==
        r : List(List(ELEMENT)) := []$List(List(ELEMENT))
@@ -3940,7 +3940,7 @@ LatticeJoinOfMeets() : Exports == Implementation where
    -- absorptionMeetOverJoin for all(x, y): x/\(x\/y)=x
    -- absorptionJoinOverMeet for all(x, y): x\/(x/\y)=x
    --
-   -- TODO add rules for top and bottom
+   -- TODO:0 add rules for top and bottom id:39
    --
    redux(n : %) : % ==
        r : List(List(ELEMENT)) := []$List(List(ELEMENT))

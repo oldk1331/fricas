@@ -589,7 +589,7 @@ hasPatternVar x ==
   or/[hasPatternVar y for y in x]
 
 getDcForm(dc, condlist) ==
-  -- FIXME: normally first condition on *1 gives origin, but not
+  -- FIXME:0 normally first condition on *1 gives origin, but not id:79
   -- always.  In particular, if we get category with no operations
   -- than this is clearly wrong, so try next (happens with attributes).
   -- We should make this reliable.

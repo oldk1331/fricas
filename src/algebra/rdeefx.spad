@@ -1320,10 +1320,10 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             as := new(#cil, 0)$Vector(F)
             finish_special_integrate2(r1, vc, a1, as, cndl, 1, 0, k)
         #(sol_rec.basis) = 1 =>
-            -- FIXME: Unimplmented, at most two solutions
+            -- FIXME:0 Unimplmented, at most two solutions id:48
             [a1, r1, ansp, false]
         #(sol_rec.basis) > 2 => error "impossible 12"
-        -- FIXME: Need to call quadratic solver
+        -- FIXME:0 Need to call quadratic solver id:49
         [a1, r1, ansp, false]
 
     decompose1(num : UP, den : UP, eidens : List(UP)) : List(UP) ==
@@ -1436,7 +1436,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         v0 := er.v_part
         u0 := er.u_part
         lc0 := leadingCoefficient(nf) + r0::F
-        -- XXX using lc0 only makes sense if deg(nf) = 1 and denf = 1
+        -- XXX:0 using lc0 only makes sense if deg(nf) = 1 and denf = 1 id:50
         -- fortunatly, in other cases cfac = 0 and we need lc0
         -- only to handle nonzero cfac
         (degree(nf) ~= 1 or denf ~= 1) and cfac ~= 0 =>

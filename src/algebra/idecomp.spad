@@ -130,7 +130,7 @@ IdealDecompositionPackage(vl) : C == T
        pv : DPoly := 0
        pw : DPoly := 0
        while degree(lf, y) ~= 1 repeat
--- FIXME: strange random distribution used (#227).
+-- FIXME:0 strange random distribution used (#227). id:25
          val := random(23)$Z
          pv := px+val*py
          pw := px-val*py
@@ -301,7 +301,7 @@ IdealDecompositionPackage(vl) : C == T
        ----  put the ideal in general position  ----
      genPosLastVar(J : FIdeal, truelist : List OV) : GenPos ==
        x := last truelist ;lv1 : List OV := remove(x, truelist)
--- FIXME: strange random distribution used (#227).
+-- FIXME:0 strange random distribution used (#227). id:26
        ranvals : List(Z) := [random(23)$Z for vv in lv1]
        val := _+/[rv*(vv::DPoly)  for vv in lv1 for rv in ranvals]
        val := val+(x::DPoly)

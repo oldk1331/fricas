@@ -898,7 +898,7 @@ GuessExpBin(F, S, EXPRR, retract, coerce) : Exports == Implementation where
                 Av : F := -coefficient(f.factor, 0)
                          / leadingCoefficient f.factor
 
-    -- FIXME: in an earlier version, we disregarded vanishing Av
+    -- FIXME:0 in an earlier version, we disregarded vanishing Av id:40
     --    maybe we intended to disregard vanishing a1v? Either doesn't really
     --    make sense to me right now.
 
@@ -908,7 +908,7 @@ GuessExpBin(F, S, EXPRR, retract, coerce) : Exports == Implementation where
     -- Note that it really may happen that poly3 vanishes when specializing
     -- A. Consider for example guessExpRat([1, 1, 1, 1]).
 
-    -- FIXME: We check poly1 below, too. I should work out in what cases poly3
+    -- FIXME:0 We check poly1 below, too. I should work out in what cases poly3 id:41
     -- vanishes.
 
                 for g in factors factor(univariate evalPoly)$GF
@@ -1135,7 +1135,7 @@ GuessExpBin(F, S, EXPRR, retract, coerce) : Exports == Implementation where
     --             if debug(options)$GOPT0 then
     --                 output(hconcat("Av: ", Av::OutputForm))$OutputPackage
 
-    -- FIXME: in an earlier version, we disregarded vanishing Av
+    -- FIXME:0 in an earlier version, we disregarded vanishing Av id:42
     --        maybe we intended to disregard vanishing a1v? Either doesn't really
     --        make sense to me right now.
 
@@ -1145,7 +1145,7 @@ GuessExpBin(F, S, EXPRR, retract, coerce) : Exports == Implementation where
     -- Note that it really may happen that poly3 vanishes when specializing
     -- A. Consider for example guessExpRat([1, 1, 1, 1]).
 
-    -- FIXME: We check poly1 below, too. I should work out in what cases poly3
+    -- FIXME:0 We check poly1 below, too. I should work out in what cases poly3 id:43
     -- vanishes.
 
                 for g in factors factor(univariate evalPoly)$GF
@@ -3224,7 +3224,7 @@ is not a solution to Hermite-Pade problem.
             output("Guess: checking solution")$OutputPackage
 
 
-       -- FIXME: we should also check that the non-zero terms contain the
+       -- FIXME:0 we should also check that the non-zero terms contain the id:44
        -- generating function
 
         nonZeroCoefficients : Union("one", "several", "none") := "none"
@@ -3246,7 +3246,7 @@ is not a solution to Hermite-Pade problem.
                       $OutputPackage
 
 
-    -- FIXME: we really should special case the check of recurrences also if
+    -- FIXME:0 we really should special case the check of recurrences also if id:45
     --        it *happens* to be a linear recurrence.
 
         len := #list

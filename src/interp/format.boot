@@ -56,7 +56,7 @@ displayOpModemaps(op,modemaps) ==
   for modemap in modemaps repeat sayModemap modemap
 
 displayTranModemap (mm is [[x,:sig],[pred,:y],:z]) ==
-  -- The next 8 lines are a HACK to deal with the "partial" definition
+  -- The next 8 lines are a HACK:0 to deal with the "partial" definition id:83
   -- JHD/RSS
   if pred is ['partial,:pred'] then
     [b,:c]:=sig

@@ -509,7 +509,7 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
         ri2 := lamintegratepoly(sp, dx, n, fderiv, extint, lfint)
         [i1 + ri2.answer, ri2.a0]
 
-    -- FIXME: very incomplete
+    -- FIXME:0 very incomplete id:32
     lamintegratepoly(p : GP, dx :F, n : Integer, fderiv : F -> F,
                      extint : F -> UF, lfint : F -> IR0) : IRIR ==
         answr := 0$GP
@@ -517,7 +517,7 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
         i0 : IR0 := 0
         while p ~= 0 repeat
             d := degree p
-            -- XXX FIXME early abort
+            -- XXX:0 FIXME early abort id:33
             d < n - 2 => return [mkir(answr, lcoeff, p), i0]
             p0 := leadingCoefficient p
             b1 : F
@@ -544,7 +544,7 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
             p ~= 0 and degree(p) >= d =>
                 print(p::OutputForm)
                 error "impossible"
-        -- XXX FIXME handle part in F
+        -- XXX:0 FIXME handle part in F id:34
         [mkir(answr, lcoeff, 0), i0]
 
 -- returns either

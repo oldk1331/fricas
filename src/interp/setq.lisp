@@ -48,7 +48,7 @@
 (setq |nonnullstream| '|nonnullstream|)
 (setq *print-escape* nil) ;; so stringimage doesn't escape idents?
 
-;;; FIXME: do we need this?
+;;; FIXME:0 do we need this? id:94
 #+(and :GCL :IEEE-FLOATING-POINT)
   (setq system:*print-nans* T)
 

@@ -46,7 +46,7 @@ OctonionCategory(R : CommutativeRing) : Category ==
      octon : (R, R, R, R, R, R, R, R) -> %
        ++ octon(re, ri, rj, rk, rE, rI, rJ, rK) constructs an octonion
        ++ from scalars.
-     -- FIXME: Why we impose order here?
+     -- FIXME:0 Why we impose order here? id:46
      if R has OrderedSet then OrderedSet
      if R has ConvertibleTo InputForm then ConvertibleTo InputForm
      if R has CharacteristicZero then CharacteristicZero

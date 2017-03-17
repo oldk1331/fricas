@@ -145,7 +145,7 @@ Float():
    dec ==> decreasePrecision
 
    -- local utility operations
-   shift2 : (I, I) -> I           -- WSP : fix bug in shift
+   shift2 : (I, I) -> I           -- WSP:0 : fix bug in shift id:16
    times : (%, %) -> %            -- multiply x and y with no rounding
    itimes : (I, %) -> %            -- multiply by a small integer
    chop : (%, PI) -> %             -- chop x at p bits of precision

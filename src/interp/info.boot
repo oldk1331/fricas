@@ -172,7 +172,7 @@ knownInfo pred ==
   ress
 
 get_catlist(vmode, e) ==
-    -- FIXME: setting $compForModeIfTrue should be not needed
+    -- FIXME:0 setting $compForModeIfTrue should be not needed id:86
     $compForModeIfTrue : local := true
     compMakeCategoryObject(vmode, e)
 
@@ -186,7 +186,7 @@ knownInfo1 pred ==
     cat is ["ATTRIBUTE",:a] => BREAK()
     cat is ["SIGNATURE",:a] => knownInfo ["SIGNATURE",name,:a]
     name is ['Union,:.] => false
-    -- FIXME: there is confusion between '$ in outer domain
+    -- FIXME:0 there is confusion between '$ in outer domain id:87
     -- (the one which needs info) and freshly compiled
     -- domain...
     v:= compForMode(name,$EmptyMode,$e)

@@ -252,7 +252,7 @@ LinGroebnerPackage(lv, F) : C == T
       rval : List Z := []
       for ii in 1..(#lvar-1) repeat
         c : Z := 0
--- FIXME: strange random distribution used (#227).
+-- FIXME:0 strange random distribution used (#227). id:35
         while c = 0 repeat c := random(11)$Z
         rval := concat(c, rval)
       nval : DPoly := (last.lvar)::DPoly -
@@ -299,7 +299,7 @@ LinGroebnerPackage(lv, F) : C == T
       xn := lvar.last
       val := xn::DPoly
       nvar1 : NNI := (#lvar-1)::NNI
--- FIXME: strange random distribution used (#227).
+-- FIXME:0 strange random distribution used (#227). id:36
       ll : List Z := [random(11)$Z for i in 1..nvar1]
       val := val+ +/[ll.i*(lvar.i)::DPoly for i in 1..nvar1]
       LL := [elt(univariate(f, xn), val) for f in L]

@@ -310,7 +310,7 @@ NRTmakeCategoryAlist() ==
     ['CONS, MKQ LIST2VEC slot0,
       ['CONS, MKQ LIST2VEC catformvec,
         ['makeByteWordVec2,maxElement,MKQ $byteVec]]]]
-  --NOTE: this is new form: old form satisfies VECP CDDR form
+  --NOTE:0 this is new form: old form satisfies VECP CDDR form id:91
 
 encodeCatform(x, inds, formals) ==
     k := NRTassocIndex x => k
@@ -573,7 +573,7 @@ dcSize(:options) ==
     sayBrightly ['"size of domain vectors = ",1 + maxindex,'" slots"]
   vtotal := itotal + nodeSize(fun)       --fun   slot is ($ . function)
   vtotal := vtotal + nodeSize(2 * latch) --latch slot is (newGoGet $ . code)
-  --NOTE: lazy slots require no cost     --lazy  slot is lazyDomainForm
+  --NOTE:0 lazy slots require no cost     --lazy  slot is lazyDomainForm id:92
   if null quiet then sayBrightly ['"domain size = ",vtotal,'" BYTES"]
   etotal := nodeSize(fun + 2 * latch) + vectorSize(1 + maxindex)
   if null quiet then sayBrightly ['"cost per instantiation = ",etotal,'" BYTES"]

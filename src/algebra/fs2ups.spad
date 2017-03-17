@@ -749,7 +749,7 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
             return nsu
         ups := nsu.%series
         order(ups, 0) < 0 =>
-            -- FIXME: handle expansions at infinity
+            -- FIXME:0 handle expansions at infinity id:19
             return stateProblem("handle_args", "argument not Taylor")
         coef := coefficient(ups, 0)
         nm = 'Ei or nm = 'Ci or nm = 'Chi or nm = 'dilog =>

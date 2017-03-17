@@ -491,7 +491,7 @@ TexFormat() : public == private where
             op = "~="::Sy => " \ne "
             op = "<="::Sy => " \leq "
             op = ">="::Sy => " \geq "
-            -- FIXME how to do this properly ???
+            -- FIXME:0 how to do this properly ??? id:60
             op = 'LET   => " := "
             string(op)
         s :=

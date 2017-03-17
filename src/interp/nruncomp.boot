@@ -61,7 +61,7 @@ NRTaddDeltaCode() ==
 
 deltaTran(item,compItem) ==
   item is ['domain,lhs,:.] => NRTencode(lhs,compItem)
-  --NOTE: all items but signatures are wrapped with domain forms
+  --NOTE:0 all items but signatures are wrapped with domain forms id:88
   [op,:modemap] := item
   [dcSig,[.,[kind,:.]]] := modemap
   [dc,:sig] := dcSig
@@ -304,7 +304,7 @@ consDomainForm(x,dc) ==
   get(x,'value,$e) or get(x,'mode,$e) => x
   MKQ x
 
--- First cut at resolving self-referential conditions.  FIXME: should
+-- First cut at resolving self-referential conditions.  FIXME:0 should id:89
 -- handle cyclic dependencies and conditions requiring matching at
 -- runtime.
 
@@ -705,7 +705,7 @@ NRTputInLocalReferences bod ==
 NRTputInHead bod ==
   atom bod => bod
   bod is ['SPADCALL,:args,fn] =>
-    NRTputInTail rest bod --NOTE: args = COPY of rest bod
+    NRTputInTail rest bod --NOTE:0 args = COPY of rest bod id:90
     -- The following test allows function-returning expressions
     fn is [elt,dom,ind] and not (dom='$) and MEMQ(elt,'(ELT QREFELT CONST)) =>
       k:= NRTassocIndex dom => RPLACA(LASTNODE bod,[$elt,'_$,k])

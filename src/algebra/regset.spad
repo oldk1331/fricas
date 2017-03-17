@@ -736,7 +736,7 @@ QuasiComponentPackage(R, E, V, P, TS) : Exports == Implementation where
 ++      decomposition of algebraic varieties" NAG Tech. Rep. 4/98.
 ++ Version: 4.
 -- There is large overlap with SquareFreeRegularTriangularSetGcdPackage
--- TODO: check if the current package is redundant
+-- TODO:0 check if the current package is redundant id:51
 
 RegularTriangularSetGcdPackage(R, E, V, P, TS) : Exports == Implementation where
 
@@ -1102,7 +1102,7 @@ RegularTriangularSetGcdPackage(R, E, V, P, TS) : Exports == Implementation where
 ++ Version: 5. Same as 4 but Does NOT use any unproved criteria.
 
 -- Very similar to SquareFreeRegularSetDecompositionPackage
--- TODO: Check if this package is redundant
+-- TODO:0 Check if this package is redundant id:52
 
 RegularSetDecompositionPackage(R, E, V, P, TS) : Exports == Implementation where
 

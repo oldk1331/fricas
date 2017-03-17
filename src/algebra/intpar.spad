@@ -1183,7 +1183,7 @@ ParametricRischDE(R, F) : Exports == Implementation where
     do_diff_rde(fp : F, lg : List F, x : SE, k : K, lk : LK,
                 ext : (LK, LF) -> L_Param_F,
                 logi : (LK, LF) -> Param_Rec_QF) : L_Param_F ==
-        -- FIXME check that fp contains no extra kernels
+        -- FIXME:0 check that fp contains no extra kernels id:31
         fpu := univariate(fp, k)
         denom(fpu) ~= 1 or degree(nfpu := numer(fpu)) > 1 => []
         fp1 := coefficient(nfpu, 1)

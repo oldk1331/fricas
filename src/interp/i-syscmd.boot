@@ -1924,7 +1924,7 @@ dewritify ob ==
                 type = 'BPI =>
                     oname := ob.2
                     f :=
-                        -- FIXME: GENSYMMER is nowhere defined
+                        -- FIXME:0 GENSYMMER is nowhere defined id:85
                         INTEGERP oname => EVAL GENSYMMER oname
                         SYMBOL_-FUNCTION oname
                     not COMPILED_-FUNCTION_-P f =>

@@ -233,10 +233,10 @@ One can show that if an integer of the form 2^k - 1 is prime, then
 k must be prime.
 \downlink{Proof}{IntegerProblemProofPage}
 \newline
-Problem \#1:  Find the smallest prime p such that \spad{2^p - 1} is not prime.
+Problem \#1:0 Find the smallest prime p such that \spad{2^p - 1} is not prime. id:65
 \downlink{Answer}{IntegerProblemAnswerPage1}
 \newline
-Problem \#2:  Find the smallest positive integer \spad{n} such that
+Problem \#2:0 Find the smallest positive integer \spad{n} such that id:66
 \spad{n^2 - n + 41} isn't prime.
 \downlink{Answer}{IntegerProblemAnswerPage2}
 \endscroll
@@ -267,7 +267,7 @@ QED
 \begin{page}{IntegerProblemAnswerPage1}{Solution to Problem \#1}
 %-------------------------------------------------------------------------
 \beginscroll
-Problem \#1:  Find the smallest prime p such that \spad{2^p - 1}
+Problem \#1:0 Find the smallest prime p such that \spad{2^p - 1} id:67
 is not prime.
 \newline
 First, define a function:
@@ -305,7 +305,7 @@ is composite:
 \begin{page}{IntegerProblemAnswerPage2}{Solution to Problem \#2}
 %-------------------------------------------------------------------------
 \beginscroll
-Problem \#2:  Find the smallest positive integer n such that
+Problem \#2:0 Find the smallest positive integer n such that id:68
 \spad{n^2 - n + 41} is not prime.
 \newline
 When n = 41, n^2 - n + 41 = 41^2, which certainly isn't prime.

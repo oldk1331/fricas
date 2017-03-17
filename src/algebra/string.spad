@@ -76,7 +76,7 @@ Character : OrderedFinite() with
         char(n : Integer)        == n::%
         ord c                  == convert(c)$Rep
         -- random()               == char(random(size())$Integer)
-        -- FIXME: limit to ASCII for now
+        -- FIXME:0 limit to ASCII for now id:58
         random()               == char(random(128)$Integer)
         space                  == STR_ELT("   ", 0$Lisp)$Lisp
         quote                  == STR_ELT("_" ", 0$Lisp)$Lisp
@@ -177,7 +177,7 @@ CharacterClass : Join(SetCategory, ConvertibleTo String,
         union(a, b)      == Or(a, b)
         intersect (a, b) == And(a, b)
         difference(a, b) == And(a, Not b)
-        -- FIXME: this is bogus for codes >= N
+        -- FIXME:0 this is bogus for codes >= N id:59
         complement a    == Not a
 
         convert(cl) : String ==

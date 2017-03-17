@@ -272,7 +272,7 @@ dbOuttran form ==
 
 dbConformGen form == dbConformGen1(form,true)
 --many buttons: one for the type and one for each inner type
---NOTE: must only be called on types KNOWN to be correct
+--NOTE:0 must only be called on types KNOWN to be correct id:76
 
 dbConformGenUnder form == dbConformGen1(form,false)
 --same as above, except buttons only for the inner types
@@ -625,7 +625,7 @@ dbShowOpDocumentation(htPage,opAlist,which,data) ==
     opAlist :=
       which = '"operation" => htpProperty(htPage,'opAlist)
       htpProperty(htPage,'attrAlist)
-    --NOTE: this line is necessary to get indexing right.
+    --NOTE:0 this line is necessary to get indexing right. id:77
     --The test below for $exposedOnlyIfTrue causes unexposed items
     --to be skipped.
   newWhich :=
@@ -804,7 +804,7 @@ dbExpandOpAlistIfNecessary(htPage,opAlist,which,needOrigins?,condition?) ==
         [op,:lines] := pair
         acc := nil
         for line in lines repeat
-        --NOTE: we must expand all lines here for a given op
+        --NOTE:0 we must expand all lines here for a given op id:78
         --      since below we will change opAlist
         --Case 1: Already expanded; just cons it onto ACC
           null STRINGP line => --already expanded

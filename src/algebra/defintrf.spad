@@ -171,7 +171,7 @@ DefiniteIntegrationTools(R, F) : Exports == Implementation where
           ["min"/[t.left for t in l], i.halfinf.endpoint]
         l := [u::REC for t in l | (u := refine(p, t, bounds)) case REC]
         incl? => l
-        -- greg, FIXME dirty workaround
+        -- greg, FIXME:0 dirty workaround id:14
         -- select!(s +-> keeprec?(i.halfinf.endpoint, s), l)
         ep := i.halfinf.endpoint
         select!(s +-> keeprec?(ep, s), l)

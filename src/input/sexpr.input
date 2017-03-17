@@ -91,7 +91,7 @@ factor rs
 convert(r)$SEI
 coerce(r)$SEI
 -- Wrong result !!
-sum(x,'x=1..10)
+--sum(x,'x=1..10)
 reduce(+,[n::SEXPR INT for n in 1..10])
 (x+y)^x
 exp(-x)
@@ -106,8 +106,8 @@ simplify %
 x^n
 -- Known problems
 -- 1) need to handle %diff operator
-D(x^n,'x)
-D(p^n,'p)
+--D(x^n,'x)
+--D(p^n,'p)
 --
 -- Rewrite Rules
 -- Interpreter bug: to ensure proper types need _rule(x,y) instead of rule x==y
