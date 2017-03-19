@@ -682,6 +682,8 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
                   [kernels1(i) for i in destruct cdr x])
                 return r
               else
+                -- InputForm is sometimes different than the operator name
+                if s='_^ then s:='%power
                 op:=operator(operator(s)$CommonOperators)$%
                 k:K := kernel(op, destruct cdr x, #cdr(x)::NonNegativeInteger)$K
                 return set [k]
