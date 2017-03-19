@@ -366,6 +366,7 @@ InverseAxiom(): Category == Axiom with
       -- x + (-y) --> x - y
       -- x / (1/y) --> x * y
       -- x * (1/y) --> x / y
+      -- WSP: Instead of inv we need isInv1 to be isMinus1 or isQuotient1 id:107
       if list? y and (inv(y) = last destruct y)$SIN then
         rin :=f(x,last destruct y)
       else
@@ -580,49 +581,14 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
 
     -- WSP: need to handle subscripted Symbol id:99
 
-    --retractIfCan(x:%):Maybe(K) ==
-    --  --output("retractIfCan Kernel: ",x::OutputForm)$OutputPackage
-    --  if atom? rep x and symbol? rep x then return kernel symbol rep x
-    --  if list? rep x and symbol? car rep x then
-    --    if list? cdr rep x then
-    --      s := symbol car rep x
-    --      -- Why not '_- ??
-    --      if not member?(s,['_+,'_*,'_/])$List(Symbol) then
-    --        k:K := kernel(operator(operator(s)$CommonOperators)$%,
-    --          destruct cdr x, #cdr(x)::NonNegativeInteger)$K
-    --        return k
-    --      else
-    --        return "failed"
-    --    else
-    --      return "failed"
-    --  else
-    --    return "failed"
-    --retractIfCan(x:%):Maybe(R) ==
-    --  --output("retractIfCan R: ",x::OutputForm)$OutputPackage
-    --  if list? rep x and # cdr rep x = 0 then error "stop"
-    --  if R is Integer then
-    --    if integer? rep x then return (integer rep x) pretend R
-    --  if R is DoubleFloat then
-    --    if float? rep x then return (float rep x) pretend R
-    --  if R is Symbol then
-    --    if symbol? rep x then return (symbol rep x) pretend R
-    --  --
-    --  return "failed"
-    --retractIfCan(x:%):Maybe(Symbol) ==
-    --  --output("retractIfCan Symbol: ",x::OutputForm)$OutputPackage
-    --  if symbol? rep x then symbol rep x
-    --  else "failed"
-    --retract(x:%):Symbol ==
-    --  --output("retract Symbol: ",x::OutputForm)$OutputPackage
-    --  s:=retractIfCan(x)@Maybe(Symbol)
-    --  if s case Symbol then return s
-    --  error "not a Symbol"
-    --
     isPlus2(x:SIN):Maybe(Pair SIN) ==
       list? x and # cdr x = 2 and symbol? car x and symbol car x = '_+ => [car cdr x, car cdr cdr x]
       "failed"
     isMinus2(x:SIN):Maybe(Pair SIN) ==
       list? x and # cdr x = 2 and symbol? car x and symbol car x = '_- => [car cdr x, car cdr cdr x]
+      "failed"
+    isMinus1(x:SIN):Maybe SIN ==
+      list? x and # cdr x = 1 and symbol? car x and symbol car x = '_- => car cdr x
       "failed"
     isTimes2(x:SIN):Maybe(Pair SIN) ==
       list? x and # cdr x = 2 and symbol? car x and symbol car x = '_* => [car cdr x, car cdr cdr x]
@@ -633,6 +599,23 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
     isPower2(x:SIN):Maybe(Pair SIN) ==
       list? x and symbol? car x and symbol car x = '_^ => [car cdr x, car cdr cdr x]
       "failed"
+
+    retractIfCan(x:%):Maybe(R) ==
+      if _$testingSystem$Lisp then
+        output("retractIfCan R: ",x::OutputForm)$OutputPackage
+      -- WSP: Why this check? id:106
+      if list? rep x and # cdr rep x = 0 then error "stop"
+      if R has AbelianGroup then
+        if (m:=isMinus1(rep x)) case SIN then
+          if (mr:=retractIfCan(per m)@Maybe(R)) case R then
+            return -mr
+      if R is Integer then
+        if integer? rep x then return (integer rep x) pretend R
+      if R is DoubleFloat then
+        if float? rep x then return (float rep x) pretend R
+      if R is Symbol then
+        if symbol? rep x then return (symbol rep x) pretend R
+      return "failed"
 
     if R has IntegralDomain then
       -- Elementary Functions
@@ -693,7 +676,8 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
         if list? x and symbol? car x then
             if list? cdr x then
               s := symbol car x
-              if member?(s,['_+,'_-,'_*,'_/,'_^])$List(Symbol) then
+              if member?(s,['_+,'_*,'_/])$List(Symbol) _
+              or s='_^ and integer? car cdr cdr x then
                 r:Set K := reduce("union",
                   [kernels1(i) for i in destruct cdr x])
                 return r
@@ -783,7 +767,7 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
             else
               return [per(r.left),per(r.right)]
         else
-          -- treat x - y as x + -y
+          ---- treat x - y as x + -y
           r := isMinus2 rep x
           if r case Pair SIN then
             r1:=isPlus per(r.left)
@@ -842,6 +826,8 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
         coerce(x:Fraction R):% == eval per convert(x)$Fraction(R)
       if R has RetractableTo Integer or R has RetractableTo Fraction Integer then
         retractIfCan(x:%):Maybe(Fraction Integer) ==
+          if _$testingSystem$Lisp then
+            output("retractIfCan(x):Maybe(Fraction Integer) ",x::OutputForm)$OutputPackage
           r:Maybe(R):=retractIfCan(x)
           if r case R then
             if R has RetractableTo Fraction Integer then
@@ -860,10 +846,16 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
         patternMatch(x : %, p : Pattern Float, l : PatternMatchResult(Float, %)) ==
           patternMatch(x, p, l)$PatternMatchFunctionSpace(Float, R, %)
 
+      PMOPT   ==> '%pmoptional
+      PMMULT  ==> '%pmmultiple
+      PMCONST ==> '%pmconstant
+
       if R has ConvertibleTo Pattern R then
         convert(x:%):Pattern R ==
           if (t:=isPlus(x)) case List % then
             return reduce("+",[convert(i)@Pattern R for i in t])
+          --if (u:=isMinus1(rep x)) case SIN then
+          --  return convert(-1$R)*convert(per u)
           if (q:=isQuotient2(rep x)) case Pair SIN then
             return convert(per q.left)/convert(per q.right)
           if (t:=isTimes(x)) case List % then
@@ -878,7 +870,10 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
           if (r:=retractIfCan(x)@Maybe(R)) case R then
             return coerce r
           if (s:=retractIfCan(x)@Maybe(Symbol)) case Symbol then
-            return coerce s
+            return patternVariable(s, _
+              null? GET(s::Symbol,PMCONST,true)$Lisp,
+              null? GET(s::Symbol,PMOPT,true)$Lisp,
+              null? GET(s::Symbol,PMMULT,true)$Lisp)
           k:=makeKernel(x)
           return elt(operator(k),[convert i for i in argument(k)])
 
@@ -909,11 +904,11 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
               else
                 return concat(r1, per(1/r.right))
             else
-              if r.left = 1 then
-                if r2 case List % then
-                  return [1/ri for ri in r2]
-                else
-                  return [x]
+              if r.left = 1 then return "failed"
+                --if r2 case List % then
+                --  return [1/ri for ri in r2]
+                --else
+                --  return [x]
               if r2 case List % then
                 return concat(per(r.left),[1/ri for ri in r2])
               else
@@ -1027,30 +1022,33 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
     nthRoot(x:%, n:Integer):% == per nthRoot2(rep x,n::Rep)
     nthRoot(x:%, n:%):% == per nthRoot2(rep x,n::Rep)
     --
-    power: (Rep,Rep) -> Rep
-    power(x:Rep,y:Rep):Rep ==
-      sin:Rep:=binary(convert('_^),[x,y])
-      rin:Maybe Rep := "failed"
-      if _$testingSystem$Lisp then
-        output("power: ",message unparse sin)$OutputPackage
-      if (x = 0)$Rep then
-        if (y = 0)$Rep then
-          rin := rep 1
-        else
-          rin := rep 0
-      else
-        if (y = 0)$Rep then
-          rin := rep 1
-        else
-          if (y = 1)$Rep then
-            rin := x
-      if rin case Rep then
-        if _$testingSystem$Lisp then
-          output("power: ",infix(message " --> ", message unparse sin,message unparse rin))$OutputPackage
-        return rin
-      else
-        return sin
-    (x:% ^ y:%):% == per power(rep x,rep y)
+    --power: (Rep,Rep) -> Rep
+    power(x:Rep,y:Rep):Rep == rep(per(x)^per(y))
+    --  sin:Rep:=binary(convert('_^),[x,y])
+    --  rin:Maybe Rep := "failed"
+    --  if _$testingSystem$Lisp then
+    --    output("power: ",message unparse sin)$OutputPackage
+    --  if (x = 0)$Rep then
+    --    if (y = 0)$Rep then
+    --      rin := rep 1
+    --    else
+    --      rin := rep 0
+    --  else
+    --    if (y = 0)$Rep then
+    --      rin := rep 1
+    --    else
+    --      if (y = 1)$Rep then
+    --        rin := x
+    --  if rin case Rep then
+    --    if _$testingSystem$Lisp then
+    --      output("power: ",infix(message " --> ", message unparse sin,message unparse rin))$OutputPackage
+    --    return rin
+    --  else
+    --    return sin
+    --
+    --(x:% ^ y:%):% == per power(rep x,rep y)
+    x : % ^ y : %                 == x ^$CF y
+
     (x:% ^ y:PositiveInteger):% ==
       if AxiomList has SquaresAxiom then
         x ^ (y::%)
@@ -1066,7 +1064,7 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
     isPower(x:%):Maybe(Record(val:%,exponent:Integer)) ==
       r:=isPower2(rep x)
       if r case Pair SIN then
-        -- WSP: Should we convert unary minus to negative value here or perhaps in integer?
+        -- WSP: Should we convert unary minus to negative value here or perhaps in integer? id:105
         if integer?(r.right) then
           return [per r.left,integer(r.right)]
       "failed"
