@@ -254,6 +254,11 @@ AlgebraicManipulations(R, F) : Exports == Implementation where
 
     dummy := kernel(new()$SY)$K
 
+    -- Make sure we always look for operators in F by operator, not name.
+    is?(op:OP,s:SY):Boolean == op = operator(operator(s)$CommonOperators)$F
+    is?(x:F,s:SY):Boolean == is?(x,operator(operator(s)$CommonOperators)$F)$F
+    is?(k:K,s:SY):Boolean == is?(k,operator(operator(s)$CommonOperators)$F)$K
+
     ratDenom x                == innerRF(x, algkernels tower x)
     ratDenom(x : F, l : List K) : F == innerRF(x, algkernels l)
     ratDenom(x : F, y : F)        == ratDenom(x, [y])
@@ -442,6 +447,8 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
   F : Join(FunctionSpace R, TranscendentalFunctionCategory)
 
   Z       ==> Integer
+  OP      ==> BasicOperator
+  SY      ==> Symbol
   K       ==> Kernel F
   P       ==> SparseMultivariatePolynomial(R, K)
   UP      ==> SparseUnivariatePolynomial P
@@ -566,6 +573,11 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
     import from PolynomialCategoryLifting(IndexedExponents K, K, R, P, F)
     import
       PolynomialCategoryQuotientFunctions(IndexedExponents K, K, R, P, F)
+
+    -- Make sure we always look for operators in F by operator, not name.
+    is?(op:OP,s:SY):Boolean == op = operator(operator(s)$CommonOperators)$F
+    is?(x:F,s:SY):Boolean == is?(x,operator(operator(s)$CommonOperators)$F)$F
+    is?(k:K,s:SY):Boolean == is?(k,operator(operator(s)$CommonOperators)$F)$K
 
     smpexp    : P -> F
     termexp   : P -> F
