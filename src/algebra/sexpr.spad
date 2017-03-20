@@ -320,19 +320,49 @@ SIN ==> InputForm
 Pair SIN ==> Record(left:SIN,right:SIN)
 ++ Divides
 DividesAxiom(): Category == Axiom with
-    rewriteDivides: (SIN, SIN) -> Maybe SIN
+    rewriteDivides: ((SIN,SIN)->SIN, SIN->Maybe Pair SIN, SIN->Maybe Pair SIN,
+      (SIN,SIN)->SIN, SIN->Maybe Pair SIN, SIN) -> Maybe SIN
   add
-    rewriteDivides(x:SIN, y:SIN): Maybe SIN ==
+    rewriteDivides(pow:(SIN,SIN)->SIN, ispower:SIN->Maybe Pair SIN, istimes:SIN->Maybe Pair SIN,
+       quotient:(SIN,SIN)->SIN, isquotient:SIN->Maybe Pair SIN, sin:SIN): Maybe SIN ==
+      x:=sin.2; y:=sin.3
       if _$testingSystem$Lisp then
-        output("rewriteDivides: ",paren [x::OutputForm,y::OutputForm])$OutputPackage
-      if eq(y,0) then return "failed"
-      if eq(x,0) then return 0
+        output("rewriteDivides: ",message unparse sin)$OutputPackage
+      -- constants
+      if integer? x and integer? y then return convert(integer(x)*integer(y))
       if integer? x and integer? y then
-        orReturn(r:=integer(x) exquo integer(y))
-        return convert r
+        if (r:=integer(x) exquo integer(y)) case Integer then
+          return convert r
       if float? x and float? y then return convert(float(x)/float(y))
-      if x = y then return 1
+      -- x^n/x^m --> x^(n+m)
+      if (tx:=ispower(x)) case "failed" or not integer? tx.right then tx := [x,1]$Pair(SIN)
+      if (ty:=ispower(y)) case "failed" or not integer? ty.right then ty := [y,1]$Pair(SIN)
+      if tx case Pair SIN and ty case Pair SIN and (ty.left = tx.left)$SIN then
+        return pow(tx.left,convert(integer(tx.right)-integer(ty.right)))
+      -- look right
+      if % has AssociativeAxiomTimes then
+        -- (x*y)/y --> x/(y/y)
+        if (t:=istimes(x)) case Pair SIN then
+          r1:=rewriteDivides(pow,ispower,istimes,quotient,isquotient,convert [car sin, t.right,y])
+          if r1 case SIN then return quotient(t.left,r1)
+      -- look left
+      if % has AssociativeAxiomTimes then
+        -- x/(x*y) --> (x/x)/y
+        if (t:=istimes(y)) case Pair SIN then
+          l1:=rewriteDivides(pow,ispower,istimes,quotient,isquotient,convert [car sin, x,t.left])
+          if l1 case SIN then return quotient(l1,t.right)
       "failed"
+
+      --if _$testingSystem$Lisp then
+      --  output("rewriteDivides: ",paren [x::OutputForm,y::OutputForm])$OutputPackage
+      --if eq(y,0) then return "failed"
+      --if eq(x,0) then return 0
+      --if integer? x and integer? y then
+      --  orReturn(r:=integer(x) exquo integer(y))
+      --  return convert r
+      --if float? x and float? y then return convert(float(x)/float(y))
+      --if x = y then return 1
+      --"failed"
 
 )abbrev category INVAX InverseAxiom
 Maybe(S) ==> Union(S,"failed")
@@ -1201,7 +1231,7 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
       if AxiomList has RightIdentityAxiom and rin case "failed" then
         rin := rewriteRightIdentity(1,sin)
       if AxiomList has DividesAxiom and rin case "failed" then
-        rin := rewriteDivides(x,y)
+        rin := rewriteDivides(power,isPower2,isTimes2,quotient,isQuotient2,sin)
       if AxiomList has InverseAxiom and rin case "failed" then
         rin := rewriteRightInverse(inv1,times,sin)
       if AxiomList has InverseAxiom and rin case "failed" then
