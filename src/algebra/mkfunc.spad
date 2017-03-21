@@ -438,6 +438,7 @@ MakeFloatCompiledFunction(S) : Exports == Implementation where
         e := ll.2
         b := ((ll.3) pretend Integer)::SF
         _*(a, EXPT(b, e)$Lisp)$Lisp pretend INF
+      streq?(op, "paren") => ll.1
       "failed"
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
