@@ -91,7 +91,7 @@ factor rs
 convert(r)$SEI
 coerce(r)$SEI
 -- Wrong result !!
---sum(x,'x=1..10)
+sum(x,'x=1..10)
 reduce(+,[n::SEXPR INT for n in 1..10])
 (x+y)^x
 exp(-x)
@@ -104,10 +104,8 @@ f(0$EXPR INT)
 D(x^2,'x)
 simplify %
 x^n
--- Known problems
--- 1) need to handle %diff operator
---D(x^n,'x)
---D(p^n,'p)
+D(x^n,'x)
+D(p^n,'p)
 --
 -- Rewrite Rules
 -- Interpreter bug: to ensure proper types need _rule(x,y) instead of rule x==y
@@ -123,8 +121,8 @@ ru3 cos(x)*sin(y)
 t1 := cos(x)*sin(y) - cos(y)*sin(x)
 t2 := - sin(x)*sin(y) + cos(x)*cos(y)
 expr := tan(q)*tan(w) + t1*cos(x3) + t2*w*cos(a) + r3*t1*t2 + 5
-rs:=_rule(cos(x)*sin(y)-sin(x)*cos(y), sin(y-x))
-rc:=_rule(cos(x)*cos(y)-sin(x)*sin(y), cos(x+y))
+rs:=_rule(cos(x)*sin(y)*optional(z)-sin(x)*cos(y)*optional(z), sin(y-x)*z)
+rc:=_rule(cos(x)*cos(y)*optional(z)-sin(x)*sin(y)*optional(z), cos(x+y)*z)
 rs t1
 rs t2
 rc t1
