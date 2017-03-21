@@ -177,34 +177,6 @@ AssociativeAxiomPlus():Category == AssociativeAxiom
 )abbrev category ASSAXT AssociativeAxiomTimes
 AssociativeAxiomTimes():Category == AssociativeAxiom
 
-)abbrev category CANAX CancelsAxiom
-Maybe(S) ==> Union(S,"failed")
-SIN ==> InputForm
-Pair SIN ==> Record(left:SIN,right:SIN)
-++ Cancelling
-CancelsAxiom(): Category == Axiom with
-    rewriteCancels: SIN -> Maybe SIN
-  add
-    rewriteCancels(sin:SIN):Maybe SIN ==
-      if _$testingSystem$Lisp then
-        output("rewriteCancels: ",message unparse sin)$OutputPackage
-      x:=sin.2; y:=sin.3
-      rin:SIN
-      if integer? x and integer? y then
-        rin := convert(integer(x)-integer(y))
-      else
-        if float? x and float? y then
-          rin := convert(float(x)-float(y))
-        else
-          if x = y then
-            rin := 0
-          else
-            return "failed"
-      if _$testingSystem$Lisp then
-        output("rewriteCancels: ",infix(message " --> ",coerce(sin)@OutputForm,coerce(rin)@OutputForm))$OutputPackage
-        --if smaller?(sin,rin)$SINFunctions then error "not smaller"
-      return rin
-
 )abbrev category COMAX CommutativeAxiom
 Maybe(S) ==> Union(S,"failed")
 SIN ==> InputForm
@@ -249,6 +221,71 @@ CommutativeAxiomTimes():Category == CommutativeAxiom
 CommutativeAxiomTimesTimes():Category == CommutativeAxiom
 )abbrev category COMAX3 CommutativeAxiomJoin
 CommutativeAxiomJoin():Category == CommutativeAxiom
+
+)abbrev category CANAX CancelsAxiom
+Maybe(S) ==> Union(S,"failed")
+SIN ==> InputForm
+Pair SIN ==> Record(left:SIN,right:SIN)
+++ Cancelling
+CancelsAxiom(): Category == Axiom with
+    rewriteCancels: ((SIN,SIN)->SIN, SIN->Maybe Pair SIN, SIN->Maybe Pair SIN,
+     (SIN,SIN)->SIN, SIN->Maybe Pair SIN, SIN) -> Maybe SIN
+  add
+    rewriteCancels(times:(SIN,SIN)->SIN, istimes:SIN->Maybe Pair SIN, isplus:SIN->Maybe Pair SIN,
+        minus:(SIN,SIN)->SIN, isminus:SIN->Maybe Pair SIN, sin:SIN):Maybe SIN ==
+      if _$testingSystem$Lisp then
+        output("rewriteCancels: ",message unparse sin)$OutputPackage
+
+      x:=sin.2; y:=sin.3
+      -- constants
+      if integer? x and integer? y then return convert(integer(x)-integer(y))
+      if float? x and float? y then return convert(float(x)-float(y))
+      -- x*n - x*m --> x*(n-m)
+      if (tx:=istimes(x)) case "failed" or not integer? tx.right then tx := [x,1]$Pair(SIN)
+      if (ty:=istimes(y)) case "failed" or not integer? ty.right then ty := [y,1]$Pair(SIN)
+      if tx case Pair SIN and ty case Pair SIN and (ty.left = tx.left)$SIN then
+        return times(tx.left,convert(integer(tx.right)-integer(ty.right)))
+      -- look right
+      if % has AssociativeAxiomPlus then
+        -- (x+y)-y --> x-(y-y)
+        if (t:=isplus(x)) case Pair SIN then
+          r1:=rewriteCancels(times,istimes,isplus,minus,isminus,convert [car sin, t.right,y])
+          if r1 case SIN then return minus(t.left,r1)
+          -- WSP: Do we need to commute the term? id:108
+          if % has CommutativeAxiomPlus then
+            -- (x+y)-x --> y-(x-x)
+            r1:=rewriteCancels(times,istimes,isplus,minus,isminus,convert [car sin, t.left,y])
+            if r1 case SIN then return minus(t.right,r1)
+      -- look left
+      if % has AssociativeAxiomPlus then
+        -- x-(x+y) --> (x-x)-y
+        if (t:=isplus(y)) case Pair SIN then
+          l1:=rewriteCancels(times,istimes,isplus,minus,isminus,convert [car sin, x,t.left])
+          if l1 case SIN then return minus(l1,t.right)
+        if % has CommutativeAxiomPlus then
+          -- y-(x+y) --> (y-y)-x
+          if (t:=isplus(y)) case Pair SIN then
+            l1:=rewriteCancels(times,istimes,isplus,minus,isminus,convert [car sin, x,t.right])
+            if l1 case SIN then return minus(l1,t.left)
+
+      "failed"
+
+      --x:=sin.2; y:=sin.3
+      --rin:SIN
+      --if integer? x and integer? y then
+      --  rin := convert(integer(x)-integer(y))
+      --else
+      --  if float? x and float? y then
+      --    rin := convert(float(x)-float(y))
+      --  else
+      --    if x = y then
+      --      rin := 0
+      --    else
+      --      return "failed"
+      --if _$testingSystem$Lisp then
+      --  output("rewriteCancels: ",infix(message " --> ",coerce(sin)@OutputForm,coerce(rin)@OutputForm))$OutputPackage
+      --  --if smaller?(sin,rin)$SINFunctions then error "not smaller"
+      --return rin
 
 )abbrev category DBLAX DoublesAxiom
 Maybe(S) ==> Union(S,"failed")
@@ -329,7 +366,6 @@ DividesAxiom(): Category == Axiom with
       if _$testingSystem$Lisp then
         output("rewriteDivides: ",message unparse sin)$OutputPackage
       -- constants
-      if integer? x and integer? y then return convert(integer(x)*integer(y))
       if integer? x and integer? y then
         if (r:=integer(x) exquo integer(y)) case Integer then
           return convert r
@@ -345,12 +381,19 @@ DividesAxiom(): Category == Axiom with
         if (t:=istimes(x)) case Pair SIN then
           r1:=rewriteDivides(pow,ispower,istimes,quotient,isquotient,convert [car sin, t.right,y])
           if r1 case SIN then return quotient(t.left,r1)
+          if % has CommutativeAxiomTimes then
+            r1:=rewriteDivides(pow,ispower,istimes,quotient,isquotient,convert [car sin, t.left,y])
+            if r1 case SIN then return quotient(t.right,r1)
       -- look left
       if % has AssociativeAxiomTimes then
         -- x/(x*y) --> (x/x)/y
         if (t:=istimes(y)) case Pair SIN then
           l1:=rewriteDivides(pow,ispower,istimes,quotient,isquotient,convert [car sin, x,t.left])
           if l1 case SIN then return quotient(l1,t.right)
+          if % has CommutativeAxiomTimes then
+            l1:=rewriteDivides(pow,ispower,istimes,quotient,isquotient,convert [car sin, x,t.right])
+            if l1 case SIN then return quotient(l1,t.left)
+          
       "failed"
 
       --if _$testingSystem$Lisp then
@@ -1194,7 +1237,7 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
       if AxiomList has RightIdentityAxiom and rin case "failed" then
         rin := rewriteRightIdentity(0,sin)
       if AxiomList has CancelsAxiom and rin case "failed" then
-        rin := rewriteCancels(sin)
+        rin := rewriteCancels(times,isTimes2,isPlus2,minus,isMinus2,sin)
       if AxiomList has InverseAxiom and rin case "failed" then
         rin := rewriteRightInverse(minus1,plus,sin)
       if rin case Rep then
