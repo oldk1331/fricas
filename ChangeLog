@@ -1,3 +1,193 @@
+2017-03-20  Qian Yun  <oldk1331@gmail.com>
+
+	* src/algebra/list.spad: Optimize 'setDifference'
+
+2017-03-18  Qian Yun  <oldk1331@gmail.com>
+
+	* src/algebra/bezout.spad: Clean up bezout.spad
+
+2017-03-18  Qian Yun  <oldk1331@gmail.com>
+
+	* src/interp/i-output.boot: Fix output for List ALIST
+
+2017-03-13  Qian Yun  <oldk1331@gmail.com>
+
+	* src/algebra/computation.spad: Skip code that would
+	otherwise produce a warning
+
+2017-03-13  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
+
+	* src/interp/compiler.boot: Respect order of fields
+	when comparing Union-s
+
+2017-03-10  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
+
+	* src/algebra/draw.spad: Clean up style handling
+
+2017-03-08  Qian Yun  <oldk1331@gmail.com>
+
+	* src/algebra/aggcat.spad, src/algebra/list.spad,
+	src/algebra/stream.spad: Add missing implementation
+	of 'leaves'
+
+2017-03-08  Qian Yun  <oldk1331@gmail.com>
+
+	* src/algebra/mset.spad, src/algebra/sex.spad,
+	src/interp/i-output.boot: More spaces in output
+
+2017-03-06  Qian Yun  <oldk1331@gmail.com>
+
+	* src/algebra/sturm.spad: Clean up, use 'subresultantVector'
+
+2017-03-06  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
+	    Qian Yun  <oldk1331@gmail.com>
+
+	* src/algebra/manip.spad: Avoid modifying argument in
+	'ratDenom'
+
+2017-03-06  Barry Trager
+
+	* src/algebra/matfuns.spad: Avoid determinant crash over GF(2)
+
+2017-03-05  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
+
+	* src/algebra/galfact.spad: Fix order of union members
+
+2017-03-04  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
+
+	* src/algebra/*.spad: Remove commented out 'one?'
+
+2017-03-03  Qian Yun  <oldk1331@gmail.com>
+
+	* src/algebra/intrf.spad: Fix subresultantVector when
+	resultant(p,q)=0
+
+2017-03-01  Qian Yun  <oldk1331@gmail.com>
+
+	* src/interp/database.boot: Avoid loss of operations
+	in ')show'
+
+2017-03-01  Qian Yun  <oldk1331@gmail.com>
+
+	* src/algebra/float.spad: Fix 'relerror'
+
+2017-02-28  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
+
+	* src/algebra/matfuns.spad, src/algebra/vector.spad:
+	Fix linear algebra with empty matrices
+
+2017-02-27  Qian Yun  <oldk1331@gmail.com>
+
+	* src/algebra/float.spad: Improve error messages
+
+2017-02-27  Qian Yun  <oldk1331@gmail.com>
+
+	* src/algebra/aggcat.spad: Add 'first' to LinearAggregate
+
+2017-02-26  Qian Yun  <oldk1331@gmail.com>
+
+	* src/algebra/float.spad, src/algebra/sf.spad:
+	Add ConvertibleTo String to FloatingPointSystem
+
+2017-02-23  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
+
+	* src/algebra/draw.spad: Fix titles
+
+2017-02-23  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
+	    Qian Yun  <oldk1331@gmail.com>
+
+	* src/interp/br-op1.boot: Omit operation name if
+	all conditions are false
+
+2017-02-22  Qian Yun  <oldk1331@gmail.com>
+
+	* src/algebra/numquad.spad: Generalize NumericalQuadrature
+
+2017-02-22  Qian Yun  <oldk1331@gmail.com>
+
+	* src/algebra/float.spad, src/algebra/sf.spad:
+	Move '/' to FloatingPointSystem
+
+2017-02-21  Qian Yun  <oldk1331@gmail.com>
+
+	* src/interp/format.boot, src/interp/i-syscmd.boot:
+	Better ')show'
+
+2017-02-20  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
+
+	* src/algebra/intalg.spad, src/algebra/pfo.spad:
+	Handle imaginary unit in algebraic integrals
+
+2017-02-20  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
+
+	* src/algebra/draw.spad: Clean up
+
+2017-02-20  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
+
+	* src/input/gpresent.input: Add Todd-Coxeter on
+	cosets of subgroup
+
+2017-02-20  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
+
+	* src/algebra/gpresent.spad: Speed up, fix symmetricGroup
+
+2017-02-19  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
+
+	* src/algebra/pfo.spad: Clean up
+
+2017-02-18  Qian Yun  <oldk1331@gmail.com>
+
+	* src/algebra/manip.spad: rootProduct(): handle
+	embedded roots
+
+2017-02-18  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
+	    Qian Yun  <oldk1331@gmail.com>
+
+	* src/algebra/manip.spad: rootPower(): handle
+	embedded roots
+
+2017-02-17  Qian Yun  <oldk1331@gmail.com>
+
+	* src/interp/format.boot: Nicer printing of types in
+	messages
+
+2017-02-16  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
+
+	* src/algebra/manip.spad: rootSimp(): handle
+	embedded roots
+
+2017-02-15  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
+
+	* src/algebra/mkfunc.spad: mkLisp(): Preserve integer
+	exponents
+
+2017-02-14  Qian Yun  <oldk1331@gmail.com>
+
+	* src/algebra/irexpand.spad: Fix division by zero in
+	'ilog'
+
+2017-02-13  Bill Page <bill.page@newsynthesis.org>
+
+	* src/interp/i-intern.boot: Remove interpreter
+	transform of '~='
+
+2017-02-13  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
+            Qian Yun  <oldk1331@gmail.com>
+
+	* src/algebra/integrat.spad, src/algebra/irexpand.spad:
+	Fix kernel selection in 'ilog'
+
+2017-02-12  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
+	    Qian Yun  <oldk1331@gmail.com>
+
+	* src/algebra/pfo.spad: Properly initialize random range
+	in FSRED
+
+2017-02-12  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
+
+	* src/algebra/pfo.spad: Fix computation of order
+	for some parametric divisors
+
 2017-02-11  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
 
 	* src/algebra/divisor.spad: Fix inconsitency between

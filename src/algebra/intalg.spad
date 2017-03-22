@@ -159,7 +159,7 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
   DIV ==> Record(num : R, den : UP, derivden : UP, gd : UP)
   U2  ==> Union(Record(ratpart:R, coeff:F),"failed")
   FAIL0 ==> error "integrate: implementation incomplete (constant residues)"
-  FAIL1==> error "integrate: implementation incomplete (irrational residues)"
+  FAIL1 ==> error "integrate: implementation incomplete (irrational residues)"
   FAIL2 ==> error "integrate: implementation incomplete (residue poly has multiple non-linear factors)"
   FAIL3 ==> error "integrate: implementation incomplete (has polynomial part)"
   FAIL4 ==> error "integrate: implementation incomplete (trace 0)"
@@ -295,7 +295,7 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
                 pc2 := [peq.factor, peq.exponent, peq.coeff,
                         na/(cc::F), di]$PC2
                 nlp := cons(pc2, nlp)
-            nlog := mkLog(p, inv(cc*(rc.order::Q)), rc.function, na)
+            nlog := mkLog(p, nfac*inv(cc*(rc.order::Q)), rc.function, alpha)
             llg := concat(nlog, llg)
         [llg, nlp, []]
 
@@ -489,7 +489,6 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
       import from UPR
       map(derivation, log.coeff) ~= 0 =>
                  error "can only handle logs with constant coefficients"
---      one?(n := degree(log.coeff)) =>
       ((n := degree(log.coeff)) = 1) =>
         c := - (leadingCoefficient reductum log.coeff)
              / (leadingCoefficient log.coeff)

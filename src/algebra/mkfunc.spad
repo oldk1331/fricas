@@ -88,7 +88,6 @@ InputForm():
 
     convert(x : DoubleFloat) : % ==
       zero? x => 0
---      one? x => 1
       (x = 1) => 1
       convert(x)$Rep
 
@@ -167,7 +166,6 @@ InputForm():
     s1 : % ^ n : Integer ==
       s1 = 0 and n > 0 => 0
       s1 = 1 or zero? n => 1
---      one? n => s1
       (n = 1) => s1
       conv [convert("^"::Symbol), s1, convert n]$List(%)
 
@@ -425,7 +423,10 @@ MakeFloatCompiledFunction(S) : Exports == Implementation where
       (u := mkLispList rest l) case "failed" => "failed"
       ll := u::List(INF)
       streqlist?(op, ["+","*","/","-"]) => convert(concat(op, ll))@INF
-      streq?(op, "^") => gencode("EXPT", ll)
+      streq?(op, "^") =>
+          integer?(ii := l(3)) =>
+              gencode("EXPT", [ll(1), ii])
+          gencode("EXPT", ll)
       streqlist?(op, ["exp","sin","cos","tan","atan","asin","acos",
          "log", "sinh","cosh","tanh","asinh","acosh","atanh","sqrt"]) =>
             gencode(upperCase string symbol op, ll)

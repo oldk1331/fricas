@@ -224,7 +224,6 @@ CharacteristicZero() : Category == Ring
 ++ The category of commutative rings with unity, i.e. rings where
 ++ \spadop{*} is commutative, and which have a multiplicative identity.
 ++ element.
---CommutativeRing(): Category == Join(Ring, BiModule(%: Ring, %: Ring)) with
 CommutativeRing() : Category == Join(Ring, BiModule(%, %), CommutativeStar)
 
 
@@ -499,7 +498,6 @@ EuclideanDomain() : Category == PrincipalIdealDomain with
       IdealElt ==> Record(coef1 : %, coef2 : %, generator : %)
       unitNormalizeIdealElt(s : IdealElt) : IdealElt ==
           (u, c, a) := unitNormal(s.generator)
---          one? a => s
           (a = 1) => s
           [a*s.coef1, a*s.coef2, c]$IdealElt
       extendedEuclidean(x, y) ==         --Extended Euclidean Algorithm
@@ -800,7 +798,6 @@ Group() : Category == Join(Monoid, unitsKnown) with
 ++ rings with no zero divisors.
 ++
 IntegralDomain() : Category ==
---  Join(CommutativeRing, Algebra(%: CommutativeRing), EntireRing) with
   Join(CommutativeRing, Algebra(%), EntireRing)
 
 
@@ -1336,8 +1333,9 @@ RightModule(R : SemiRng) : Category == AbelianSemiGroup with
       if R has AbelianMonoid then AbelianMonoid
       if R has AbelianGroup then AbelianGroup
       --operations
-      "*": (%,R) -> %  ++ x*r returns the right multiplication of the module element x
-                       ++ by the ring element r.
+      "*" : (%, R) -> %
+          ++ x*r returns the right multiplication of the module element x
+          ++ by the ring element r.
 
 )abbrev category RING Ring
 ++ Author:

@@ -19,7 +19,6 @@ FactoredFunctions(M : IntegralDomain) : Exports == Implementation where
   Implementation ==> add
     nthRoot(ff, n) ==
       coeff : M       := 1
---      radi: List(M)  := (one? unit ff => empty(); [unit ff])
       radi : List(M)  := (((unit ff) = 1) => empty(); [unit ff])
       lf            := factors ff
       d : N :=
@@ -83,7 +82,6 @@ PolynomialRoots(E, V, R, P, F) : Exports == Implementation where
     zroot : (Z, N) -> Record(exponent : N, coef : Z, radicand : Z)
 
     zroot(x, n) ==
---      zero? x or one? x => [1, x, 1]
       zero? x or (x = 1) => [1, x, 1]
       s := nthRoot(squareFree x, n)
       [s.exponent, s.coef, */s.radicand]
@@ -147,7 +145,6 @@ PolynomialRoots(E, V, R, P, F) : Exports == Implementation where
       else nthr(x, n) == nthRoot(squareFree x, n)
 
       froot(x, n) ==
---        zero? x or one? x => [1, x, 1]
         zero? x or (x = 1) => [1, x, 1]
         sn := nthr(numer x, n)
         sd := nthr(denom x, n)
@@ -262,8 +259,9 @@ AlgebraicManipulations(R, F) : Exports == Implementation where
     ratDenom x                == innerRF(x, algkernels tower x)
     ratDenom(x : F, l : List K) : F == innerRF(x, algkernels l)
     ratDenom(x : F, y : F)        == ratDenom(x, [y])
-    ratDenom(x : F, l : List F)   == ratDenom(x, [retract(y)@K for y in l]$List(K))
-    algkernels l              == select!((z1 : K) : Boolean +-> has?(operator z1, ALGOP), l)
+    ratDenom(x : F, l : List F)   == ratDenom(x, [retract(y)@K for y in l
+                                                 ]$List(K))
+    algkernels(l) == select((z1 : K) : Boolean +-> has?(operator z1, ALGOP), l)
     rootkernels l == select!((z1 : K) : Boolean +->
                                 is?(operator z1, 'nthRoot), l)
 
@@ -297,7 +295,7 @@ AlgebraicManipulations(R, F) : Exports == Implementation where
      and F has FunctionSpace(R) then
       import from PolynomialRoots(IndexedExponents K, K, R, P, F)
 
-      sroot  : K -> F
+      sroot  : (K, List K, List F) -> F
       inroot : (OP, F, N) -> F
       radeval : (P, K) -> F
       breakup : List K -> List REC
@@ -350,13 +348,13 @@ AlgebraicManipulations(R, F) : Exports == Implementation where
       else
         rootKerSimp(op, x, n) == inroot(op, x, n)
 
--- l is a list of nth-roots, returns a list of records of the form
--- [a^(1/n1), a^(1/n2), ...], [n1, n2, ...]]
--- such that the whole list covers l exactly
+      -- l is a list of nth-roots, returns a list of records of the form
+      -- [[a^(1/n1), a^(1/n2), ...], [n1, n2, ...]]
+      -- such that the whole list covers l exactly
       breakup l ==
         empty? l => empty()
         k := first l
-        a := first(arg := argument(k := first l))
+        a := first(arg := argument(k))
         n := retract(second arg)@Z
         expo := empty()$List(Z)
         others := same := empty()$List(K)
@@ -371,19 +369,31 @@ AlgebraicManipulations(R, F) : Exports == Implementation where
       rootProduct x ==
         for rec in breakup rootkernels tower x repeat
           k0 := first(l := rec.ker)
-          nx := numer x; dx := denom x
-          if empty? rest l then x := radeval(nx, k0) / radeval(dx, k0)
-          else
+          if not empty? rest l then
             n  := lcm(rec.exponent)
             k  := kernel(operator k0, [first argument k0, n::F], height k0)$K
-            lv := [monomial(1, k, (n quo m)::N) for m in rec.exponent]$List(P)
-            x  := radeval(eval(nx, l, lv), k) / radeval(eval(dx, l, lv), k)
-        x
+            lv := [k::F^(n quo m)::N for m in rec.exponent]
+            x := eval(x, l, lv)
+        rootPower x
+
+      rootPower1(x : F, lk : List(K), nlk : List(F)) : F ==
+          x := eval(x, lk, nlk)
+          for k in kernels(x) repeat
+              if is?(operator k, 'nthRoot) then
+                  x := radeval(numer x, k) / radeval(denom x, k)
+          x
 
       rootPower x ==
-        for k in rootkernels tower x repeat
-          x := radeval(numer x, k) / radeval(denom x, k)
-        x
+          lk : List(K):= []
+          nlk : List(F) := []
+          for k in tower x repeat
+              -- Here we assume that 'rootPower1' will not mess
+              -- dummy arguments
+              nargs := map(k1 +-> rootPower1(k1, lk, nlk), argument k)
+              nk := (operator k)(nargs)
+              lk := cons(k, lk)
+              nlk := cons(nk, nlk)
+          rootPower1(x, lk, nlk)
 
 -- replaces (a^(1/n))^m in p by a power of a simpler radical of a if
 -- n and m have a common factor
@@ -404,9 +414,7 @@ AlgebraicManipulations(R, F) : Exports == Implementation where
         leadingCoefficient(q)::F + ans
 
       inroot(op, x, n) ==
---        one? x => x
         (x = 1) => x
---        (x ~= -1) and (one?(num := numer x) or (num = -1)) =>
         (x ~= -1) and (((num := numer x) = 1) or (num = -1)) =>
           inv inroot(op, (num * denom x)::F, n)
         (u := isExpt(x, op)) case "failed" => kernel(op, [x, n::F])
@@ -417,13 +425,20 @@ AlgebraicManipulations(R, F) : Exports == Implementation where
         x  := first argument(pr.var)
         x ^ qr.quotient * rootKerSimp(op, x, denom(q)::N) ^ qr.remainder
 
-      sroot k ==
-        pr := froot(first(arg := argument k), (retract(second arg)@Z)::N)
+      sroot(k, lk, nlk) ==
+        narg1 := eval(first(arg := argument(k)), lk, nlk)
+        pr := froot(narg1, (retract(second arg)@Z)::N)
         pr.coef * rootKerSimp(operator k, pr.radicand, pr.exponent)
 
       rootSimp x ==
-        lk := rootkernels tower x
-        eval(x, lk, [sroot k for k in lk])
+        tk := rootkernels tower x
+        lk : List K := []
+        nlk : List F := []
+        for k in tk repeat
+            nk := sroot(k, lk, nlk)
+            lk := cons(k, lk)
+            nlk := cons(nk, nlk)
+        eval(x, lk, nlk)
 
 )abbrev package SIMPAN SimplifyAlgebraicNumberConvertPackage
 ++ Package to allow simplify to be called on AlgebraicNumbers
@@ -656,7 +671,7 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
       not (termList case "failed") =>
         -- We want to simplify each log term in the product and then multiply
         -- them together.  However, if there is a constant or arithmetic
-        -- expression (i.e. somwthing which looks like a Polynomial) we would
+        -- expression (i.e. something which looks like a Polynomial) we would
         -- like to combine it with a log term.
         terms : List F := [simplifyLog(term) for term in termList::List(F)]
         exprs : List F := []
@@ -685,12 +700,10 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
       not (terms case "failed") => logArgs(terms)
 
       expt : Union(POW, "failed") := isPower(e)
---      (expt case POW) and not one? expt.exponent =>
       (expt case POW) and not (expt.exponent = 1) =>
         simplifyLog(expt.val)^(expt.exponent)
 
       kers : List K := kernels e
---      not(one?(#kers)) => e -- Have a constant
       not(((#kers) = 1)) => e -- Have a constant
       kernel(operator first kers, [simplifyLog(u) for u in argument first kers])
 
@@ -703,9 +716,7 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
     expandpow k ==
       a := expandPower first(arg := argument k)
       b := expandPower second arg
---      ne: F := (one? numer a => 1; numer(a)::F ^ b)
       ne : F := (((numer a) = 1) => 1; numer(a)::F ^ b)
---      de: F := (one? denom a => 1; denom(a)::F ^ (-b))
       de : F := (((denom a) = 1) => 1; denom(a)::F ^ (-b))
       ne * de
 

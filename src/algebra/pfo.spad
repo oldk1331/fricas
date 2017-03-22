@@ -166,7 +166,6 @@ PointsOfFiniteOrderRational(UP, UPUP, R) : Exports == Implementation where
       n   := rat(modulus, d, p := getGoodPrime bad)
 -- if n > 1 then it is cheaper to compute the order modulo a second prime,
 -- since computing n * d could be very expensive
---      one? n => n
       (n = 1) => n
       m   := rat(modulus, d, getGoodPrime(p * bad))
       n = m => n
@@ -179,7 +178,6 @@ PointsOfFiniteOrderRational(UP, UPUP, R) : Exports == Implementation where
 
 -- returns the potential order of d, 0 if d is of infinite order
     possibleOrder d ==
---      zero?(genus()) or one?(#(numer ideal d)) => 1
       zero?(genus()) or (#(numer ideal d) = 1) => 1
       r := polyred definingPolynomial()$R
       ratcurve(d, r, doubleDisc r)
@@ -235,7 +233,7 @@ FunctionSpaceReduce(R, F) : Exports == Implementation where
     K2Z : K -> F
 
     redmap := table()$AssociationList(K, Z)
-    nn : Integer := 1
+    nn : Integer := 10^6
 
     newReduc(n) ==
       nn := n
@@ -289,20 +287,31 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R) : Exports == Implementation where
   RC0 ==> Record(ncurve : UPUPQ, disc : Z)
   ID  ==> FractionalIdeal(UP, QF, UPUP, R)
   SMP ==> SparseMultivariatePolynomial(R0, K)
+  IREC ==> Record(ncurve : UPUP, n_div_numer : Vector(UPUP),
+                  n_div_denom : UPUP, need_change : Boolean)
 
   Exports ==> with
     order        : FD -> Union(N, "failed")
-        ++ order(f) \undocumented
+        ++ order(fd) returns order of divisor \spad{fd} or \spad{"failed"} if
+        ++ \spad{fd} is not of finite order.
     torsion?     : FD -> Boolean
-        ++ torsion?(f) \undocumented
+        ++ torsion?(fd) returns \spad{true} if \spad{fd} is of finite order,
+        ++ \spad{false} otherwise.
     torsionIfCan : FD -> Union(Record(order:N, function:R), "failed")
-        ++ torsionIfCan(f) \undocumented
+        ++ torsionIfCan(fd) returns \spad{[n, f]} such that
+        ++ \spad{n*fd = div(f)} when \spad{fd} is of finite order.
+        ++ torsionIfCan(fd) returns \spad{"failed"} if
+        ++ \spad{fd} is not of finite order.
     cmult        : List SMP -> SMP
         ++ cmult(x) should be local but conditional
     possibleOrder : FD -> N
+        ++ possibleOrder(d) returns n such that d is of order n,
+        ++ or of infinite order.
+    handle_imaginary : FD -> IREC
+        ++ handle_imaginary(d) should be local but conditional.
     if R0 has CharacteristicZero and F has AlgebraicallyClosedField then
-        simplifyCoeffs : (FD, List K) -> N
-          ++ simplifyCoeffs(d, la) should be local but conditional
+        simplifyCoeffs : (IREC, List K) -> N
+          ++ simplifyCoeffs(d, la) should be local but conditional.
 
   Implementation ==> add
     import from IntegerPrimesPackage(Z)
@@ -311,15 +320,6 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R) : Exports == Implementation where
 
     ALGOP  := '%alg
 
-    raise         : (UPQ, K) -> F
-    raise2        : (UP2, K) -> UP
-    qmod          : F     -> Q
-    fmod          : UPF   -> UPQ
-    rmod          : UP    -> UPQ
-    pmod          : UPUP  -> UPUPQ
-    kqmod         : (F,    K) -> UPQ
-    krmod         : (UP,   K) -> UP2
-    kpmod         : (UPUP, K) -> UP3
     selectIntegers : K   -> REC
     selIntegers :    ()  -> RC0
     ratcurve      : (FD, RC0)    -> N
@@ -334,21 +334,42 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R) : Exports == Implementation where
     alglist       : FD -> List K
     notIrr?       : UPQ -> Boolean
     rat           : (UPUP, FD, PI) -> N
-    toQ1          : (UP2, UPQ) -> UP
-    toQ2          : (UP3, UPQ) -> R
-    Q2F           : Q -> F
-    Q2UPUP        : UPUPQ -> UPUP
 
     q := FunctionSpaceReduce(R0, F)
 
     torsion? d == order(d) case N
-    Q2F x      == numer(x)::F / denom(x)::F
-    qmod x     == bringDown(x)$q
-    kqmod(x, k) == bringDown(x, k)$q
-    fmod p     == map(qmod, p)$SparseUnivariatePolynomialFunctions2(F, Q)
-    pmod p     == map(qmod, p)$MultipleMap(F, UP, UPUP, Q, UPQ, UPUPQ)
-    Q2UPUP p   == map(Q2F, p)$MultipleMap(Q, UPQ, UPUPQ, F, UP, UPUP)
-    klist d    == "setUnion"/[kernels c for c in coefficients d]
+
+    Q2F(x : Q) : F     == numer(x)::F / denom(x)::F
+
+    Q2UPUP(p : UPUPQ) : UPUP ==
+        map(Q2F, p)$MultipleMap(Q, UPQ, UPUPQ, F, UP, UPUP)
+
+    raise(p : UPQ, k : K) : F ==
+        (map(Q2F, p)$SparseUnivariatePolynomialFunctions2(Q, F)) (k::F)
+
+    raise2(p : UP2, k : K) : UP ==
+        map(z1 +-> raise(z1, k),
+            p)$UnivariatePolynomialCategoryFunctions2(UPQ, UP2, F, UP)
+
+    -- reduction functions
+    qmod(x : F) : Q == bringDown(x)$q
+    fmod(p : UPF) : UPQ ==
+        map(qmod, p)$UnivariatePolynomialCategoryFunctions2(F, UPF, Q, UPQ)
+    pmod(p : UPUP) : UPUPQ ==
+        map(qmod, p)$MultipleMap(F, UP, UPUP, Q, UPQ, UPUPQ)
+    rmod(p : UP) : UPQ ==
+        map(qmod, p)$UnivariatePolynomialCategoryFunctions2(F, UP, Q, UPQ)
+
+    kqmod(x : F, k : K) : UPQ == bringDown(x, k)$q
+    krmod(p : UP, k : K) : UP2 ==
+        map(z1 +-> kqmod(z1, k),
+            p)$UnivariatePolynomialCategoryFunctions2(F, UP, UPQ, UP2)
+    kpmod(p : UPUP, k : K) : UP3 ==
+        map((p1 : QF) : UP2 +-> krmod(retract(p1)@UP, k),
+            p)$UnivariatePolynomialCategoryFunctions2(QF, UPUP, UP2, UP3)
+
+
+    klist d    == algtower(coefficients(d))
     notIrr? d  == #(factors factor(d)$RationalFactorize(UPQ)) > 1
     kbadBadNum(d, m) == mix [badNum(c rem m) for c in coefficients d]
     kbad3Num(h, m)   == lcm [kbadBadNum(c, m) for c in coefficients h]
@@ -393,33 +414,78 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R) : Exports == Implementation where
         "setUnion"/[klist(retract(c)@UP) for c in coefficients lift f]
       klist(retract(r::QF)@UP)
 
-    alglist d ==
+    alglist0(d : FD) : List K ==
       n := numer(i := ideal d)
       select!((k1 : K) : Boolean +-> has?(operator k1, ALGOP),
                setUnion(klist denom i,
                  "setUnion"/[aklist qelt(n,i) for i in minIndex n..maxIndex n]))
 
-    krmod(p, k) ==
-       map(z1 +-> kqmod(z1, k),
-           p)$UnivariatePolynomialCategoryFunctions2(F, UP, UPQ, UP2)
+    alglist(d : FD) : List K ==
+        f := definingPolynomial()$R
+        l1 : List K := "setUnion"/[klist(retract(c)@UP) for c in
+                                   coefficients f]
+        setUnion(l1, alglist0(d))
 
-    rmod p ==
-       map(qmod, p)$UnivariatePolynomialCategoryFunctions2(F, UP, Q, UPQ)
+    alglist2(f : UPUP) : List K ==
+        "setUnion"/[klist(retract(c)@UP) for c in coefficients f]
 
-    raise(p, k) ==
-      (map(Q2F, p)$SparseUnivariatePolynomialFunctions2(Q, F)) (k::F)
+    alglist1(nc : UPUP, nva : Vector(UPUP), nd : UPUP) : List K ==
+        l1 : List(UPUP) := entries(nva)
+        l2 := cons(nc, cons(nd, l1))
+        "setUnion"/[alglist2(f) for f in l2]
 
-    raise2(p, k) ==
-      map(z1 +-> raise(z1, k),
-          p)$UnivariatePolynomialCategoryFunctions2(UPQ, UP2, F, UP)
+    if R0 is Complex(Integer) and F is Expression(R0) then
+
+        subst_mp_ni(p : SMP, ni : F) : F ==
+            map((c : R0) : R0 +-> real(c)::R0, p)::F +
+              ni*map((c : R0) : R0 +-> imag(c)::R0, p)::F
+
+        subst_upup_ni(upup : UPUP, ni : F) : UPUP ==
+            map((a : QF) : QF +->
+              map((b : UP) : UP +->
+                map((c : F) : F +-> subst_mp_ni(numer(c), ni)/
+                                    subst_mp_ni(denom(c), ni), b), a), upup)
+
+        handle_imaginary(fd) ==
+            -- p0 : F := (new()$Symbol::F)^2 + 1
+            p0 := monomial(1, 2)$UPF + 1$UPF
+            ni := rootOf(p0)
+            f := definingPolynomial()$R
+            nf := subst_upup_ni(f, ni)
+            id := ideal(fd)$FD
+            n := numer(id)
+            nva := vector([subst_upup_ni(lift(vi), ni)
+                           for vi in entries(n)])$Vector(UPUP)
+            nd := subst_upup_ni(denom(id)::QF::UPUP, ni)
+            [nf, nva, nd, f ~= nf]
+
+    else
+
+        handle_imaginary(fd) ==
+            id := ideal(fd)$FD
+            n := numer(id)
+            d := denom(id)
+            nva := vector([lift(vi) for vi in entries(n)])$Vector(UPUP)
+            [definingPolynomial()$R, nva, d::QF::UPUP, false]
+
+    UPQ_to_UPF(p : UPQ) : UPF ==
+        map(Q2F, p)$SparseUnivariatePolynomialFunctions2(Q, F)
 
     algcurve(d, rc, k) ==
+      k1 : K :=
+          mp := minPoly k
+          every?((x : F) : Boolean +->
+                   retractIfCan(x)@Union(Q, "failed") case Q,
+                 coefficients(mp)) => k
+          F has AlgebraicallyClosedField =>
+              first(kernels(rootOf(UPQ_to_UPF(rc.dfpoly))$F))
+          error "cannot reduce root"
       mn := minIndex(n := numer(i := minimize ideal d))
       h  := kpmod(lift(hh := n(mn + 1)), k)
       b2 := primitivePart
-                 raise2(b := krmod(retract(retract(n.mn)@QF)@UP, k), k)
+                 raise2(b := krmod(retract(retract(n.mn)@QF)@UP, k), k1)
       s  := kqmod(resultant(primitivePart separate(raise2(krmod(
-                    retract(norm hh)@UP, k), k), b2).primePart, b2), k)
+                    retract(norm hh)@UP, k), k1), b2).primePart, b2), k1)
       pr := kgetGoodPrime(rc, s, h, b, dd := krmod(denom i, k))
       p  := pr.prime
       pp := UP32UPUP(rc.ncurve, k)
@@ -427,7 +493,6 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R) : Exports == Implementation where
       gf := InnerPrimeField p
       m  := map((z1 : Q) : gf +-> retract(z1)@Z :: gf,
                          mm)$SparseUnivariatePolynomialFunctions2(Q, gf)
---      one? degree m =>
       (degree m = 1) =>
         alpha := - coefficient(m, 0) / leadingCoefficient m
         order(d, pp,
@@ -456,7 +521,6 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R) : Exports == Implementation where
       n   := rat(pp, d, p := getGoodPrime bad)
 -- if n > 1 then it is cheaper to compute the order modulo a second prime,
 -- since computing n * d could be very expensive
---      one? n => n
       (n = 1) => n
       m   := rat(pp, d, getGoodPrime(p * bad))
       n = m => n
@@ -473,65 +537,56 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R) : Exports == Implementation where
             map((b : UP) : UP +->
                 map((c : F) : F +-> eval(c, la, lrhs), b), a), upup)
 
-    evala(f : R, la : List K, lrhs : List F) : R ==
-        reduce(evalup(lift f, la, lrhs))
-
     if R0 has CharacteristicZero and F has AlgebraicallyClosedField then
-      simplifyCoeffs(d : FD, la : List K) : N ==
-        rec := primitiveElement([k::F for k in la]
+        simplifyCoeffs(irec : IREC, la : List K) : N ==
+            lp := [minPoly(k) for k in la]
+            rec := primitiveElement([k::F for k in la]
                                )$FunctionSpacePrimitiveElement(R0, F)
-        y := rootOf(rec.prim)
-        lrhs := [pol(y) for pol in rec.poly]$List(F)
-        nf := evalup(definingPolynomial()$R, la, lrhs)
-        nR := AlgebraicFunctionField(F, UP, UPUP, nf)
-        nFD := FiniteDivisor(F, UP, UPUP, nR)
-        nFR := FractionalIdeal(UP, Fraction(UP), UPUP, nR)
-        nPFO := PointsOfFiniteOrder(R0, F, UP, UPUP, nR)
-
-        id := ideal(d)$FD
-        nd := reduce(evalup(lift(denom(id)::QF::R)$R, la, lrhs))$nR
-        v := numer(id)
-        va := [reduce(evalup(lift(v.i)$R, la, lrhs))$nR/nd
-                  for i in minIndex v..maxIndex v]$Vector(nR)
-        ndiv := divisor(ideal(va)$nFR)$nFD
-        possibleOrder(ndiv)$nPFO
+            y := rootOf(rec.prim)
+            lrhs := [pol(y) for pol in rec.poly]$List(F)
+            nf := evalup(irec.ncurve, la, lrhs)
+            nR := AlgebraicFunctionField(F, UP, UPUP, nf)
+            nFD := FiniteDivisor(F, UP, UPUP, nR)
+            nFR := FractionalIdeal(UP, Fraction(UP), UPUP, nR)
+            nPFO := PointsOfFiniteOrder(R0, F, UP, UPUP, nR)
+            nd := reduce(evalup(irec.n_div_denom, la, lrhs))$nR
+            va := [reduce(evalup(ni, la, lrhs))$nR/nd
+                    for ni in entries(irec.n_div_numer)]$Vector(nR)
+            ndiv := divisor(ideal(va)$nFR)$nFD
+            possibleOrder(ndiv)$nPFO
 
 -- returns the potential order of d, 0 if d is of infinite order
     possibleOrder d ==
---      zero?(genus()) or one?(#(numer ideal d)) => 1
       zero?(genus()) or (#(numer ideal d) = 1) => 1
-      empty?(la := alglist d) => ratcurve(d, selIntegers())
-      not(empty? rest la) =>
+      irec := handle_imaginary(d)
+      la := alglist1(irec.ncurve, irec.n_div_numer, irec.n_div_denom)
+      empty?(la) => ratcurve(d, selIntegers())
+      not(empty? rest la) or irec.need_change =>
           if R0 has CharacteristicZero and F has AlgebraicallyClosedField then
-               return simplifyCoeffs(d, la)
+               return simplifyCoeffs(irec, la)
           error "PFO::possibleOrder: more than 1 algebraic constant"
+      nden := reduce(irec.n_div_denom)$R
+      va := [reduce(ni)$R/nden for ni in entries(irec.n_div_numer)]$Vector(R)
+      d := divisor(ideal(va)$FractionalIdeal(UP, Fraction(UP), UPUP, R))$FD
       algcurve(d, selectIntegers first la, first la)
 
     selIntegers() : RC0 ==
       f := definingPolynomial()$R
       n : Integer := 10^6
-      while zero?(d := doubleDisc(r := polyred pmod f)) repeat newReduc(n)$q
-      [r, d]
+      repeat
+          newReduc(n)$q
+          d := doubleDisc(r := polyred pmod f)
+          if not(zero?(d)) then return [r, d]
 
     selectIntegers(k : K) : REC ==
       g := polyred(f := definingPolynomial()$R)
       p := minPoly k
       n : Integer := 10^6
-      while zero?(d := doubleDisc(r := kpmod(g, k))) or (notIrr? fmod p)
-          repeat newReduc(n)$q
-      [r, d, splitDenominator(fmod p).num]
-
-    toQ1(p, d) ==
-      map((p1 : UPQ) : F +-> Q2F(retract(p1 rem d)@Q),
-          p)$UnivariatePolynomialCategoryFunctions2(UPQ, UP2, F, UP)
-
-    toQ2(p, d) ==
-      reduce map((p1 : UP2) : QF +-> toQ1(p1, d)::QF,
-        p)$UnivariatePolynomialCategoryFunctions2(UP2, UP3, QF, UPUP)
-
-    kpmod(p, k) ==
-      map((p1 : QF) : UP2 +-> krmod(retract(p1)@UP, k),
-        p)$UnivariatePolynomialCategoryFunctions2(QF, UPUP, UP2, UP3)
+      repeat
+          newReduc(n)$q
+          d := doubleDisc(r := kpmod(g, k))
+          zero?(d) or (notIrr? fmod p) => "iterate"
+          return [r, d, splitDenominator(fmod p).num]
 
     order d ==
       zero?(n := possibleOrder(d := reduce d)) => "failed"
@@ -550,7 +605,6 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R) : Exports == Implementation where
       l  := [f.factor for f in factors factor(map((z1 : Q) : gf +-> retract(z1)@Z :: gf,
                rec.dfpoly)$SparseUnivariatePolynomialFunctions2(Q,
                  gf))$DistinctDegreeFactorize(gf,
---                   SparseUnivariatePolynomial gf) | one?(f.exponent)]
                    SparseUnivariatePolynomial gf) | (f.exponent = 1)]
       empty? l => "failed"
       mdg := first l
