@@ -604,12 +604,9 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
       --not smaller?(x,y) and not smaller?(y,x)
 
     subst(x:%,e:Equation %):% == per SUBST(rep rhs e,rep lhs e,rep x)$Lisp
-    subst(x:%,ks:List K, vs:List %) ==
-      if #ks > 1 then return subst(subst(x,equation(first(ks)::%,first(vs))),rest ks, rest vs)
-      else return subst(x,equation(first(ks)::%,first(vs)))
-    subst(x:%, es:List Equation %):% ==
-      if #es > 1 then return subst(subst(x, first es),rest es)
-      else subst(x, first es)
+    -- note SUBLIS does "parallel" substitution
+    subst(x:%,ks:List K, vs:List %) == subst(x,[equation(i::%,j) for i in ks for j in vs])
+    subst(x:%, es:List Equation %):% == per SUBLIS(es,rep x)$Lisp
 
     --if R has ConvertibleTo SIN then
     -- +0 is a hack to avoid premature conversion (do we need it?)
