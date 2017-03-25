@@ -393,7 +393,7 @@ DividesAxiom(): Category == Axiom with
           if % has CommutativeAxiomTimes then
             l1:=rewriteDivides(pow,ispower,istimes,quotient,isquotient,convert [car sin, x,t.right])
             if l1 case SIN then return quotient(l1,t.left)
-          
+
       "failed"
 
       --if _$testingSystem$Lisp then
@@ -604,8 +604,9 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
       --not smaller?(x,y) and not smaller?(y,x)
 
     subst(x:%,e:Equation %):% == per SUBST(rep rhs e,rep lhs e,rep x)$Lisp
-    -- note SUBLIS does "parallel" substitution
+    -- does "parallel" substitution
     subst(x:%,ks:List K, vs:List %) == subst(x,[equation(i::%,j) for i in ks for j in vs])
+    -- SUBLIS expects a list of dotted pairs. List Equation suffices.
     subst(x:%, es:List Equation %):% == per SUBLIS(es,rep x)$Lisp
 
     --if R has ConvertibleTo SIN then
@@ -636,14 +637,15 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
       eval subst(x,[k],[s])
     eval(x:%,ks:List K, vs:List %) ==
       --output("eval 2:", paren [x::OutputForm, ks::OutputForm, vs::OutputForm])$OutputPackage
-      r:=x
-      -- Use temporary symbols in case of parallel substitutions
-      ts:List K := [kernel(new()$Symbol) for k in ks]
-      for k in ks for t in ts repeat
-        r:=eval(r,k,coerce t)
-      for t in ts for v in vs repeat
-        r:=eval(r,t,v)
-      return r
+      eval subst(x,ks,vs)
+      --r:=x
+      ---- Use temporary symbols in case of parallel substitutions
+      --ts:List K := [kernel(new()$Symbol) for k in ks]
+      --for k in ks for t in ts repeat
+      --  r:=eval(r,k,coerce t)
+      --for t in ts for v in vs repeat
+      --  r:=eval(r,t,v)
+      --return r
     eval(x:%,a:%,b:%):% ==
       --output("eval 3:", paren [x::OutputForm, a::OutputForm, b::OutputForm])$OutputPackage
       eval(x, retract a, b)
@@ -746,6 +748,7 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
         if list? x and symbol? car x then
             if list? cdr x then
               s := symbol car x
+              -- ,'_-
               if member?(s,['_+,'_*,'_/])$List(Symbol) _
               or s='_^ and integer? car cdr cdr x then
                 r:Set K := reduce("union",
@@ -823,7 +826,7 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
       -- WSP: replace univariate$QF id:104
 
       (x:SMP / y:SMP):% == coerce(x) / coerce(y)
-      isPlus(x:%):Maybe(List %) ==
+      isPlusReversed(x:%):Maybe(List %) ==
         r := isPlus2 rep x
         if r case Pair SIN then
           r1:=isPlus per(r.left)
@@ -840,22 +843,26 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
               return [per(r.left),per(r.right)]
         else
           ---- treat x - y as x + -y
-          r := isMinus2 rep x
-          if r case Pair SIN then
-            r1:=isPlus per(r.left)
-            r2:=isPlus per(r.right)
-            if r1 case List % then
-              if r2 case List % then
-                return concat(r1,[-ri for ri in r2])
-              else
-                return concat(r1, [per(-r.right)])
-            else
-              if r2 case List % then
-                return concat([per(r.left)],[-ri for ri in r2])
-              else
-                return [per(r.left),per(-r.right)]
-          else
+          --r := isMinus2 rep x
+          --if r case Pair SIN then
+          --  r1:=isPlus per(r.left)
+          --  r2:=isPlus per(r.right)
+          --  if r1 case List % then
+          --    if r2 case List % then
+          --      return concat(r1,[-ri for ri in r2])
+          --    else
+          --      return concat(r1, [per(-r.right)])
+          --  else
+          --    if r2 case List % then
+          --      return concat([per(r.left)],[-ri for ri in r2])
+          --    else
+          --      return [per(r.left),per(-r.right)]
+          --else
             return "failed"
+      -- Make order compatible with Expression.
+      isPlus(x:%):Maybe(List %) ==
+        (r:=isPlusReversed(x)) case "failed" => "failed"
+        reverse(r::List %)
 
       isMinus(x:%):Maybe(List %) ==
         r := isMinus2 rep x
@@ -911,7 +918,8 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
           return "failed"
       if R has PatternMatchable Integer then
         patternMatch(x : %, p : Pattern Integer, l : PatternMatchResult(Integer, %)) ==
-          --output("patternMatch: ",paren [x::OutputForm,p::OutputForm,l::OutputForm])$OutputPackage
+          if _$testingSystem$Lisp then
+            output("patternMatch: ",paren [x::OutputForm,p::OutputForm,l::OutputForm])$OutputPackage
           patternMatch(x, p, l)$PatternMatchFunctionSpace(Integer, R, %)
 
       if R has PatternMatchable Float then
@@ -928,6 +936,8 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
             return reduce("+",[convert(i)@Pattern R for i in t])
           --if (u:=isMinus1(rep x)) case SIN then
           --  return convert(-1$R)*convert(per u)
+          --if (m:=isMinus2(rep x)) case Pair SIN then
+          --  return convert(per m.left)+convert(-1$R)*convert(per m.right)
           if (q:=isQuotient2(rep x)) case Pair SIN then
             return convert(per q.left)/convert(per q.right)
           if (t:=isTimes(x)) case List % then
@@ -977,10 +987,6 @@ Symbolic(R:Join(Comparable,ConvertibleTo SIN), AxiomList:Type):SymbolicCategory(
                 return concat(r1, per(1/r.right))
             else
               if r.left = 1 then return "failed"
-                --if r2 case List % then
-                --  return [1/ri for ri in r2]
-                --else
-                --  return [x]
               if r2 case List % then
                 return concat(per(r.left),[1/ri for ri in r2])
               else
@@ -1481,6 +1487,24 @@ SIN ==> InputForm
 ++ SymbolicExpression is a Symbolic domain with automatic rewrite rules that
 ++ approximate Expression itself.
 SymbolicExpression(R:Join(Comparable,ConvertibleTo SIN)) : SymbolicCategory(R) == Implementation where
+  --F ==> Expression R
+  Implementation ==> Symbolic(R, _
+    join(join(join(join(join(join(join(join(join( _
+    Squares, Inverse), Identities), _
+    Doubles), Divides), _
+    CommutativePlus), CommutativeTimes), Cancels),  _
+    AssociativePlus), AssociativeTimes)) add
+    -- use equality from Expression(R)
+    (x:% = y:%):Boolean ==
+      --output("=",paren [x::OutputForm,y::OutputForm])$OutputPackage
+      coerce(x)@Expression(R) = coerce(y)@Expression(R)
+
+)abbrev domain SDEXPR SymbolicDistributedExpression
+SIN ==> InputForm
+++ Description:
+++ SymbolicExpression is a Symbolic domain with automatic rewrite rules that
+++ approximate Expression itself.
+SymbolicDistributedExpression(R:Join(Comparable,ConvertibleTo SIN)) : SymbolicCategory(R) == Implementation where
   --F ==> Expression R
   Implementation ==> Symbolic(R, _
     join(join(join(join(join(join(join(join(join(join( _

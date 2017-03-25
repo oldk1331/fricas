@@ -106,7 +106,7 @@ testEquals("x*(y*z)","(x*y)*z")
 
 x*(y+z) = x*y + x*z
 test %
-testEquals("x*(y+z)","x*y + x*z")
+testEquals("x*(y+z)","z*x + y*x")
 
 smaller?(x*x,x*y)
 testEquals("smaller?(x*x,x*y)","true")
@@ -127,7 +127,7 @@ expand((x+y)/z)
 testEquals("expand((x+y)/z)","(x/z)+(y/z)")
 
 expand(x*(y+z))
-testEquals("expand(x*(y+z))","x*z + x*y")
+testEquals("expand(x*(y+z))","z*x + y*x")
 
 x*z+y*z+x*y
 

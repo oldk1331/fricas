@@ -293,6 +293,7 @@ PatternMatchKernel(S, E) : Exports == Implementation where
 
       if E has AbelianMonoid then
         patternMatch(s, p, l) ==
+          --output("patternMatch Kernel (AbelianMonoid): ",paren [s::OutputForm,p::OutputForm,l::OutputForm])$OutputPackage
           (u := patternMatchMonoid(s, p, l)) case PRS => u::PRS
           (w := isPlus p) case List(PAT) =>
             patternMatchOpt(s::E, w::List(PAT), l, 0)
@@ -300,11 +301,13 @@ PatternMatchKernel(S, E) : Exports == Implementation where
 
       else
         patternMatch(s, p, l) ==
+          --output("patternMatch Kernel (Monoid): ",paren [s::OutputForm,p::OutputForm,l::OutputForm])$OutputPackage
           (u := patternMatchMonoid(s, p, l)) case PRS => u::PRS
           failed()
 
     else
       patternMatch(s, p, l) ==
+        --output("patternMatch Kernel (not Monoid): ",paren [s::OutputForm,p::OutputForm,l::OutputForm])$OutputPackage
         (u := patternMatchInner(s, p, l)) case PRS => u::PRS
         failed()
 
@@ -440,13 +443,13 @@ PatternMatchTools(S, R, P) : Exports == Implementation where
   Implementation ==> add
     import from PatternFunctions1(S, P)
 
-    preprocessList : (PAT, List P, PRS) -> Union(List P, "failed")
+    preprocessList : (PAT, List P, PRS, P) -> Union(List P, "failed")
     selBestGen    : List PAT -> List PAT
     negConstant   : List P -> Union(P, "failed")
     findMatch     : (PAT, List P, PRS, P, (P, PAT, PRS) -> PRS) -> REC
     tryToMatch    : (List PAT, REC, P, (P, PAT, PRS) -> PRS) ->
                                                   Union(REC, "failed")
-    filterMatchedPatterns : (List PAT, List P, PRS) -> Union(RC, "failed")
+    filterMatchedPatterns : (List PAT, List P, PRS, P) -> Union(RC, "failed")
 
     mn1 := convert(-1::P)@Pattern(S)
 
@@ -460,6 +463,7 @@ PatternMatchTools(S, R, P) : Exports == Implementation where
 -- with rc.res being the list of existing matches.
 -- updates rc with the new result and subjects still to match
     tryToMatch(lp, rc, ident, pmatch) ==
+      --output("tryToMatch: ", paren [lp::OutputForm, rc::OutputForm])$OutputPackage
       rec : REC := [l := rc.res, ls := rc.s]
       for p in lp repeat
         rec := findMatch(p, ls, l, ident, pmatch)
@@ -469,6 +473,7 @@ PatternMatchTools(S, R, P) : Exports == Implementation where
 
 -- handles -1 in the pattern list.
     patternMatchTimes(ls, lp, l, pmatch) ==
+      --output("patternMatchTimes: ", paren [ls::OutputForm,lp::OutputForm,l::OutputForm])$OutputPackage
       member?(mn1, lp) =>
         (u := negConstant ls) case "failed" => failed()
         if (u::P ~= -1::P) then ls := concat(-u::P, ls)
@@ -477,11 +482,14 @@ PatternMatchTools(S, R, P) : Exports == Implementation where
 
 -- finds a match for p in ls, try not to match to a "bad" value
     findMatch(p, ls, l, ident, pmatch) ==
+      --output("findMatch: ", paren [p::OutputForm, ls::OutputForm])$OutputPackage
       bad : List(P) :=
         generic? p => setIntersection(badValues p, ls)
         empty()
+      --output("findMatch bad: ", bad::OutputForm)$OutputPackage
       l1 : PRS := failed()
-      for x in setDifference(ls, bad)
+      --for x in setDifference(ls, bad)
+      for x in select((x1:P):Boolean +-> not member?(x1,bad),ls)
         while (t := x; failed?(l1 := pmatch(x, p, l))) repeat 0
       failed? l1 =>
         for x in bad
@@ -491,21 +499,25 @@ PatternMatchTools(S, R, P) : Exports == Implementation where
       [l1, remove(t, ls)]
 
 -- filters out pattern if it's generic and already matched.
-    preprocessList(pattern, ls, l) ==
+    preprocessList(pattern, ls, l,ident) ==
+      --output("preprocessList: ", paren [pattern::OutputForm, ls::OutputForm, l::OutputForm])$OutputPackage
       generic? pattern =>
         (u := getMatch(pattern, l)) case P =>
-          member?(u::P, ls) => [u::P]
+          --output("preprocessList u, ls: ", paren [u::OutputForm, ls::OutputForm])$OutputPackage
+          u = ident or member?(u::P, ls) => [u::P]
           "failed"
         empty()
       empty()
 
 -- take out already matched generic patterns
-    filterMatchedPatterns(lp, ls, l) ==
+    filterMatchedPatterns(lp, ls, l, ident) ==
+      --output("filterMatchedPatterns: ", paren [lp::OutputForm, ls::OutputForm, l::OutputForm])$OutputPackage
       for p in lp repeat
-        (rc := preprocessList(p, ls, l)) case "failed" => return "failed"
+        (rc := preprocessList(p, ls, l, ident)) case "failed" => return "failed"
         if not empty?(rc::List(P)) then
           lp := remove(p,  lp)
           ls := remove(first(rc::List(P)), ls)
+      --output("filterMatchedPatterns lp ls: ", bracket [lp::OutputForm, ls::OutputForm])$OutputPackage
       [lp, ls]
 
 -- select a generic pattern with no predicate if possible
@@ -518,13 +530,15 @@ PatternMatchTools(S, R, P) : Exports == Implementation where
 
 -- matches unordered lists ls and lp
     patternMatch(ls, lp, op, l, pmatch) ==
+      --output("patternMatch List",paren [ls::OutputForm,lp::OutputForm,l::OutputForm])$OutputPackage
       ident := op empty()
-      (rc := filterMatchedPatterns(lp, ls, l)) case "failed" => return failed()
+      (rc := filterMatchedPatterns(lp, ls, l, ident)) case "failed" => return failed()
       lp := (rc::RC).pat
       ls := (rc::RC).s
       empty? lp => l
       #(lpm := select(optional?, lp)) > 1 =>
         error "More than one optional pattern in sum/product"
+      --output("patternMatch List #ls, #lpm:", paren [#ls::OutputForm,#lpm::OutputForm])$OutputPackage
       (#ls + #lpm) < #lp => failed()
       if (not empty? lpm) and (#ls + 1 = #lp) then
         lp := remove(first lpm, lp)
@@ -540,9 +554,15 @@ PatternMatchTools(S, R, P) : Exports == Implementation where
       -- l2 = patterns with a predicate attached to them
       l2 := select((p1 : PAT) : Boolean +-> hasPredicate? p1 and not constant? p1, lp)
       -- l3 = non-generic patterns without predicates
+      -- WSP: Why sort the patterns? Why sort in place!! ? id:110
       l3 := sort!((z1 : PAT, z2 : PAT) : Boolean +-> depth(z1) > depth(z2),
         select((p1 : PAT) : Boolean +-> not(hasPredicate? p1 or generic? p1 or constant? p1), lp))
-      -- l4 = generic patterns with predicates
+      -- Don't change order if same depth.
+      --l3 := sort!((z1 : PAT, z2 : PAT) : Boolean +-> depth(z1) >= depth(z2),
+      --    select((p1 : PAT) : Boolean +-> not(hasPredicate? p1 or generic? p1 or constant? p1), lp))
+      -- No sorting
+      --l3 := select((p1 : PAT) : Boolean +-> not(hasPredicate? p1 or generic? p1 or constant? p1), lp)
+      -- l4 = generic patterns without predicates
       l4 := select((p1 : PAT) : Boolean +-> generic? p1 and
                               not(hasPredicate? p1 or constant? p1), lp)
       rec : REC := [l, ls]
@@ -553,7 +573,7 @@ PatternMatchTools(S, R, P) : Exports == Implementation where
       (u := tryToMatch(l3, u::REC, ident, pmatch)) case "failed" =>
         failed()
       rec := u::REC
-      (rc := filterMatchedPatterns(l4,rec.s,rec.res)) case "failed" => failed()
+      (rc := filterMatchedPatterns(l4,rec.s,rec.res,ident)) case "failed" => failed()
       rec := [rec.res, (rc::RC).s]
       (u := tryToMatch((rc::RC).pat,rec,ident,pmatch)) case "failed" => failed()
       rec := u::REC
@@ -826,6 +846,7 @@ PatternMatchFunctionSpace(S, R, F) : Exports== Implementation where
     import from PatternMatchPushDown(S, R, F)
 
     patternMatch(x, p, l) ==
+      --output("patternMatch (FunctionSpace): ",paren [x::OutputForm,p::OutputForm,l::OutputForm])$OutputPackage
       generic? p => addMatch(p, x, l)
       (r := retractIfCan(x)@Union(R, "failed")) case R =>
         patternMatch(r::R, p, l)

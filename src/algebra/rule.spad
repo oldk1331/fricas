@@ -230,7 +230,7 @@ ApplyRules(Base, R, F) : Exports == Implementation where
       patternMatch(subject, pat, new()$PR)
 
     app(lrule, subject) ==
-      output("app: ",paren [lrule::OutputForm,subject::OutputForm])$OutputPackage
+      --output("app: ",paren [lrule::OutputForm,subject::OutputForm])$OutputPackage
       for r in lrule repeat
         not failed?(u := isit(subject, pattern r)) =>
           return rewrite(rhs r, u, quotedOperators r)
