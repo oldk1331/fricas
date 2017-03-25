@@ -224,7 +224,7 @@ ApplyRules(Base, R, F) : Exports == Implementation where
       isitwithpred(subject, pat, vars, concat(u, bad))
 
     isit(subject, pat) ==
-      output("isit: ",paren [subject::OutputForm,pat::OutputForm])$OutputPackage
+      --output("isit: ",paren [subject::OutputForm,pat::OutputForm])$OutputPackage
       hasTopPredicate? pat =>
         for v in (l := variables pat) repeat resetBadValues v
         isitwithpred(subject, pat, l, empty())
