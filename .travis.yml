@@ -1,0 +1,22 @@
+sudo: false
+dist: trusty
+language: c
+addons:
+  apt:
+    packages:
+      - sbcl
+compiler: gcc
+
+script:
+  - |
+    ./configure && make -j2 2>&1 | tee build.log | \
+        sed -n 's/.*\(")compile".*spad\).*/\1/p'
+  - |
+    make > /dev/null 2>&1 && cd src/input && make -j2 | \
+        tee ../../tests.log | sed -n 's/.*tee \(.*output\);.*/\1/p'
+  - cd $TRAVIS_BUILD_DIR/src/input && ../scripts/test.sh
+
+after_failure:
+  - cd $TRAVIS_BUILD_DIR
+  - bzip2 build.log && curl -sT build.log.bz2 chunk.io
+  - bzip2 tests.log && curl -sT tests.log.bz2 chunk.io
