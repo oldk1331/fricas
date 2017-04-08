@@ -158,11 +158,15 @@ SparseMultivariatePolynomial(R : Join(SemiRng, AbelianMonoid),
       if R has SemiRing then
           coerce(mvar) : % == [mvar, monomial(1, 1)$D]$VPoly
 
-      monomial? p ==
+      monomial1?(p : %) : Boolean ==
         p case R => true
         sup : D := p.ts
-        1 ~= numberOfMonomials(sup) => false
-        monomial? leadingCoefficient(sup)$D
+        not(monomial?(sup)) => false
+        monomial1?(leadingCoefficient(sup)$D)
+
+      monomial?(p) ==
+          p = 0 => false
+          monomial1?(p)
 
 --    local
       moreThanOneVariable? : % -> Boolean
@@ -819,8 +823,8 @@ IndexedExponents(Varset : OrderedSet) : C == T where
          t.c = 1 => (t.k)::OutputForm
          (t.k)::OutputForm ^ (t.c)::OutputForm
       coerce(x) : OutputForm == ++ converts entire exponents to OutputForm
-         null x => 1::Integer::OutputForm
-         null rest x => coerceOF(first x)
+         empty?(x) => 1::Integer::OutputForm
+         empty?(rest(x)) => coerceOF(first(x))
          reduce("*",[coerceOF t for t in x])
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.

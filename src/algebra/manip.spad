@@ -496,8 +496,13 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
       ++ htrigs(f) converts all the exponentials in f into
       ++ hyperbolic sines and cosines.
     simplifyExp : F -> F
-      ++ simplifyExp(f) converts every product \spad{exp(a)*exp(b)}
-      ++ appearing in f into \spad{exp(a+b)}.
+      ++ simplifyExp(f) performs the following simplifications on f:
+      ++ \begin{items}
+      ++ \item 1. rewrites \spad{exp(a)*exp(b)} as \spad{exp(a+b)}.
+      ++ \item 2. rewrites \spad{a^b*a^c} as \spad{a^(b+c)}.
+      ++ \item 3. rewrites \spad{exp(a)/exp(b)} as \spad{exp(a-b)}.
+      ++ \item 4. rewrites \spad{a^b/a^c} as \spad{a^(b-c)}.
+      ++ \end{items}
     simplifyLog : F -> F
       ++ simplifyLog(f) converts every \spad{log(a) - log(b)} appearing in f
       ++ into \spad{log(a/b)}, every \spad{log(a) + log(b)} into \spad{log(a*b)}
@@ -601,7 +606,7 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
     smpexpand : P -> F
     smp2htrigs : P -> F
     kerexpand : K -> F
-    expandpow : K -> F
+    expandpow : (K, F -> F) -> F
     logexpand : K -> F
     sup2htrigs : (UP, F) -> F
     supexp    : (UP, F, F, Z) -> F
@@ -621,6 +626,8 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
     simplify0 : F -> F
     simplifyLog1 : F -> F
     logArgs   : List F -> F
+    opexp := operator(operator('exp)$CommonOperators)$F
+    oplog := operator(operator('log)$CommonOperators)$F
 
     import from F
     import from List F
@@ -662,7 +669,7 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
 
       -- Check for n*log(u)
       prod : Union(PRODUCT, "failed") := isMult(e)
-      (prod case PRODUCT) and is?(prod.var, 'log) =>
+      (prod case PRODUCT) and is?(prod.var, oplog) =>
         log simplifyLog ((first argument(prod.var))^(prod.coef))
 
       termList : Union(List(F),"failed") := isTimes(e)
@@ -705,7 +712,7 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
 
       kers : List K := kernels e
       not(((#kers) = 1)) => e -- Have a constant
-      kernel(operator first kers, [simplifyLog(u) for u in argument first kers])
+      (operator first kers) [simplifyLog(u) for u in argument first kers]
 
 
     if R has RetractableTo Integer then
@@ -713,30 +720,32 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
 
     else simplify x == simplify0 x
 
-    expandpow k ==
-      a := expandPower first(arg := argument k)
-      b := expandPower second arg
+    expandpow(k, f) ==
+      a := f first(arg := argument k)
+      b := f second arg
       ne : F := (((numer a) = 1) => 1; numer(a)::F ^ b)
       de : F := (((denom a) = 1) => 1; denom(a)::F ^ (-b))
       ne * de
 
     termexp p ==
+      lk := variables p
+      empty? lk => p::F
       exponent : F := 0
       coef := (leadingCoefficient p)::P
-      lpow := select((z1 : K) : Boolean +-> is?(z1, POWER)$K, lk := variables p)$List(K)
+      lpow := select((z1 : K) : Boolean +-> is?(z1, POWER), lk)
       for k in lk repeat
         d := degree(p, k)
-        if is?(k, 'exp) then
+        if is?(k, opexp) then
           exponent := exponent + d * first argument k
         else if not is?(k, POWER) then
           -- Expand arguments to functions as well ... MCD 23/1/97
           --coef := coef * monomial(1, k, d)
           coef := coef * monomial(1, kernel(operator k, [simplifyExp u for u in argument k], height k), d)
-      coef::F * exp exponent * powersimp(p, lpow)
+      coef::F * exp simplifyExp exponent * powersimp(p, lpow)
 
     expandPower f ==
       l := select((z1 : K) : Boolean +-> is?(z1, POWER)$K, kernels f)$List(K)
-      eval(f, l, [expandpow k for k in l])
+      eval(f, l, [expandpow(k, expandPower) for k in l])
 
 -- l is a list of pure powers appearing as kernels in p
     powersimp(p, l) ==
@@ -744,11 +753,10 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
       k := first l                           -- k = a^b
       a := first(arg := argument k)
       exponent := degree(p, k) * second arg
-      empty?(lk := select((z1 : K) : Boolean +-> a = first argument z1, rest l)) =>
-        (a ^ exponent) * powersimp(p, rest l)
+      lk := select((z1 : K) : Boolean +-> a = first argument z1, rest l)
       for k0 in lk repeat
-        exponent := exponent + degree(p, k0) * second argument k0
-      (a ^ exponent) * powersimp(p, setDifference(rest l, lk))
+          exponent := exponent + degree(p, k0) * second argument k0
+      (a ^ simplifyExp exponent) * powersimp(p, setDifference(rest l, lk))
 
     t2t x         == sin(x) / cos(x)
     c2t x         == cos(x) / sin(x)
@@ -783,11 +791,36 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
     removeCoshSq x== ueval2(x, 'cosh, (z1 : F) : F +-> 1 + (sinh z1)^2)
     removeSinhSq x== ueval2(x, 'sinh, sh2ch2)
     expandLog x   == smplog(numer x) / smplog(denom x)
-    simplifyExp x == (smpexp numer x) / (smpexp denom x)
     expand x      == (smpexpand numer x) / (smpexpand denom x)
     smpexpand p   == map(kerexpand, (r1 : R) : F +-> r1::F, p)
     smplog p      == map(logexpand, (r1 : R) : F +-> r1::F, p)
     smp2htrigs p  == map((k1 : K) : F +-> htrigs(k1::F), (r1 : R) : F +-> r1::F, p)
+
+    simplifyExp x ==
+        p := smpexp numer x
+        q := smpexp denom x
+        not (monomial?(p1 := numer p) and monomial?(q1 := numer q)) => p/q
+        -- currently only fraction of monomials are simplified, e.g:
+        -- (exp(a)*b^c*d^e*...)/(exp(f)*b^g*h^i*...)
+        lk1 := variables p1
+        lk2 := variables q1
+        term : F := 1
+        for k2 in lk2 repeat
+            -- assert!(degree(q1, k) = 1)
+            op := operator k2
+            args := argument k2
+            h := height k2
+            if op = opexp then
+                for k1 in lk1 repeat
+                    if is?(k1, opexp) then
+                        term := term * kernel(op, [-(args.1)], h)::F
+                        break
+            if is?(op, POWER) then
+                for k1 in lk1 repeat
+                    if is?(k1, POWER) and args.1 = first argument k1 then
+                        term := term * kernel(op, [args.1, -(args.2)], h)::F
+                        break
+        termexp(numer(p*term))/termexp(numer(q*term))
 
     htrigs f ==
       (m := mainKernel f) case "failed" => f
@@ -795,7 +828,7 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
       arg := [htrigs x for x in argument k]$List(F)
       num := univariate(numer f, k)
       den := univariate(denom f, k)
-      is?(op, 'exp) =>
+      op = opexp =>
         g1 := cosh(a := first arg) + sinh(a)
         g2 := cosh(a) - sinh(a)
         supexp(num, g1, g2, b:= (degree num)::Z quo 2)/supexp(den, g1, g2, b)
@@ -824,7 +857,7 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
 
     kerexpand k ==
       nullary?(op := operator k) => k::F
-      is?(op, POWER) => expandpow k
+      is?(op, POWER) => expandpow(k, expand)
       arg := first argument k
       is?(op, 'sec) => inv expand cos arg
       is?(op, 'csc) => inv expand sin arg
