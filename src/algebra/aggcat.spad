@@ -2407,6 +2407,17 @@ AssociationListAggregate(Key : SetCategory, Entry : Type) : Category ==
                 l := [(r.key)::O = (r.entry)::O for r in parts(u)@List Rec]
                 prefix(message("table")$O, l)
 
+        if Entry has BasicType then
+            x = y ==
+                eq?(x, y) => true
+                while not empty? x and not empty? y repeat
+                    fx : Record(key:Key,entry:Entry) := first x
+                    fy : Record(key:Key,entry:Entry) := first y
+                    fx.key ~= fy.key or fx.entry ~= fy.entry  => return false
+                    x := rest x
+                    y := rest y
+                empty? x and empty? y
+
 )abbrev category SRAGG StringAggregate
 ++ Author: Stephen Watt and Michael Monagan. revised by Manuel Bronstein and Richard Jenks
 ++ Date Created: August 87 through August 88

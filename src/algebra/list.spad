@@ -502,6 +502,7 @@ AssociationList(Key : SetCategory, Entry : Type):
 
         import from List Pair
 
+        construct l == ref l
         dictionary()            == ref empty()
         empty()                 == dictionary()
         empty? t                == empty? deref t

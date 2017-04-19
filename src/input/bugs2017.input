@@ -119,5 +119,16 @@ testcase "node? from URAGG"
 
 testTrue("not(node?([],[])$List(Integer))")
 
+testcase "construct and = from AssociationList"
+
+T ==> AssociationList(String, Integer)
+R ==> Record(key : String, entry : Integer)
+
+t1 : T := construct [["1", 1]::R, ["1", 1]::R]
+t2 : T := construct [["1", 1]::R, ["1", 2]::R]
+
+testEquals("#t1", "2")
+testTrue("t1 ~= t2")
+
 )set output algebra on
 statistics()
