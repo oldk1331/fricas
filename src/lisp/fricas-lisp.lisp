@@ -1192,6 +1192,30 @@ with this hack and will try to convince the GCL crowd to fix this.
 (defun |write_to_string_radix| (int radix)
     (write-to-string int :base radix))
 
+;;; init for texmacs
+
+;; this variable indicates if FriCAS is started inside TeXmacs
+(defvar |fricasintexmacs| nil)
+
+(defun init-texmacs ()
+  (setq |fricasintexmacs| t)
+  (|setOutputAlgebra| '(off)) ;; ")set output algebra off"
+  (|setOutputTexmacs| '(on))  ;; ")set output texmacs on"
+  (setf |$ioHook|
+      (lambda (x &optional args)
+        (cond ((eq x '|startPrompt|)
+                  (princ (concat (code-char 2) "prompt\#")))
+              ((eq x '|startTeXmacsOutput|)
+                  (princ (code-char 2)))
+              ((eq x '|endOfTeXmacsOutput|)
+                  (princ (concat (code-char 5) (code-char 10))))
+              ((eq x '|startKeyedMsg|)
+                  (princ (concat (code-char 2) "verbatim:")))
+              ((eq x '|endOfKeyedMsg|)
+                  (princ (code-char 5)))
+              ((eq x '|endOfPrompt|)
+                  (princ (code-char 5)))))))
+
 (in-package "BOOTTRAN")
 
 (defmacro |doInBoottranPackage| (expr)
