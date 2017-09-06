@@ -99,13 +99,8 @@ fi
 rootwsdir=$AXIOM/bin
 
 # 2. Process command line arguments.
-algebra_off=')set output algebra off'
-texmacs_on=')set output texmacs on'
-markers=")lisp (setf |\$ioHook| (lambda (x &optional args) (cond ((eq x '|startPrompt|) (princ (concat (code-char 2) \"prompt\#\") ))  ((eq x '|endOfTeXmacsOutput|) (princ (concat (code-char 5) (code-char 10)))) ((eq x '|startTeXmacsOutput|) (princ (code-char 2)))  ((eq x '|startKeyedMsg|)  (princ (concat (code-char 2) \"verbatim:\")))  ((eq x '|endOfKeyedMsg|)  (princ (code-char 5)))  ((eq x '|endOfPrompt|) (princ (code-char 5) ))  )))"
-
-
 if [ "$*" = "-texmacs" ] ; then
-    exec "$AXIOM/bin/AXIOMsys" -- -eval "$algebra_off" -eval "$markers" -eval "$texmacs_on"
+    exec "$AXIOM/bin/AXIOMsys" -- -eval ")lisp (init-texmacs)"
 fi
 
 # Start FriCAS from inside emacs. Discard output to stderr.
