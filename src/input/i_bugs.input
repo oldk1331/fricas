@@ -291,3 +291,8 @@ overlabel(3, empty())$OutputForm
 
 xk(s: String): Integer == integer(parse(s)@InputForm)
 xk("1");
+
+
+-- lacked spaces between box
+
+box(x) * box(y)
