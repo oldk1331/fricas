@@ -303,3 +303,7 @@ D(f(x, y^2), [x, y])
 paren(blankSeparate([])$OUTFORM)
 
 vconcat([])$OUTFORM
+
+-- lacked spaces between box
+
+box(x) * box(y)
