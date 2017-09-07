@@ -563,7 +563,7 @@ CommonOperators() : Exports == Implementation where
     startUp b ==
       brandNew? := b
       display(oppren, paren)
-      display(opbox, commaSeparate)
+      display(opbox, (z1 : List O) : O +-> first z1)
       display(oppi, dpi)
       display(opexp, dexp)
       display(opGamma2, dgamma)
