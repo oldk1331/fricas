@@ -1189,6 +1189,14 @@ with this hack and will try to convince the GCL crowd to fix this.
 (defmacro |idChar?| (x)
     `(or (alphanumericp ,x) (member ,x '(#\? #\% #\' #\!) :test #'char=)))
 
+;;; conversion between string and integer in given radix
+
+(defun parseintegerradix (str radix)
+    (parse-integer str :radix radix))
+
+(defun writetostringradix (int radix)
+    (write-to-string int :base radix))
+
 ;;; init for texmacs
 
 ;; this variable indicates if FriCAS is started inside TeXmacs
