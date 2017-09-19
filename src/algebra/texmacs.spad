@@ -974,9 +974,15 @@ TexmacsFormat() : public == private where
     group str ==
       concat ["(concat ",str,")"]
 
+    import from NumberFormats
     cork(x) ==
       res := search(x, Cork)
-      res case "failed" => ucodeToString(x::Integer)
+      res case "failed" =>
+         if (x > 1000) then  -- the range of Unicode that TeXmacs can't handle
+             s := FormatRadix(x, 16)
+             concat ["\<#", s, "\>"]
+         else
+             ucodeToString(x::Integer)
       res::String
 
     utf2cork str ==
