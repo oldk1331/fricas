@@ -291,7 +291,8 @@ GraphImage () : Exports == Implementation where
       graf.rangesField := roundRanges(graf.rangesField)
       if empty?(units graf) then  -- figure out best ranges for points
         graf.unitsField := figureUnits(graf.rangesField)  --::V SEG SF
-      say(
+      if not fricasintexmacs$Lisp then
+        say(
         "   Graph data being transmitted to the viewport manager..."
                   )$DisplayPackage
       sendI(VIEW, typeGRAPH)
@@ -822,7 +823,8 @@ TwoDimensionalViewport () : Exports == Implementation where
       viewport := viewportDollar::Rep
       send_graphs(viewport.graphsField)
       doOptions viewport --local function to extract and assign optional arguments for 2D viewports
-      say("   FriCAS2D data being transmitted to the viewport manager..."
+      if not fricasintexmacs$Lisp then
+        say("   FriCAS2D data being transmitted to the viewport manager..."
          )$DisplayPackage
       sendI(VIEW, typeVIEW2D)
       sendI(VIEW, makeVIEW2D)
@@ -1018,10 +1020,15 @@ TwoDimensionalViewport () : Exports == Implementation where
           getI(VIEW)          -- acknowledge
           viewport.key := 0$I
 
+    import from TexmacsFormat
     coerce viewport ==
       (key(viewport) = 0$I) =>
         hconcat [message("Closed or Undefined TwoDimensionalViewport: "),
                   (viewport.title)::E]
+      if fricasintexmacs$Lisp then
+          write(viewport, "/tmp/fricas2D", "postscript")
+          sayExpr concat [ucodeToString 2, "ps:", _
+              FILE_-GET_-CONTENTS("/tmp/fricas2D.VIEW/fricas2D.ps")$Lisp pretend String, ucodeToString 5]
       hconcat [message("TwoDimensionalViewport: "), (viewport.title)::E]
 
     write(viewport : %, Filename : STR, aThingToWrite : STR) ==

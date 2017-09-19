@@ -1221,6 +1221,12 @@ with this hack and will try to convince the GCL crowd to fix this.
               ((eq x '|endOfPrompt|)
                   (princ (code-char 5)))))))
 
+(defun file-get-contents (filename)
+  (with-open-file (stream filename)
+    (let ((contents (make-string (file-length stream))))
+      (read-sequence contents stream)
+      contents)))
+
 (in-package "BOOTTRAN")
 
 (defmacro |doInBoottranPackage| (expr)

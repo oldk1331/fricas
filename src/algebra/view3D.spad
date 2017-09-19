@@ -493,7 +493,8 @@ ThreeDimensionalViewport() : Exports == Implementation where
 
     makeViewport3D0 viewport ==
       doOptions viewport --local function to extract and assign optional arguments for 3D viewports
-      say("   Transmitting data...")$DisplayPackage
+      if not fricasintexmacs$Lisp then
+        say("   Transmitting data...")$DisplayPackage
       transform := coord(viewport.optionsField, cartesian$COORDSYS)$DrawOptionFunctions0
       check(viewport.space3D)
       lpts := lp(viewport.space3D)
@@ -787,11 +788,16 @@ ThreeDimensionalViewport() : Exports == Implementation where
           sendI(VIEW, ySize)
           getI(VIEW)          -- acknowledge
 
+    import from TexmacsFormat
     coerce viewport ==
       (key(viewport) = 0$I) =>
         hconcat
           [message("Closed or Undefined ThreeDimensionalViewport: "),
            (viewport.title)::E]
+      if fricasintexmacs$Lisp then
+          write(viewport, "/tmp/fricas3D", "postscript")
+          sayExpr concat [ucodeToString 2, "ps:", _
+              FILE_-GET_-CONTENTS("/tmp/fricas3D.VIEW/fricas3D.ps")$Lisp pretend String, ucodeToString 5]
       hconcat [message("ThreeDimensionalViewport: "), (viewport.title)::E]
 
     key viewport == viewport.key

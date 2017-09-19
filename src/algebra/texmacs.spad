@@ -32,6 +32,7 @@ TexmacsFormat() : public == private where
   US     ==> UniversalSegment(Integer)
 
   public == SetCategory with
+    sayExpr : S -> Void
     coerce :    E -> S
       ++ coerce(o) changes o in the standard output format to Texmacs
       ++ format.
