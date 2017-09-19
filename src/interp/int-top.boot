@@ -103,8 +103,8 @@ spad() ==
   -- starts the interpreter, read in profiles, etc.
   $PrintCompilerMessageIfTrue: local
   setOutputAlgebra "%initialize%"
-  readSpadProfileIfThere()
   evalInlineCode()
+  readSpadProfileIfThere()
   runspad()
   'EndOfSpad
 
