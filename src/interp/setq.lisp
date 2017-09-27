@@ -444,8 +444,11 @@
      |U32Matrix| |U16Vector| |U16Matrix| |U8Vector| |U8Matrix|
      |DoubleFloatVector| |DoubleFloatMatrix| |ComplexDoubleFloatVector|
      |ComplexDoubleFloatMatrix| |Character| |SortedExponentVector|
-     |HashState| |Reference|))
+     |HashState| |Reference| |Maybe|))
             ;" used by optCallSpecially"
+            ; if there are arguments to the constructor,
+            ; then also modify 'optCallEval' in g-opt.boot
+            ; and add it to DOMLIST in src/algebra/Makefile.in
 (SETQ |$Zero| '(|Zero|))
 (SETQ |$One| '(|One|))
 (SETQ |$NonMentionableDomainNames|

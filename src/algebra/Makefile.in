@@ -57,7 +57,7 @@ SPAD_SRCS= \
      leadcdet lie limitps lindep lingrob liouv \
      listgcd list lll lmdict lodof lodof2 lodo logic \
      mama manip mantepse mappkg matcat matfuns matrix \
-     matstor mesh mfinfact mkfunc mkrecord \
+     matstor maybe mesh mfinfact mkfunc mkrecord \
      mlift moddfact modgcd modhpsol modmonom modmon modring \
      moebius mring mrv_limit mset mts muldep multfact multpoly \
      multsqfr naalgc naalg newdata newpoint newpoly \
@@ -199,7 +199,7 @@ SPADLIST4=\
      MAPHACK3 MAPPKG1 MAPPKG2 MAPPKG3 MATCAT2 MATCAT
 
 SPADLIST5=\
-     MATLIN MATRIX MATSTOR MCALCFN MCDEN MCMPLX \
+     MATLIN MATRIX MATSTOR MAYBE MCALCFN MCDEN MCMPLX \
      MDAGG MDDFACT MEETLAT MESH MEVCAT MEVAL1 MEVAL2 \
      MFGRPH MFINFACT MFLOAT MHROWRED \
      MINT MKBCFUNC MKCHSET MKFUNC MKRECORD \
@@ -341,7 +341,7 @@ SPADLIST=${SPADLIST1} ${SPADLIST2} ${SPADLIST3} ${SPADLIST4} \
 
 # List of core domains
 DOMLIST= ALIST BOOLEAN CHAR DFLOAT FRAC HASHSTAT \
-        ILIST IARRAY1 ISTRING IVECTOR \
+        ILIST IARRAY1 ISTRING IVECTOR MAYBE \
         INT LIST NNI OUTFORM PI PRIMARR REF SEX SINT STRING SYMBOL VECTOR \
         MATRIX ARRAY1 IIARRAY2 ARRAY2 U32VEC U32MAT U16VEC U16MAT U8VEC \
         U8MAT DFVEC DFMAT COMPLEX CDFVEC CDFMAT SOREXPV
