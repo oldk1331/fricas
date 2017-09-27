@@ -170,6 +170,7 @@ optCallEval u ==
   u is ["Matrix", :.] => Matrix Integer()
   u is ["TwoDimensionalArray", :.] => TwoDimensionalArray Integer()
   u is ["Reference", :.] => Reference Integer()
+  u is ["Maybe", :.] => Maybe Integer()
   eval u
 
 optCons (x is ["CONS",a,b]) ==
