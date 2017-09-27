@@ -1,0 +1,60 @@
+)abbrev domain MAYBE Maybe
+++ Description:
+++ The type Maybe(R) represents either a value of type R, or absence/failure.
+++ Using Maybe is a good way to deal with errors or exceptional cases without
+++ resorting to drastic measures such as error.  It replaces the usage of
+++ Union(R, "failed").
+
+Maybe(R : Type) : Exports == Implementation where
+  Exports == with
+      failed : () -> %
+          ++ failed() returns the value that indicates failure.
+      failed? : % -> Boolean
+          ++ failed?(x) checks if x is failed().
+      wrap : R -> %
+          ++ wrap(x) returns x wrapped in type Maybe(R).
+      wrap? : % -> Boolean
+          ++ wrap?(x) checks if x is of type R.
+      unwrap : % -> R
+          ++ unwrap(x) returns x as type R, gives an error if x is failed().
+      unwrap! : % -> R
+          ++ unwrap!(x) returns x as type R without checking, use with caution.
+      unwrapOr : (%, R) -> R
+          ++ unwrapOr(x, default) returns x as type R if it's not failed(),
+          ++ otherwise returns default.
+      coerce : R -> %
+          ++ coerce(x) returns x wrapped in type Maybe(R).  This is the same
+          ++ as wrap(x), and provides auto-coercion in interpreter.
+      if R has CoercibleTo OutputForm then CoercibleTo OutputForm
+      if R has BasicType then BasicType
+      if R has SetCategory then SetCategory
+
+  Implementation == add
+      Rep := List R
+      -- the representation should have 0 or 1 element
+
+      errMsg ==> "unwrap: the argument is failed()"
+
+      failed() == []
+      failed? x == empty? x
+      wrap x == [x]
+      wrap? x == CONSP(x)$Lisp
+      unwrap! x == QCAR(x)$Lisp
+      unwrap x == if failed? x then error errMsg else unwrap! x
+      unwrapOr(x, default) == if failed?(x) then default else unwrap! x
+
+      coerce(x : R) : % == wrap x
+
+      if R has CoercibleTo OutputForm then
+          coerce(x : %) : OutputForm ==
+              failed? x => 'failed::OutputForm
+              unwrap!(x)::OutputForm
+
+      if R has BasicType then
+          x = y ==
+              failed? x => failed? y
+              failed? y => false
+              unwrap! x = unwrap! y
+
+      if R has SetCategory then
+          hashUpdate!(hs : HashState, x : %) == hashUpdate!(hs, x)$Rep
