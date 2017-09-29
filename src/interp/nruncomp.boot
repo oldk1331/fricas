@@ -133,13 +133,16 @@ optDeltaEntry(op,sig,dc,eltOrConst) ==
   sig := substitute(ndc, dc, sig)
   not MEMQ(IFCAR ndc, $optimizableConstructorNames) => nil
   dcval := optCallEval ndc
+  ddcval := devaluate dcval
   -- substitute guarantees to use EQUAL testing
-  sig := substitute(devaluate dcval, ndc, sig)
+  sig := substitute(ddcval, ndc, sig)
   if rest ndc then
-     for new in rest devaluate dcval for old in rest ndc repeat
-       sig := substitute(new, old, sig)
+     for new in rest ddcval for old in rest ndc repeat
+         if old ~= '$ then sig := substitute(new, old, sig)
      -- optCallEval sends (List X) to (List (Integer)) etc,
      -- so we should make the same transformation
+     sig := substitute(CADR ddcval, "$$", sig)
+     -- also transform "$$" to CADR(ddcval) which is '(Integer)
   fn := compiledLookup(op,sig,dcval)
   if null fn then
     -- following code is to handle selectors like first, rest
