@@ -256,6 +256,7 @@ Float():
       normalize [s, -e]
 
    sin x ==
+      zero? x => 0
       s := sign x; x := abs x; p := bits(); inc 4
       if x > [6, 0] then (inc p; x := 2*pi*fractionPart(x/pi/2); bits p)
       if x > [3, 0] then (inc p; s := -s; x := x - pi; bits p)
@@ -322,6 +323,7 @@ Float():
       normalize [s, -p]
 
    tan x ==
+      zero? x => 0
       s := sign x; x := abs x; p := bits(); inc 6
       if x > [3, 0] then (inc p; x := pi()*fractionPart(x/pi()); dec p)
       if x > [3, -1] then (inc p; x := pi()-x; s := -s; dec p)
@@ -604,7 +606,10 @@ Float():
    wholePart x == shift2(x.mantissa, x.exponent)
    floor x == if negative? x then -ceiling(-x) else truncate x
    round x == (half := [sign x, -1]; truncate(x + half))
-   sign x == if x.mantissa < 0 then -1 else 1
+   sign x ==
+       x.mantissa < 0 => -1
+       x.mantissa = 0 => 0
+       1
    truncate x ==
       if x.exponent >= 0 then return x
       normalize [shift2(x.mantissa, x.exponent), 0]
