@@ -178,7 +178,7 @@ ListPackage(T : BasicType): Exports == Implementation where
         resyes : List T := empty()
         resno : List T := empty()
         for t in l repeat
-            if test f(t) then
+            if f(t) then
               resyes := cons(t, resyes)
             else
               resno := cons(t, resno)
