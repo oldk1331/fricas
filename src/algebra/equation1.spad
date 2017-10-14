@@ -85,6 +85,8 @@ Equation(S : Type) : public == private where
     if S has SetCategory then
         SetCategory
         CoercibleTo Boolean
+        test : % -> Boolean
+            ++ test(eqn) returns true if both sides of eqn are equal.
         if S has Evalable(S) then
            eval : (%, %) -> %
                ++ eval(eqn, x=f) replaces x by f in equation eqn.
@@ -191,6 +193,7 @@ Equation(S : Type) : public == private where
                      (eq1.rhs = eq2.rhs)@Boolean
         coerce(eqn : %) : Ex == eqn.lhs::Ex = eqn.rhs::Ex
         coerce(eqn : %) : Boolean == eqn.lhs = eqn.rhs
+        test eqn == eqn.lhs = eqn.rhs
     if S has AbelianSemiGroup then
         eq1 + eq2 == eq1.lhs + eq2.lhs = eq1.rhs + eq2.rhs
         s + eq2 == [s, s] + eq2
