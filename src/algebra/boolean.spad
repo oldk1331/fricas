@@ -49,40 +49,36 @@ Boolean() : Join(OrderedSet, Finite, Logic, ConvertibleTo InputForm) with
     _not : % -> %
       ++ not n returns the negation of n.
     _and  : (%, %) -> %
-      ++ a and b  returns the logical {\em and} of Boolean \spad{a} and b.
+      ++ a and b returns the logical {\em and} of Boolean \spad{a} and \spad{b}.
+      ++ This function is short-circuited.
     _or  : (%, %) -> %
-      ++ a or b returns the logical inclusive {\em or}
-      ++ of Boolean \spad{a} and b.
+      ++ a or b returns the logical inclusive {\em or} of Boolean
+      ++ \spad{a} and \spad{b}. This function is short-circuited.
     xor    : (%, %) -> %
       ++ xor(a, b) returns the logical exclusive {\em or}
-      ++ of Boolean \spad{a} and b.
+      ++ of Boolean \spad{a} and \spad{b}.
     nand   : (%, %) -> %
-      ++ nand(a, b) returns the logical negation of \spad{a} and b.
+      ++ nand(a, b) returns the logical negation of \spad{a} and \spad{b}.
     nor    : (%, %) -> %
-      ++ nor(a, b) returns the logical negation of \spad{a} or b.
+      ++ nor(a, b) returns the logical negation of \spad{a} or \spad{b}.
     implies : (%, %) -> %
       ++ implies(a, b) returns the logical implication
-      ++ of Boolean \spad{a} and b.
-    test : % -> Boolean
-      ++ test(b) returns b and is provided for compatibility with the new compiler.
+      ++ of Boolean \spad{a} and \spad{b}.
   == add
-    nt : % -> %
+    -- test is a hack to trick the compiler: compiler doesn't know % is Boolean
+    test a ==> a pretend Boolean
 
-    test a        == a pretend Boolean
-
-    nt b          == (b pretend Boolean => false; true)
-    true          == EQ(2, 2)$Lisp   --well, 1 is rather special
+    true          == EQ(2, 2)$Lisp  -- this is optimized to lisp symbol T
     false         == NIL$Lisp
-    -- sample()      == true
     not b         == NOT(b)$Lisp
     _~ b          == NOT(b)$Lisp
     _and(a, b)    == AND(a, b)$Lisp
     _/_\(a, b)    == AND(a, b)$Lisp
     _or(a, b)     == OR(a, b)$Lisp
     _\_/(a, b)    == OR(a, b)$Lisp
-    xor(a, b)     == (test a => nt b; b)
-    nor(a, b)     == (test a => false; nt b)
-    nand(a, b)    == (test a => nt b; true)
+    xor(a, b)     == (test a => ~ b; b)
+    nor(a, b)     == (test a => false; ~ b)
+    nand(a, b)    == (test a => ~ b; true)
     a = b         == BooleanEquality(a, b)$Lisp
     implies(a, b) == (test a => b; true)
     a < b         == (test b => not(test a);false)
@@ -94,18 +90,18 @@ Boolean() : Join(OrderedSet, Finite, Logic, ConvertibleTo InputForm) with
       even?(i::Integer) => false
       true
     lookup a      ==
-      a pretend Boolean => 1
+      test a => 1
       2
     random()      ==
       even?(random(2)$Integer) => false
       true
 
     convert(x : %) : InputForm ==
-      x pretend Boolean => convert('true)
+      test x => convert('true)
       convert('false)
 
     coerce(x : %) : OutputForm ==
-      x pretend Boolean => message "true"
+      test x => message "true"
       message "false"
 
 
