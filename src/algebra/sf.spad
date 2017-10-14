@@ -555,7 +555,11 @@ DoubleFloat() : Join(FloatingPointSystem, DifferentialRing, OpenMath,
      x = ((n := wholePart x)::%) => n
      "failed"
 
-   sign(x : %) : Integer == retract FLOAT_-SIGN(x, 1)$Lisp
+   sign(x : %) : Integer ==
+       zero? x => 0
+       negative? x => -1
+       1
+
    abs x   == abs_DF(x)$Lisp
 
    conjugate x == x
