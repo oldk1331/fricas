@@ -1401,9 +1401,8 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
       reverse! l
 
   children x ==
-      l := empty()$List(%)
-      empty? x => l
-      concat(rest x, l)
+      empty? x => empty()
+      [rest x]
 
   leaf? x == empty? x
 
@@ -1515,13 +1514,13 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
           s
 
       setchildren!(u, lv) ==
-          #lv = 1 => setrest!(u, first lv)
+          size?(lv, 1) => setrest!(u, first lv)
           error "wrong number of children specified"
 
       setvalue!(u, s) == setfirst!(u, s)
 
       split!(p, n) ==
-          n < 1 => error "index out of range"
+          n = 0 => error "index out of range"
           p := rest(p, (n - 1)::NonNegativeInteger)
           q := rest p
           setrest!(p, empty())
@@ -2006,7 +2005,6 @@ OneDimensionalArrayAggregate(S : Type) : Category ==
         y
 
     construct l ==
---      a := new(#l)
         empty? l => empty()
         a := new(#l, first l)
         for i in minIndex(a).. for x in l repeat qsetelt!(a, i, x)

@@ -146,7 +146,6 @@ GroebnerInternalPackage(Dom, Expon, Dpol) : T == C where
           if xx2 = 1 then
            prindINFO(D0, s, h, # basPols, # D, xx)
            xx := 2
-          " go to top of while "
          degree(h) = 0 =>
            D := []
            if xx2 = 1 then
