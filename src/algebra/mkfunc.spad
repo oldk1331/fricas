@@ -421,24 +421,27 @@ MakeFloatCompiledFunction(S) : Exports == Implementation where
     mkLisp s ==
       atom? s => (integer?(s) => convert((integer s)::SF)@INF; s)
       op := first(l := destruct s)
-      (u := mkLispList rest l) case "failed" => "failed"
+      l := rest(l)
+      (u := mkLispList l) case "failed" => "failed"
       ll := u::List(INF)
+      -- l is the original argument list
+      -- ll is l where integer constants are replaced by floats
       streqlist?(op, ["+","*","/","-"]) => convert(concat(op, ll))@INF
       streq?(op, "^") =>
-          integer?(ii := l(3)) =>
-              gencode("EXPT", [ll(1), ii])
+          integer?(ii := l.2) =>
+              gencode("EXPT", [ll.1, ii])
           gencode("EXPT", ll)
       streqlist?(op, ["exp","sin","cos","tan","atan","asin","acos",
          "log", "sinh","cosh","tanh","asinh","acosh","atanh","sqrt"]) =>
             gencode(upperCase string symbol op, ll)
       streq?(op, "nthRoot") =>
-        second(rest(l)) = convert(2::Integer)@INF =>
-           gencode("SQRT",[first ll])
-        gencode("EXPT", concat(first ll, [1$INF / second ll]))
+        l.2 = convert(2::Integer)@INF =>
+            gencode("SQRT", [ll.1])
+        gencode("EXPT", [ll.1, 1$INF / ll.2])
       streq?(op, "float") =>
         a := ll.1
         e := ll.2
-        b := ((ll.3) pretend Integer)::SF
+        b := ll.3
         _*(a, EXPT(b, e)$Lisp)$Lisp pretend INF
       "failed"
 
