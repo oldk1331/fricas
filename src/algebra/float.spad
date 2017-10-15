@@ -111,7 +111,7 @@ Float():
       ++ convert(x) converts a \spadtype{DoubleFloat} x to a \spadtype{Float}.
    outputFloating : () -> Void
       ++ outputFloating() sets the output mode to floating (scientific) notation, i.e.
-      ++ \spad{mantissa * 10 exponent} is displayed as  \spad{0.mantissa E exponent}.
+      ++ \spad{0.mantissa * 10^exponent} is displayed as \spad{0.mantissa E exponent}.
    outputFloating : N -> Void
       ++ outputFloating(n) sets the output mode to floating (scientific) notation
       ++ with n significant digits displayed after the decimal point.

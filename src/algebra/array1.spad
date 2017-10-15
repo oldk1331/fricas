@@ -446,7 +446,7 @@ OneDimensionalArray(S : Type) : Exports == Implementation where
     oneDimensionalArray : List S -> %
         ++ oneDimensionalArray(l) creates an array from a list of elements l
     oneDimensionalArray : (NonNegativeInteger, S) -> %
-        ++ oneDimensionalArray(n, s) creates an array from n copies of element s
+        ++ oneDimensionalArray(n, s) creates an array with n copies of element s.
   Implementation == IndexedOneDimensionalArray(S, ARRAYMININDEX) add
 
     -- qelt and qsetelt! are logically unnecessary, but good for

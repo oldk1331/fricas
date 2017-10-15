@@ -941,7 +941,7 @@ OrderedAbelianMonoid() : Category ==
 ++ Keywords:
 ++ References:
 ++ Description:
-++ This domain is an OrderedAbelianMonoid with a \spadfun{sup} operation added.
+++ This domain is an OrderedAbelianMonoid with a \spadfun{sup} operation.
 ++ The purpose of the \spadfun{sup} operator in this domain is to act as a supremum
 ++ with respect to the partial order imposed by \spadop{-}, rather than with respect to
 ++ the total \spad{>} order (since that is "max").
