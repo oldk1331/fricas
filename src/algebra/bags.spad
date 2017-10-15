@@ -12,13 +12,12 @@
 
 ++ Linked List implementation of a Stack
 
-Stack(S : SetCategory) : StackAggregate S with
+Stack(S : Type) : StackAggregate S with
     stack : List S -> %
       ++ stack([x, y, ..., z]) creates a stack with first (top)
       ++ element x, second element y, ..., and last element z.
   == add
     Rep := Reference List S
-    s = t == deref s = deref t
     parts s == deref s
     map(f : S -> S, s : %) == ref map(f, deref s)$List(S)
     map!(f : S -> S, s : %) ==
@@ -42,7 +41,10 @@ Stack(S : SetCategory) : StackAggregate S with
     empty? s == empty?(deref(s))
     construct s == ref copy s
     stack s == construct s
-    hashUpdate!(st, s) == hashUpdate!(st, deref s)
+    if S has BasicType then
+        s = t == deref s = deref t
+    if S has SetCategory then
+        hashUpdate!(st, s) == hashUpdate!(st, deref s)
 
 )abbrev domain ASTACK ArrayStack
 ++ Author: Michael Monagan and Stephen Watt
@@ -58,7 +60,7 @@ Stack(S : SetCategory) : StackAggregate S with
 
 ++ A stack represented as a flexible array.
 
-ArrayStack(S : SetCategory) : StackAggregate(S) with
+ArrayStack(S : Type) : StackAggregate(S) with
     arrayStack : List S -> %
       ++ arrayStack([x, y, ..., z]) creates an array stack with first (top)
       ++ element x, second element y, ..., and last element z.
@@ -67,12 +69,18 @@ ArrayStack(S : SetCategory) : StackAggregate(S) with
 
     -- system operations
     # s == _#(s)$Rep
-    s = t == s =$Rep t
     copy s == copy(s)$Rep
-    coerce(d) : OutputForm ==
-        empty? d => empty()$(List S) ::OutputForm
-        n := #d
-        [(d.(n - i))::OutputForm for i in 1..n]::OutputForm
+
+    if S has BasicType then
+        s = t == s =$Rep t
+
+    if S has SetCategory then
+        coerce(d) : OutputForm ==
+            empty? d => empty()$(List S) ::OutputForm
+            n := #d
+            [(d.(n - i))::OutputForm for i in 1..n]::OutputForm
+
+        hashUpdate!(hs, s) == hashUpdate!(hs, s)$Rep
 
     -- stack operations
     empty? s == empty?(s)$Rep
@@ -93,7 +101,6 @@ ArrayStack(S : SetCategory) : StackAggregate(S) with
     empty() == empty()$Rep
     map(f, s) == map(f, s)$Rep
     map!(f, s) == map!(f, s)$Rep
-    hashUpdate!(hs, s) == hashUpdate!(hs, s)$Rep
 
 )abbrev domain QUEUE Queue
 ++ Author: Michael Monagan and Stephen Watt
@@ -109,7 +116,7 @@ ArrayStack(S : SetCategory) : StackAggregate(S) with
 
 ++ Linked List implementation of a Queue
 
-Queue(S : SetCategory) : QueueAggregate S with
+Queue(S : Type) : QueueAggregate S with
     queue : List S -> %
       ++ queue([x, y, ..., z]) creates a queue with first (top)
       ++ element x, second element y, ..., and last (bottom) element z.
@@ -148,7 +155,7 @@ Queue(S : SetCategory) : QueueAggregate S with
 
 ++ Linked list implementation of a Dequeue
 
-Dequeue(S : SetCategory) : DequeueAggregate S with
+Dequeue(S : Type) : DequeueAggregate S with
      dequeue : List S -> %
        ++ dequeue([x, y, ..., z]) creates a dequeue with first (top or front)
        ++ element x, second element y, ..., and last (bottom or back) element z.
