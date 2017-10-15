@@ -228,7 +228,6 @@ compWithMappingMode(x, m, oldE) ==
   compWithMappingMode1(x, m, oldE, $formalArgList)
 
 compWithMappingMode1(x, m is ["Mapping", m', :sl], oldE, $formalArgList) ==
-  $killOptimizeIfTrue: local:= true
   e:= oldE
   isFunctor x =>
     if get(x,"modemap",$CategoryFrame) is [[[.,target,:argModeList],.],:.] and
@@ -261,6 +260,9 @@ compWithMappingMode1(x, m is ["Mapping", m', :sl], oldE, $formalArgList) ==
   $returnMode : local := m'
   $currentFunctionLevel : local := #$exitModeStack
   old_style and not null vl and not hasFormalMapVariable(x, vl) =>
+      -- this is for the case like "max" in 'reduce("max", l)'
+      -- it should not be inlined
+      $killOptimizeIfTrue: local := true
       vln := [GENSYM() for v in vl]
       $formalArgList := [:vln, :$formalArgList]
       for m in sl for v in vln repeat
@@ -322,7 +324,10 @@ simpleCall(u, vl, m, oldE) ==
     u is ["call", fn, :avl] and avl = vl =>
         if fn is ["applyFun", a] then fn := a
         fn = "mkRecord" => nil
-        [fn,m,oldE]
+        -- anonymous function can't be optimized into symbol (like +)
+        -- or 'XLAM form
+        CONSP fn and first(fn) ~= 'XLAM => [fn, m, oldE]
+        nil
     nil
 
 extractCodeAndConstructTriple(u, m, oldE) ==
