@@ -26,7 +26,6 @@ SymmetricFunctions(R : Ring) : Exports == Implementation where
         coef_vect(*/[monomial(1, 1)$UP + a::UP for a in l], #l)
 
 )abbrev package TANEXP TangentExpansions
-++ Expansions of tangents of sums and quotients
 ++ Author: Manuel Bronstein
 ++ Date Created: 13 Feb 1989
 ++ Description: Expands tangents of sums and scalar products.
@@ -76,7 +75,6 @@ TangentExpansions(R : Field) : Exports == Implementation where
           /(1 + +/[m1toN(i) * v(2*i - 1 + m) for i in 1..(#v quo 2)])
 
 )abbrev package EFSTRUC ElementaryFunctionStructurePackage
-++ Risch structure theorem
 ++ Author: Manuel Bronstein, Waldek Hebisch
 ++ Date Created: 1987
 ++ Description:
