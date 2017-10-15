@@ -6,7 +6,7 @@
 ++ Description:  \spadtype{Reference} is for making a changeable instance
 ++ of something.
 
-Reference(S : Type) : Type with
+Reference(S : Type) : with
         ref   : S -> %
           ++  ref(n) creates a pointer (reference) to the object n.
         elt   : % -> S

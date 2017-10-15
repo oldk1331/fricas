@@ -524,7 +524,7 @@ AlgebraicFunction(R, F) : Exports == Implementation where
           else
               if R has FloatingPointSystem then
                   iroot(r, n) ==
-                      odd? n or not(smaller?(r, 0)) => nthRoot(r, n)::F
+                      odd? n or r >= 0 => nthRoot(r, n)::F
                       hackroot(r::F, n)
               else
                   iroot(r, n) ==
@@ -546,12 +546,13 @@ AlgebraicFunction(R, F) : Exports == Implementation where
         dumvar - x
 
       minPoly k ==
+        args := argument k
+        arg1 := first args
+        arg2 := second args
         is?(k, opalg)  =>
-           numer univariate(first argument k,
-                                           retract(second argument k)@K)
+           numer univariate(arg1, retract(arg2)@K)
         is?(k, oproot) =>
-           monomial(1, retract(second argument k)@Z :: NonNegativeInteger)
-             - first(argument k)::UP
+           monomial(1, retract(arg2)@Z :: NonNegativeInteger) - arg1::UP
         monomial(1, 1) - k::F::UP
 
       evaluate(oproot, inroot)$BasicOperatorFunctions1(F)

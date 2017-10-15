@@ -162,8 +162,9 @@ SplitHomogeneousDirectProduct(dimtot, dim1, S) : T == C where
           n1<n2 => true
           n2<n1 => false
           for i in high..low by -1 repeat
-            if qelt(v2, i) < qelt(v1, i) then return true
-            if qelt(v1, i) < qelt(v2, i) then return false
+            q1 := qelt(v1, i); q2 := qelt(v2, i)
+            if q2 < q1 then return true
+            if q1 < q2 then return false
           false
 
         (v1 : % < v2 : %) : Boolean ==
