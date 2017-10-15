@@ -413,11 +413,16 @@ DoubleFloat() : Join(FloatingPointSystem, DifferentialRing, OpenMath,
 
    convert(x : %) : InputForm == convert(x pretend DoubleFloat)$InputForm
    x < y            == less_DF(x, y)$Lisp
+   x > y            == more_DF(x, y)$Lisp
+   x <= y           == less_eq_DF(x, y)$Lisp
+   x >= y           == more_eq_DF(x, y)$Lisp
    - x              == minus_DF(x)$Lisp
    x + y            == add_DF(x, y)$Lisp
    x : % - y : %        == sub_DF(x, y)$Lisp
    x : % * y : %        == mul_DF(x, y)$Lisp
    i : Integer * x : %  == mul_DF_I(x, i)$Lisp
+   i : PositiveInteger * x : %  == mul_DF_I(x, i)$Lisp
+   i : NonNegativeInteger * x : %  == mul_DF_I(x, i)$Lisp
    max(x, y)         == max_DF(x, y)$Lisp
    min(x, y)         == min_DF(x, y)$Lisp
    x = y            == eql_DF(x, y)$Lisp
@@ -426,6 +431,8 @@ DoubleFloat() : Join(FloatingPointSystem, DifferentialRing, OpenMath,
    qsqrt x          == qsqrt_DF(x)$Lisp
    log10 x          == checkComplex LOG10(x)$Lisp
    x : % ^ i : Integer == expt_DF_I(x, i)$Lisp
+   x : % ^ i : PositiveInteger == expt_DF_I(x, i)$Lisp
+   x : % ^ i : NonNegativeInteger == expt_DF_I(x, i)$Lisp
    x : % ^ y : %       == checkComplex expt_DF(x, y)$Lisp
    coerce(i : Integer) : % == FLOAT(i, MOST_-POSITIVE_-DOUBLE_-FLOAT$Lisp)$Lisp
    exp x            == exp_DF(x)$Lisp
@@ -443,7 +450,7 @@ DoubleFloat() : Join(FloatingPointSystem, DifferentialRing, OpenMath,
    atan x           == atan_DF(x)$Lisp
    acsc x           == asin(1/x)
 
-   pi_half : % := pi()/(2::%)
+   pi_half ==> pi()/(2::%)
 
    acot x           ==
        0 < x =>
@@ -467,6 +474,7 @@ DoubleFloat() : Join(FloatingPointSystem, DifferentialRing, OpenMath,
    asech x          == acosh(1/x)
    x : % / y : %        == div_DF(x, y)$Lisp
    negative? x      == negative?_DF(x)$Lisp
+   positive? x      == positive?_DF(x)$Lisp
    zero? x          == zero?_DF(x)$Lisp
    hashUpdate!(hs, s) == update!(hs, SXHASH(s)$Lisp)$HashState
    recip(x)         == (zero? x => "failed"; 1 / x)

@@ -268,6 +268,12 @@
 (progn
 (defmacro |less_DF| (x y) `(< (the double-float ,x)
                                              (the double-float ,y)))
+(defmacro |more_DF| (x y) `(> (the double-float ,x)
+                                             (the double-float ,y)))
+(defmacro |less_eq_DF| (x y) `(<= (the double-float ,x)
+                                             (the double-float ,y)))
+(defmacro |more_eq_DF| (x y) `(>= (the double-float ,x)
+                                             (the double-float ,y)))
 (defmacro |eql_DF| (x y) `(EQL (the double-float ,x)
                                              (the double-float ,y)))
 (defmacro |expt_DF_I| (x y) `(EXPT (the double-float ,x)
@@ -280,6 +286,7 @@
                                   (the integer ,y)))
 (defmacro |zero?_DF| (x) `(ZEROP (the double-float ,x)))
 (defmacro |negative?_DF| (x) `(MINUSP (the double-float ,x)))
+(defmacro |positive?_DF| (x) `(PLUSP (the double-float ,x)))
 (defmacro |sqrt_DF| (x) `(SQRT (the double-float ,x)))
 (defmacro |log_DF| (x) `(LOG (the double-float ,x)))
 (defmacro |qsqrt_DF| (x) `(the double-float (SQRT
@@ -293,7 +300,10 @@
 
 #+(and :openmcl (not :CCL-1.8))
 (progn
-(defmacro |less_DF| (x y) `(<  ,x ,y))
+(defmacro |less_DF| (x y) `(< ,x ,y))
+(defmacro |more_DF| (x y) `(> ,x ,y))
+(defmacro |less_eq_DF| (x y) `(<= ,x ,y))
+(defmacro |more_eq_DF| (x y) `(>= ,x ,y))
 (defmacro |eql_DF| (x y) `(EQL ,x ,y))
 (defmacro |expt_DF_I| (x y) `(EXPT ,x ,y))
 (defmacro |expt_DF| (x y) `(EXPT ,x ,y))
@@ -301,6 +311,7 @@
 (defmacro |div_DF_I| (x y) `(/ ,x ,y))
 (defmacro |zero?_DF| (x) `(ZEROP ,x))
 (defmacro |negative?_DF| (x) `(MINUSP ,x))
+(defmacro |positive?_DF| (x) `(PLUSP ,x))
 (defmacro |sqrt_DF|(x) `(SQRT ,x))
 (defmacro |log_DF| (x) `(LOG ,x))
 (defmacro |qsqrt_DF|(x) `(SQRT ,x))
