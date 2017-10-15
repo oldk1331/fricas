@@ -1076,7 +1076,8 @@ Pi() : Exports == Implementation where
                    RetractableTo Fraction Integer, RealConstant,
                    CoercibleTo DoubleFloat, CoercibleTo Float,
                    ConvertibleTo RF, ConvertibleTo InputForm) with
-    pi : () -> % ++ pi() returns the symbolic %pi.
+    pi : () -> %
+        ++ pi() returns the symbolic %pi.
   Implementation ==> RF add
     Rep := RF
 
