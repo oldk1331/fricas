@@ -168,31 +168,30 @@ AnyFunctions1(S : Type) : with
             error "Cannot retract value."
 
 )abbrev domain VOID Void
--- These types act as the top and bottom of the type lattice
--- and are known to the compiler and interpreter for type resolution.
 ++ Author: Stephen M. Watt
 ++ Date Created: 1986
 ++ Basic Operations:
 ++ Related Domains: ErrorFunctions, ResolveLatticeCompletion, Exit
 ++ Also See:
 ++ AMS Classifications:
-++ Keywords: type, mode, coerce, no value
+++ Keywords: type, mode, coerce, unit type
 ++ Examples:
 ++ References:
 ++ Description:
-++   This type is used when no value is needed, e.g., in the \spad{then}
-++   part of a one armed \spad{if}.
+++   \spadtype{Void} implements the unit type in type theory.
+++   It allows only one value thus can hold no information.
+++   Void is used in the \spad{then} part of a one armed \spad{if}.
 ++   All values can be coerced to type Void.  Once a value has been coerced
 ++   to Void, it cannot be recovered.
 
 Void : with
-        void : () -> %            ++ void() produces a void object.
+        void : () -> %
+            ++ void() returns the void object.
         coerce : % -> OutputForm
-          ++ coerce(v) coerces void object to OutputForm.
+            ++ coerce(v) coerces the void object to OutputForm.
     == add
-        Rep := String
         void()      == voidValue()$Lisp
-        coerce(v : %) == coerce(void())$Rep
+        coerce(v : %) == message "()"
 
 )abbrev domain EXIT Exit
 ++ Author: Stephen M. Watt
