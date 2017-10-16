@@ -81,9 +81,11 @@ DEFPARAMETER($repeatLabel, NIL)
 DEFPARAMETER($breakCount, 0)
 DEFPARAMETER($anonymousMapCounter, 0)
 
---% Void stuff
+--% Void is the unit type that allows only one value.
+--% It can be anything and we use 0 here.
+--% It can't be NIL, see function "getArgValue" in "interpret1".
 
-voidValue() == '"()"
+voidValue() == 0
 
 --% Handlers for Anonymous Function Definitions
 
