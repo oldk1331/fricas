@@ -1404,7 +1404,7 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
       empty? x => empty()
       [rest x]
 
-  leaf? x == empty? x
+  leaf? x == empty? x or empty? rest x
 
   value x ==
       empty? x => error "value of empty object"
