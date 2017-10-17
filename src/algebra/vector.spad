@@ -380,8 +380,6 @@ DirectProduct(dim : NonNegativeInteger, R : Type):
       coerce(z : %) : Vector(R)        == copy(z)$Rep pretend Vector(R)
       coerce(r : R) : %                == new(dim, r)$Rep
 
-      parts x == VEC2LIST(x)$Lisp
-
       directProduct z ==
         size?(z, dim) => copy(z)$Rep
         error "Not of the correct length"
