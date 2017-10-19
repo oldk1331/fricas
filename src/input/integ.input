@@ -9,7 +9,7 @@ is_evaluated_integral(res, f) ==
 
 testIntegrate(f: String, x: String, issue: String): Void ==
     testcaseNoClear("integrate(" f ", " x ") (" issue ")")
-    testTrue("(res := integrate(" f ", " x "); true)")
+    testTrue("(res := integrate(" f ", " x "); print res; true)")
     testTrue("is_evaluated_integral(res, " f ")")
     testEquals("normalize(D(res, " x ") - (" f "))", "0")
 
