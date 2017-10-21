@@ -38,21 +38,20 @@ integrate(sin x,x)
 I ==> integrate
 I(x^3,x)
 I(sin sin x,x)
-I(x^n,x)
-% - 1/(n + 1)
+In := I(x^n,x)
+In - 1/(n + 1)
 limit(%,n=-1)
-In := %% 17
-limit(%,n=-1)
+limit(In,n=-1)
 )set stream calculate 5
 series(In,n=-1)          --  expand In in powers of (n+1)
 In2 := In - x*%e^(-log(x))*(n+1)^(-1)
 limit(In2,n=-1)
 limit(x^(n+1)/(n+1),n=-1)
 limit(x^(n+1)/(n+1)-1/(n+1),n=-1)
-I(1/(a+x^2),x)
-series(second %, a=0)
-second %% 27
-(rule atan A == acot(1/A)) %
+res := I(1/(a+x^2),x)
+res2 := second res
+series(res2, a=0)
+(rule atan A == acot(1/A)) res2
 I(atan x - acot(1/x),x)
 atanRule := rule atan(A) == acot(1/A)
 atanRule atan x
@@ -71,7 +70,7 @@ simplify %
 (rule N*log A + M*log B == log(A^N*B^M)) %
 (rule log(A^N) == N*log A)%
 ii:=I(1/(x^3 + x + 1),x)
-T0:= (tower ii).2 ::EXPR INT
+T0:= (tower ii).3 ::EXPR INT -- choose the %%var
 f:=definingPolynomial  T0
 outputGeneral 5
 solve((numerator f) :: POLY INT,0.00001)
