@@ -539,7 +539,7 @@ DoubleFloat() : Join(FloatingPointSystem, DifferentialRing, OpenMath,
    rationalApproximation(x, d) == rationalApproximation(x, d, 10)
 
    atan(x, y) ==
-      x = 0 =>
+      zero? x =>
          y > 0 => pi()/2
          y < 0 => -pi()/2
          0
