@@ -4,7 +4,7 @@ FriCAS now tries to support standard GNU build/installation
 conventions.  So if you have sources and all prerequisites
 just:
 
-configure && make && make install
+    ./configure && make && make install
 
 should work. The above will install FriCAS files in
 /usr/local/lib/fricas directory and put fricas command in
@@ -71,12 +71,11 @@ Prerequisites:
   GMP should work on all sbcl and Clozure CL platforms except
   for Clozure CL on Power PC.
 
-- Extra libraries needed to have LaTeXed output (ASCII output works
-  fine without) in efricas.
+- Extra libraries are needed to have LaTeX output in efricas.
 
   On Debian (or Ubuntu) you probably need: dvipng, auctex
 
-- Extra libraries needed by gcl.  If you use Debian gcl you probably
+- Extra libraries are needed by gcl.  If you use Debian gcl you probably
   need libreadline5-dev, libncurses5-dev, libgmp3-dev, libxmu-dev and
   libxaw7-dev
 
@@ -84,10 +83,11 @@ Prerequisites:
 
 Known problems:
 
-- currently on when using case insensitive filesystem (typically
-  on Mac OSX and Windows) svn version can be only build in
+- currently when using case insensitive filesystem (typically
+  on Mac OS X and Windows), svn version can be only build in
   separate directory (in-tree build will fail).  This does not
   affect release tarball.
+
 - by default sbcl 1.0.54 and newer limits memory use to 1GB, which
   is too small for heavy use.  To work around this one can
   pass '--dynamic-space-size' argument during _sbcl_ build
@@ -96,8 +96,8 @@ Known problems:
   will be able to use almost all RAM, but limit should prevent
   trashing).
 
-- on some systems (notably MAC OSX) when using sbcl default
-  limit of open files may be too low.  To workaround increase
+- on some systems (notably MAC OS X) when using sbcl default
+  limit of open files may be too low.  Workaround is to increase
   limit (experiments suggest that 512 open files is enough).
   This should be not needed in FriCAS 1.1.7.
 
@@ -111,7 +111,7 @@ Known problems:
 - sbcl-1.0.29 has bug in 'directory' function which causes build
   failure.  This problem is fixed in 1.0.29.54.rc1.
 
-- 1.0.29.54.rc1 has broken complex 'tanh' function -- you will get
+- sbcl 1.0.29.54.rc1 has broken complex 'tanh' function -- you will get
   wrong results when applying 'tanh' to Complex DoubleFloat.
 
 - in sbcl 1.0.35 and up Control-C handling did not work.  This
@@ -140,7 +140,7 @@ Known problems:
 - On Gentoo system installed gcl probably will not work, one need to
   build own one.
 
-- Older version of gcl are incompatible with Fedora "exec-shield" and
+- Older versions of gcl are incompatible with Fedora "exec-shield" and
   strong address space randomization (setting randomize_va_space to 2).
   Newest CVS version of 2.6.8 branch of gcl fixes this problem.
 
@@ -162,7 +162,7 @@ Known problems:
 
   while sbcl will show only loader prompt.
 
-- On Mac OSX Tiger some users reported problems with pseudoterminals,
+- On Mac OS X Tiger some users reported problems with pseudoterminals,
   build stopped with message:
 
     fork_Axiom: Failed to reopen server: No such file or directory
@@ -189,8 +189,7 @@ Known problems:
   newer and 1.5 and earlier work OK.
 
 - Clozure CL earlier than release 1.2 (former Openmcl) has a bug in Lisp
-  printer.  This bug causes incorrect printing of FriCAS types.  Also,
-  Clozure CL earlier than release 1.2 has bug in complex
+  printer that causes incorrect printing of FriCAS types, and a bug in complex
   cosine function.  Those bugs are fixed in release 1.2.  If you want to
   use earlier version you can work around the bugs applying
   the 'contib/omcl.diff' patch and recompiling the compiler (see the patch
@@ -217,12 +216,12 @@ _one_ of the following:
 
 - Clozure CL
 
-  http://ccl.clozure.com/manual/chapter2.2.html#id357702
+  http://ccl.clozure.com/
   ftp://ftp.clozure.com/pub/release/
 
 - ECL
 
-  http://ecls.sourceforge.net
+  https://common-lisp.net/project/ecl/
 
 - gcl, version 2.6.8 works OK.  If you want to try development
   version from git note that main branch currently is very
@@ -235,16 +234,18 @@ _one_ of the following:
 
 - clisp
 
-  http://clisp.cons.org
+  http://www.clisp.org/
 
 - cmucl
+
+  http://cmucl.org/
 
 --------------------------------------------------------
 
 Step by step instructions for first time users:
 
 Latest (development) version of FriCAS is available only
-via svn, so you need svn client (see http://subversion.tigris.org/).
+via svn, so you need svn client (see https://subversion.apache.org/).
 
 You also need Lisp -- see links in section "Getting Lisp" and
 follow instructions.
