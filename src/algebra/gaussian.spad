@@ -466,7 +466,7 @@ ComplexCategory(R : CommutativeRing) : Category ==
            if R has _< : (R, R) -> Boolean then
 
                ((x : %) ^ (y : %)) : % ==
-                   x = 0 =>
+                   zero? x =>
                        yr : R := real(y)
                        0$R <$R yr => 0$%
                        error "x^y with x = 0 and real(y) <= 0"
