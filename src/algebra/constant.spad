@@ -30,6 +30,9 @@ AlgebraicNumber() : Exports == Implementation where
     reduce : % -> %
       ++ reduce(f) simplifies all the unreduced algebraic numbers
       ++ present in f by applying their defining relations.
+    simplify : % -> %
+      ++ simplify(f) applies simplifications to algebrauc number f.
+      ++ Currently it only applies the \spadfun{rootProduct} simplification.
     trueEqual : (%, %) -> Boolean
       ++ trueEqual(x, y) tries to determine if the two numbers are equal
     norm : (SUP(%), Kernel %) -> SUP(%)
@@ -99,6 +102,7 @@ AlgebraicNumber() : Exports == Implementation where
     x : % ^ n : Integer ==
       n < 0 => mainRatDenom (x ^$Rep n)
       x ^$Rep n
+    simplify x == rootProduct(x::Rep)$AlgebraicManipulations(Z, FE)
     trueEqual(a, b) ==
        -- if two algebraic numbers have the same norm (after deleting repeated
        -- roots, then they are certainly conjugates. Note that we start with a

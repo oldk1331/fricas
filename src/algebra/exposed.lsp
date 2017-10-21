@@ -299,7 +299,6 @@
   (|Sequence| . SEQU)
   (|SequenceFunctions2| . SEQU2)
   (|Set| . SET)
-  (|SimplifyAlgebraicNumberConvertPackage| . SIMPAN)
   (|SingleInteger| . SINT)
   (|SmithNormalForm| . SMITH)
   (|SparseUnivariatePolynomialFunctions2| . SUP2)
