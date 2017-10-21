@@ -40,6 +40,7 @@ ComplexCategory(R : CommutativeRing) : Category ==
        abs : % -> %
          ++ abs(x) returns the absolute value of x = sqrt(norm(x)).
      if R has arbitraryPrecision then arbitraryPrecision
+     if R has Approximate then Approximate
      if R has TranscendentalFunctionCategory then
        TranscendentalFunctionCategory
        argument : % -> R  ++ argument(x) returns the angle made by (1, 0) and x.

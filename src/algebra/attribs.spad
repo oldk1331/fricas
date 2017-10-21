@@ -52,7 +52,7 @@ arbitraryExponent() : Category == with ()
 
 )abbrev category ATAPPRO Approximate
 ++ Description:
-++ An approximation to the real numbers.
+++ An approximation to numbers.
 Approximate() : Category == with ()
 
 )abbrev category ATADDVA additiveValuation
