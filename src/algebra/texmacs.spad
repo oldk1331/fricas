@@ -1022,8 +1022,8 @@ TexmacsFormat() : public == private where
                             "</mtr></mtable>"))
 )endif
         op = 'CONCATB =>
-            --formatNary('STRSEP, "(space _"1quad_")", 0, args, prec)
-            formatNary('STRSEP, " ", 0, args, prec)
+            formatNary('STRSEP, "(space _"1spc_")", 0, args, prec)
+            --formatNary('STRSEP, " ", 0, args, prec)
         op = 'CONCAT =>
             formatNary('STRSEP, "", 0, args, minPrec)
         op = 'QUOTE =>
