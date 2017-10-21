@@ -328,14 +328,11 @@ it loads all of the named files, resets a few global state variables,
 loads the databases, sets up autoload triggers and clears out hash tables.
 After this function is called the image is clean and can be saved.
 |#
-(defun build-interpsys (load-files parse-files comp-files browse-files
-             asauto-files spad)
-  (declare (ignore nagbr-files))
+(defun build-interpsys (load-files spad)
   #-:ecl
   (progn
       (mapcar #'load load-files)
-      (interpsys-image-init parse-files comp-files browse-files
-             asauto-files spad))
+      (interpsys-image-init spad))
   (if (and (boundp 'FRICAS-LISP::*building-axiomsys*)
                 FRICAS-LISP::*building-axiomsys*)
        (progn
@@ -351,14 +348,6 @@ After this function is called the image is clean and can be saved.
            (append FRICAS-LISP::*fricas-initial-lisp-objects*
                    '("util.o")
                    load-files))
-#|
-      (dolist (el `(
-                    ("comp-files" ,comp-files)
-                    ("browse-files" ,browse-files)
-                    ("asauto-files" ,asauto-files)))
-          (c:build-fasl (concatenate 'string spad "/autoload/" (car el))
-                        :lisp-files (nth 1 el)))
-|#
       (let ((initforms nil))
           (dolist (el '(|$build_date| |$build_version| |$createLocalLibDb|))
               (if (boundp el)
@@ -386,33 +375,18 @@ After this function is called the image is clean and can be saved.
      (setf spad $spadroot)
      (format *standard-output* "spad = ~s~%" spad)
      (force-output  *standard-output*)
-     ;;; (load (concatenate 'string spad "/autoload/"  "parini.lsp"))
-#|
-     (interpsys-image-init
-           (list (concatenate 'string spad "/autoload/" "parse-files"))
-           (list (concatenate 'string spad "/autoload/" "comp-files"))
-           (list (concatenate 'string spad "/autoload/" "browse-files"))
-           (list (concatenate 'string spad "/autoload/" "asauto-files"))
-           spad)
-|#
-      (interpsys-image-init ()' ()' ()' ()' spad)
+      (interpsys-image-init spad)
       (format *standard-output* "before fricas-restart~%")
       (force-output  *standard-output*)
 )
 
-(defun interpsys-image-init (parse-files comp-files browse-files
-             asauto-files spad)
+(defun interpsys-image-init (spad)
   (setf *package* (find-package "BOOT"))
   (initroot spad)
   #+:GCL
   (setq compiler::*suppress-compiler-notes* t)
   (|interpsysInitialization|)
   (setq *load-verbose* nil)
-#|
-  (|setBootAutloadProperties| comp-functions comp-files)
-  (|setBootAutloadProperties| browse-functions browse-files)
-  (|setBootAutloadProperties| asauto-functions asauto-files)
-|#
   (resethashtables) ; the databases into core, then close the streams
  )
 
