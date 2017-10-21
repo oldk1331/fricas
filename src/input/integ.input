@@ -699,5 +699,9 @@ b1 := eval(f, x = a1)*D(a1, x)
 c1 := eval(g, x = a1)
 testEquals("integrate(b1, x)", "c1")
 
+-- This test is from mapleok.input
+in249a := integrate((sin(z)/(1-cos(z)))^(1/3), z = 0..%pi, "noPole")
+testEquals("simplifyLog(in249a)", "2/3*sqrt(3)*%pi")
+
 )set output algebra on
 statistics()
