@@ -294,7 +294,10 @@ IntegerRoots(I : IntegerNumberSystem) : Exports == Implementation where
       (s := approxSqrt a) * s = a => s
       "failed"
 
-    approxSqrt a ==
+    if I is Integer then
+     approxSqrt a == if a <= 0 then 0 else ISQRT(a)$Lisp
+    else
+     approxSqrt a ==
       a < 1 => 0
       if (n := length a) > (100::I) then
          -- variable precision newton iteration
