@@ -318,7 +318,7 @@ CombinatorialFunction(R, F) : Exports == Implementation where
       zero? second l => 1
       kernel(opperm, l)
 
-    if R has RetractableTo Z then
+    if R has RetractableTo Z and not R has Approximate then
       iidsum l ==
         (r1 := retractIfCan(fourth l)@Union(Z,"failed"))
          case "failed" or
@@ -358,10 +358,12 @@ CombinatorialFunction(R, F) : Exports == Implementation where
 
     else
       ipow l ==
-        zero?(x := first l) =>
-          zero? second l => error "0 ^ 0"
-          0
-        (x = 1) or zero?(n : F := second l) => 1
+        x := first l
+        n := second l
+        zero? x =>
+            zero? n => error "0 ^ 0"
+            kernel(oppow, l)
+        zero? n => 1
         (n = 1) => x
         (u := isExpt(x, OPEXP)) case "failed" => kernel(oppow, l)
         rec := u::Record(var : K, exponent : Z)
