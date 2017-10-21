@@ -292,36 +292,6 @@ where the [[${AXIOM}]] variable points to installed tree.
   (reroot (or (|getEnv| "AXIOM") newroot $spadroot
               (error "setenv AXIOM or (setq $spadroot)"))))
 
-;;; Gnu Common Lisp (GCL) (at least 2.6.[78]) requires some changes
-;;; to the default memory setup to run Axiom efficently.
-;;; This function performs those setup commands.
-(defun init-memory-config (&key
-                           (cons 500)
-                           (fixnum 200)
-                           (symbol 500)
-                           (package 8)
-                           (array 400)
-                           (string 500)
-                           (cfun 100)
-                           (cpages 3000)
-                           (rpages 1000)
-                           (hole 2000) )
-  ;; initialize GCL memory allocation parameters
-  #+:GCL
-  (progn
-    (system:allocate 'cons cons)
-    (system:allocate 'fixnum fixnum)
-    (system:allocate 'symbol symbol)
-    (system:allocate 'package package)
-    (system:allocate 'array array)
-    (system:allocate 'string string)
-    (system:allocate 'cfun cfun)
-    (system:allocate-contiguous-pages cpages)
-    (system:allocate-relocatable-pages rpages)
-    (system:set-hole-size hole))
-  #-:GCL
-  nil)
-
 #|
 ;############################################################################
 ;# autoload dependencies
@@ -435,10 +405,6 @@ After this function is called the image is clean and can be saved.
   (setf *package* (find-package "BOOT"))
   (initroot spad)
   #+:GCL
-  (init-memory-config :cons 500 :fixnum 200 :symbol 500 :package 8
-                      :array 400 :string 500 :cfun 100 :cpages 1000
-                      :rpages 1000 :hole 2000)
-  #+:GCL
   (setq compiler::*suppress-compiler-notes* t)
   (|interpsysInitialization|)
   (setq *load-verbose* nil)
@@ -475,9 +441,6 @@ After this function is called the image is clean and can be saved.
 (defvar *fricas-load-libspad* t)
 
 (defun fricas-init ()
-#+:GCL
-  (init-memory-config :cons 500 :fixnum 200 :symbol 500 :package 8
-    :array 400 :string 500 :cfun 100 :cpages 3000 :rpages 1000 :hole 2000)
 #+:GCL (setq compiler::*compile-verbose* nil)
 #+:GCL (setq compiler::*suppress-compiler-warnings* t)
 #+:GCL (setq compiler::*suppress-compiler-notes* t)
