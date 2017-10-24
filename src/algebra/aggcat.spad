@@ -1089,7 +1089,7 @@ RecursiveAggregate(S : Type) : Category == HomogeneousAggregate(S) with
    if % has shallowlyMutable then
       setchildren! : (%, List %) -> %
         ++ setchildren!(u, v) replaces the current children of node u
-        ++ with the members of v in left-to-right order.
+        ++ with v.
       setelt! : (%, "value", S) -> S
         ++ setelt!(u, "value", x) (also written \spad{u.value := x})
         ++ is equivalent to \spad{setvalue!(u, x)}
