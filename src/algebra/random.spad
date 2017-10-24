@@ -64,13 +64,15 @@ RandomNumberSource() : with
 -- Currently unused.
 RandomDistributions(S : SetCategory) : with
         uniform :  Set S -> (() -> S)
-                ++ uniform(s) \undocumented
-        weighted : List Record(value : S, weight : Integer) -> (()->S)
-                ++ weighted(l) \undocumented
-        rdHack1 :  (Vector S, Vector Integer, Integer)->(()->S)
-                ++ rdHack1(v, u, n) \undocumented
+            ++ uniform(s) returns a function which is an uniform distribution
+            ++ over set \spad{s}.
+        weighted : List Record(value : S, weight : Integer) -> (() -> S)
+            ++ weighted(l) returns a function which is a distribution over
+            ++ \spad{value} weighted by \spad{weight}.
     == add
         import from RandomNumberSource()
+
+        rdHack1 :  (Vector S, Vector Integer, Integer) -> (() -> S)
 
         weighted lvw ==
             -- Collapse duplicates, adding weights.
