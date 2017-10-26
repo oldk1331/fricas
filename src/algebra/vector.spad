@@ -107,7 +107,9 @@ VectorCategory(R : Type) : Category == OneDimensionalArrayAggregate R with
     if R has AbelianGroup then
       - u                 == map(x +-> - x, u)
       n : Integer * u : % == map(x +-> n*x, u)
-      u - v           == u + (-v)
+      u - v ==
+          #u ~= #v => error "Vectors must be of the same length"
+          map(_-, u, v)
 
     if R has SemiGroup then
 
