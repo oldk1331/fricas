@@ -11,20 +11,21 @@ PrimitiveArray(S : Type) : OneDimensionalArrayAggregate S == add
 
    #x                          == Qsize x
    minIndex x                  == 0
+   maxIndex x                  == Qmax x
    empty()                     == Qnew(0$Lisp)
    new(n, x)                   == Qnew1(n, x)
    qelt(x, i)                  == Qelt(x, i)
-   elt(x : %, i : Integer)         == Qelt(x, i)
-   qsetelt!(x, i, s)          == Qsetelt(x, i, s)
+   elt(x : %, i : Integer)     == Qelt(x, i)
+   qsetelt!(x, i, s)           == Qsetelt(x, i, s)
    setelt!(x : %, i : Integer, s : S) == Qsetelt(x, i, s)
-   fill!(x, s)       == (for i in 0..Qmax x repeat Qsetelt(x, i, s); x)
+   fill!(x, s) == (for i in minIndex(x)..maxIndex(x) repeat x.i := s; x)
 
    -- logically unnecessary, but we want to take advantage from
    -- fast indexing.
    if S has SetCategory then
        hashUpdate!(s : HashState, x : %) : HashState ==
-           for i in 0..Qmax x repeat
-               s := hashUpdate!(s, Qelt(x, i))$S
+           for i in minIndex(x)..maxIndex(x) repeat
+               s := hashUpdate!(s, x.i)$S
            s
 
 
