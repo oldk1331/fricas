@@ -11,14 +11,14 @@ U32Vector() : OneDimensionalArrayAggregate Integer == add
 
    #x                          == Qsize x
    minIndex x                  == 0
+   maxIndex x                  == # x - 1
    empty()                     == Qnew(0$Lisp, 0$Lisp)
-   new(n, x)                   == Qnew (n, x)
+   new(n, x)                   == Qnew(n, x)
    qelt(x, i)                  == Qelt(x, i)
-   elt(x : %, i : Integer)         == Qelt(x, i)
-   qsetelt!(x, i, s)          == Qsetelt(x, i, s)
+   elt(x : %, i : Integer)     == Qelt(x, i)
+   qsetelt!(x, i, s)           == Qsetelt(x, i, s)
    setelt!(x : %, i : Integer, s : Integer) == Qsetelt(x, i, s)
-   fill!(x, s)       == (for i in 0..((Qsize x) - 1) repeat Qsetelt(x, i, s); x)
-
+   fill!(x, s) == (for i in minIndex(x)..maxIndex(x) repeat x.i := s; x)
 
 
 )abbrev domain U32MAT U32Matrix
@@ -28,9 +28,7 @@ U32Vector() : OneDimensionalArrayAggregate Integer == add
 ++ Indexing is 0 based, there is no bound checking (unless
 ++ provided by lower level).
 
-U32Matrix : MatrixCategory(Integer,
-                         U32Vector,
-                         U32Vector)
+U32Matrix : MatrixCategory(Integer, U32Vector, U32Vector)
   == add
 
     R ==> Integer
@@ -46,8 +44,8 @@ U32Matrix : MatrixCategory(Integer,
     minColIndex x == 0
     nrows x == Qnrows(x)
     ncols x == Qncols(x)
-    maxRowIndex x == Qnrows(x) - 1
-    maxColIndex x == Qncols(x) - 1
+    maxRowIndex x == nrows(x) - 1
+    maxColIndex x == ncols(x) - 1
 
     qelt(m, i, j) == Qelt2(m, i, j)
     elt(m : %, i : Integer, j : Integer) : R == Qelt2(m, i, j)
@@ -57,8 +55,6 @@ U32Matrix : MatrixCategory(Integer,
     empty() == Qnew(0$Integer, 0$Integer)
     qnew(rows, cols) == Qnew(rows, cols)
     new(rows, cols, a) == Qnew1(rows, cols, a)
-
-
 
 
 )abbrev domain U16VEC U16Vector
@@ -74,14 +70,14 @@ U16Vector() : OneDimensionalArrayAggregate Integer == add
 
    #x                          == Qsize x
    minIndex x                  == 0
+   maxIndex x                  == # x - 1
    empty()                     == Qnew(0$Lisp, 0$Lisp)
-   new(n, x)                   == Qnew (n, x)
+   new(n, x)                   == Qnew(n, x)
    qelt(x, i)                  == Qelt(x, i)
-   elt(x : %, i : Integer)         == Qelt(x, i)
-   qsetelt!(x, i, s)          == Qsetelt(x, i, s)
+   elt(x : %, i : Integer)     == Qelt(x, i)
+   qsetelt!(x, i, s)           == Qsetelt(x, i, s)
    setelt!(x : %, i : Integer, s : Integer) == Qsetelt(x, i, s)
-   fill!(x, s)       == (for i in 0..((Qsize x) - 1) repeat Qsetelt(x, i, s); x)
-
+   fill!(x, s) == (for i in minIndex(x)..maxIndex(x) repeat x.i := s; x)
 
 
 )abbrev domain U16MAT U16Matrix
@@ -91,9 +87,7 @@ U16Vector() : OneDimensionalArrayAggregate Integer == add
 ++ Indexing is 0 based, there is no bound checking (unless
 ++ provided by lower level).
 
-U16Matrix : MatrixCategory(Integer,
-                         U16Vector,
-                         U16Vector)
+U16Matrix : MatrixCategory(Integer, U16Vector, U16Vector)
   == add
 
     R ==> Integer
@@ -109,8 +103,8 @@ U16Matrix : MatrixCategory(Integer,
     minColIndex x == 0
     nrows x == Qnrows(x)
     ncols x == Qncols(x)
-    maxRowIndex x == Qnrows(x) - 1
-    maxColIndex x == Qncols(x) - 1
+    maxRowIndex x == nrows(x) - 1
+    maxColIndex x == ncols(x) - 1
 
     qelt(m, i, j) == Qelt2(m, i, j)
     elt(m : %, i : Integer, j : Integer) : R == Qelt2(m, i, j)
@@ -120,8 +114,6 @@ U16Matrix : MatrixCategory(Integer,
     empty() == Qnew(0$Integer, 0$Integer)
     qnew(rows, cols) == Qnew(rows, cols)
     new(rows, cols, a) == Qnew1(rows, cols, a)
-
-
 
 
 )abbrev domain U8VEC U8Vector
@@ -137,14 +129,14 @@ U8Vector() : OneDimensionalArrayAggregate Integer == add
 
    #x                          == Qsize x
    minIndex x                  == 0
+   maxIndex x                  == # x - 1
    empty()                     == Qnew(0$Lisp, 0$Lisp)
-   new(n, x)                   == Qnew (n, x)
+   new(n, x)                   == Qnew(n, x)
    qelt(x, i)                  == Qelt(x, i)
-   elt(x : %, i : Integer)         == Qelt(x, i)
-   qsetelt!(x, i, s)          == Qsetelt(x, i, s)
+   elt(x : %, i : Integer)     == Qelt(x, i)
+   qsetelt!(x, i, s)           == Qsetelt(x, i, s)
    setelt!(x : %, i : Integer, s : Integer) == Qsetelt(x, i, s)
-   fill!(x, s)       == (for i in 0..((Qsize x) - 1) repeat Qsetelt(x, i, s); x)
-
+   fill!(x, s) == (for i in minIndex(x)..maxIndex(x) repeat x.i := s; x)
 
 
 )abbrev domain U8MAT U8Matrix
@@ -154,9 +146,7 @@ U8Vector() : OneDimensionalArrayAggregate Integer == add
 ++ Indexing is 0 based, there is no bound checking (unless
 ++ provided by lower level).
 
-U8Matrix : MatrixCategory(Integer,
-                         U8Vector,
-                         U8Vector)
+U8Matrix : MatrixCategory(Integer, U8Vector, U8Vector)
   == add
 
     R ==> Integer
@@ -172,8 +162,8 @@ U8Matrix : MatrixCategory(Integer,
     minColIndex x == 0
     nrows x == Qnrows(x)
     ncols x == Qncols(x)
-    maxRowIndex x == Qnrows(x) - 1
-    maxColIndex x == Qncols(x) - 1
+    maxRowIndex x == nrows(x) - 1
+    maxColIndex x == ncols(x) - 1
 
     qelt(m, i, j) == Qelt2(m, i, j)
     elt(m : %, i : Integer, j : Integer) : R == Qelt2(m, i, j)
@@ -183,7 +173,6 @@ U8Matrix : MatrixCategory(Integer,
     empty() == Qnew(0$Integer, 0$Integer)
     qnew(rows, cols) == Qnew(rows, cols)
     new(rows, cols, a) == Qnew1(rows, cols, a)
-
 
 
 )abbrev package POLYVEC U32VectorPolynomialOperations
