@@ -155,7 +155,26 @@ optDeltaEntry(op,sig,dc,eltOrConst) ==
      fn := compiledLookup(op,nsig,dcval)
      if null fn then return nil
   eltOrConst="CONST" => ['XLAM,'ignore,MKQ SPADCALL fn]
-  GETL(compileTimeBindingOf first fn,'SPADreplace)
+  spadreplace := GETL(compileTimeBindingOf first fn,'SPADreplace)
+  if CONSP spadreplace and first spadreplace = 'XLAM then
+      -- if the optimization is a XLAM form, make sure it's a "proper macro",
+      -- i.e. doesn't ignore its argument or evaluate it more than once.
+      lhs := CADR spadreplace
+      rhs := CADDR spadreplace
+      if # lhs = 1 and countXLAM(var := first lhs, rhs) = 0 then
+          -- deal with the case like "minIndex l == 0", "(XLAM (|l|) 0)"
+          return ['XLAM, lhs, ['PROGN, var, rhs]]
+      for var in lhs repeat
+          -- ignore argument that is string, e.g. 'elt(x, "first")'
+          if not STRINGP var and (n := countXLAM(var, rhs)) ~= 1 then
+              sayBrightly "warning: this function is not inline optimized"
+              return nil
+  spadreplace
+
+countXLAM(var, rhs) ==
+    -- return how many times does var appear in rhs
+    not CONSP rhs => if var = rhs then 1 else 0
+    COUNT(var, rhs)
 
 genDeltaEntry opMmPair ==
 --called from compApplyModemap
