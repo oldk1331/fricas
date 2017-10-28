@@ -444,7 +444,7 @@
      |U32Matrix| |U16Vector| |U16Matrix| |U8Vector| |U8Matrix|
      |DoubleFloatVector| |DoubleFloatMatrix| |ComplexDoubleFloatVector|
      |ComplexDoubleFloatMatrix| |Character| |SortedExponentVector|
-     |HashState| ))
+     |HashState| |Reference|))
             ;" used by optCallSpecially"
 (SETQ |$Zero| '(|Zero|))
 (SETQ |$One| '(|One|))
