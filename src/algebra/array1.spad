@@ -405,16 +405,17 @@ IndexedOneDimensionalArray(S : Type, mn : Integer):
            s
 
    if zero? mn then
+     maxIndex x == Qmax x
      qelt(x, i)       == Qelt(x, i)
      qsetelt!(x, i, s) == Qsetelt(x, i, s)
 
      elt(x : %, i : I) ==
-       negative? i or i > maxIndex(x) => error "index out of range"
-       qelt(x, i)
+       negative? i or i > Qmax x => error "index out of range"
+       Qelt(x, i)
 
      setelt!(x : %, i : I, s : S) ==
-       negative? i or i > maxIndex(x) => error "index out of range"
-       qsetelt!(x, i, s)
+       negative? i or i > Qmax x => error "index out of range"
+       Qsetelt(x, i, s)
 
    else if (mn = 1) then
      maxIndex x       == Qsize x
@@ -422,13 +423,11 @@ IndexedOneDimensionalArray(S : Type, mn : Integer):
      qsetelt!(x, i, s) == Qsetelt(x, i-1, s)
 
      elt(x : %, i : I) ==
-       less_SI(i, 1$Lisp)$Lisp or less_SI(Qsize x, i)$Lisp =>
-         error "index out of range"
+       i < 1 or i > Qsize x => error "index out of range"
        Qelt(x, i-1)
 
      setelt!(x : %, i : I, s : S) ==
-       less_SI(i, 1$Lisp)$Lisp or less_SI(Qsize x, i)$Lisp =>
-         error "index out of range"
+       i < 1 or i > Qsize x => error "index out of range"
        Qsetelt(x, i-1, s)
 
     else
