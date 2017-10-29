@@ -398,11 +398,11 @@ DoubleFloat() : Join(FloatingPointSystem, DifferentialRing, OpenMath,
    max()            == MOST_-POSITIVE_-DOUBLE_-FLOAT$Lisp
    min()            == MOST_-NEGATIVE_-DOUBLE_-FLOAT$Lisp
    order(a) == precision() + exponent a - 1
-   0                == FLOAT(0$Lisp, MOST_-POSITIVE_-DOUBLE_-FLOAT$Lisp)$Lisp
-   1                == FLOAT(1$Lisp, MOST_-POSITIVE_-DOUBLE_-FLOAT$Lisp)$Lisp
+   0                == FLOAT(0$Lisp, max())$Lisp
+   1                == FLOAT(1$Lisp, max())$Lisp
    -- rational approximation to e accurate to 23 digits
-   exp1()           == FLOAT(534625820200, MOST_-POSITIVE_-DOUBLE_-FLOAT$Lisp)$Lisp / FLOAT(196677847971, MOST_-POSITIVE_-DOUBLE_-FLOAT$Lisp)$Lisp
-   pi()             == FLOAT(PI$Lisp, MOST_-POSITIVE_-DOUBLE_-FLOAT$Lisp)$Lisp
+   exp1()           == FLOAT(534625820200, max())$Lisp / FLOAT(196677847971, max())$Lisp
+   pi()             == FLOAT(PI$Lisp, max())$Lisp
 
    convert(x : %) : String ==
        FORMAT(NIL$Lisp, format, x)$Lisp pretend String
@@ -435,7 +435,7 @@ DoubleFloat() : Join(FloatingPointSystem, DifferentialRing, OpenMath,
    x : % ^ i : PositiveInteger == expt_DF_I(x, i)$Lisp
    x : % ^ i : NonNegativeInteger == expt_DF_I(x, i)$Lisp
    x : % ^ y : %       == checkComplex expt_DF(x, y)$Lisp
-   coerce(i : Integer) : % == FLOAT(i, MOST_-POSITIVE_-DOUBLE_-FLOAT$Lisp)$Lisp
+   coerce(i : Integer) : % == FLOAT(i, max())$Lisp
    exp x            == exp_DF(x)$Lisp
    log x            == checkComplex log_DF(x)$Lisp
    qlog x           == qlog_DF(x)$Lisp
