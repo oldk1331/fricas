@@ -276,6 +276,7 @@
                                              (the double-float ,y)))
 (defmacro |eql_DF| (x y) `(EQL (the double-float ,x)
                                              (the double-float ,y)))
+(defmacro |neq_DF| (x y) `(not (|eql_DF| ,x ,y)))
 (defmacro |expt_DF_I| (x y) `(EXPT (the double-float ,x)
                                  (the integer ,y)))
 (defmacro |expt_DF| (x y) `(EXPT (the double-float ,x)
@@ -305,6 +306,7 @@
 (defmacro |less_eq_DF| (x y) `(<= ,x ,y))
 (defmacro |more_eq_DF| (x y) `(>= ,x ,y))
 (defmacro |eql_DF| (x y) `(EQL ,x ,y))
+(defmacro |neq_DF| (x y) `(not (EQL ,x ,y)))
 (defmacro |expt_DF_I| (x y) `(EXPT ,x ,y))
 (defmacro |expt_DF| (x y) `(EXPT ,x ,y))
 (defmacro |mul_DF_I| (x y) `(* ,x ,y))
@@ -364,6 +366,7 @@
    `(defmacro ,name (x y) `(,',op (the fixnum ,x) (the fixnum ,y))))
 
 (DEF_SI_ARG_BINOP |eql_SI| eql)
+(defmacro |neq_SI| (a b) `(not (|eql_SI| ,a ,b)))
 (DEF_SI_ARG_BINOP |less_SI| <)
 (DEF_SI_ARG_BINOP |greater_SI| >)
 (DEF_SI_ARG_BINOP |lesseq_SI| <=)
@@ -535,6 +538,8 @@
 (defmacro HREM (table key) `(remhash ,key ,table))
 
 ; Misc operations
+
+(defmacro NEQ (x y) `(not (EQL ,x ,y)))
 
 (defmacro |qset_first|(l x) `(SETF (CAR (the cons ,l)) ,x))
 
