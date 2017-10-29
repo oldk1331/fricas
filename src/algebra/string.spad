@@ -174,11 +174,11 @@ CharacterClass : Join(SetCategory, ConvertibleTo String,
             (i := ord c) < N => a(i)
             false
 
-        union(a, b)      == Or(a, b)
-        intersect (a, b) == And(a, b)
-        difference(a, b) == And(a, Not b)
+        union(a, b)      == a \/ b
+        intersect (a, b) == a /\ b
+        difference(a, b) == a /\ (~ b)
         -- FIXME: this is bogus for codes >= N
-        complement a    == Not a
+        complement a    == ~ a
 
         convert(cl) : String ==
           construct(convert(cl)@List(Character))
