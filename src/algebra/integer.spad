@@ -124,6 +124,7 @@ Integer : Join(IntegerNumberSystem, LinearlyExplicitOver Integer,
       abs(x) == ABS(x)$Lisp
       random(x) == RANDOM(x)$Lisp
       x = y == EQL(x, y)$Lisp
+      x ~= y == NEQ(x, y)$Lisp
       x < y == (x<y)$Lisp
       x > y == (x>y)$Lisp
       -- critical for coercions to NonNegativeInteger
