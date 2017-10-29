@@ -366,13 +366,17 @@
 (DEF_SI_ARG_BINOP |eql_SI| eql)
 (DEF_SI_ARG_BINOP |less_SI| <)
 (DEF_SI_ARG_BINOP |greater_SI| >)
+(DEF_SI_ARG_BINOP |lesseq_SI| <=)
+(DEF_SI_ARG_BINOP |greatereq_SI| >=)
 
 (defmacro DEF_SI_ARG_UNOP (name op)
    `(defmacro ,name (x) `(,',op (the fixnum ,x))))
 
 (DEF_SI_ARG_UNOP |zero?_SI| zerop)
 (DEF_SI_ARG_UNOP |negative?_SI| minusp)
+(DEF_SI_ARG_UNOP |positive?_SI| plusp)
 (DEF_SI_ARG_UNOP |odd?_SI| oddp)
+(DEF_SI_ARG_UNOP |even?_SI| evenp)
 
 ; Small finite field operations
 ;
