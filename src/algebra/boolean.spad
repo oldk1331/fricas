@@ -108,24 +108,12 @@ Boolean() : Join(OrderedSet, Finite, Logic, ConvertibleTo InputForm) with
 )abbrev domain IBITS IndexedBits
 ++ Author: Stephen Watt and Michael Monagan
 ++ Date Created: July 86
-++ Basic Operations: range
 ++ Related Constructors:
 ++ Keywords: indexed bits
 ++ Description: \spadtype{IndexedBits} is a domain to compactly represent
 ++ large quantities of Boolean data.
 
-IndexedBits(mn : Integer) : BitAggregate() with
-        -- temporaries until parser gets better
-        Not : % -> %
-            ++ Not(n) returns the bit-by-bit logical {\em Not} of n.
-        Or : (%, %) -> %
-            ++ Or(n, m)  returns the bit-by-bit logical {\em Or} of
-            ++ n and m.
-        And : (%, %) -> %
-            ++ And(n, m)  returns the bit-by-bit logical {\em And} of
-            ++ n and m.
-    == add
-
+IndexedBits(mn : Integer) : BitAggregate == add
         range : (%, Integer) -> Integer
           --++ range(j, i) returns the range i of the boolean j.
 
@@ -149,24 +137,24 @@ IndexedBits(mn : Integer) : BitAggregate() with
         #v           == size_BVEC(v)$Lisp
         v = u        == equal_BVEC(v, u)$Lisp
         v < u        == greater_BVEC(u, v)$Lisp
+        not v        == not_BVEC(v)$Lisp
+        _~ v         == not_BVEC(v)$Lisp
         _and(u, v)   == (#v = #u => and_BVEC(v, u)$Lisp; map("and", v, u))
+        _/_\(u, v)   == (#v = #u => and_BVEC(v, u)$Lisp; map("and", v, u))
         _or(u, v)    == (#v = #u => or_BVEC(v, u)$Lisp; map("or", v, u))
+        _\_/(u, v)   == (#v = #u => or_BVEC(v, u)$Lisp; map("or", v, u))
         xor(v, u)    == (#v = #u => xor_BVEC(v, u)$Lisp; map("xor", v, u))
         setelt!(v : %, i : Integer, f : Boolean) ==
             SETELT_BVEC(v, range(v, i - mn), bool_to_bit(f)$Lisp)$Lisp
         elt(v : %, i : Integer) ==
             bit_to_bool(ELT_BVEC(v, range(v, i - mn))$Lisp)$Lisp
 
-        Not v        == not_BVEC(v)$Lisp
-        And(u, v)    == (#v = #u => and_BVEC(v, u)$Lisp; map("and", v, u))
-        Or(u, v)     == (#v = #u => or_BVEC(v, u)$Lisp; map("or", v, u))
-
 )abbrev domain BITS Bits
 ++ Author: Stephen M. Watt
-++ Basic Operations: And, Not, Or
 ++ Related Constructors:
 ++ Keywords: bits
-++ Description:  \spadtype{Bits} provides logical functions for Indexed Bits.
+++ Description:  \spadtype{Bits} is a domain to compactly represent
+++ large quantities of Boolean data.
 
 Bits() : Exports == Implementation where
   Exports == BitAggregate() with
