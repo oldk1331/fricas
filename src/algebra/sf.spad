@@ -429,6 +429,7 @@ DoubleFloat() : Join(FloatingPointSystem, DifferentialRing, OpenMath,
    max(x, y)         == max_DF(x, y)$Lisp
    min(x, y)         == min_DF(x, y)$Lisp
    x = y            == eql_DF(x, y)$Lisp
+   x ~= y           == neq_DF(x, y)$Lisp
    x : % / i : Integer  == div_DF_I(x, i)$Lisp
    sqrt x           == checkComplex sqrt_DF(x)$Lisp
    qsqrt x          == qsqrt_DF(x)$Lisp

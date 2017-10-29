@@ -203,6 +203,7 @@ SingleInteger() : Join(IntegerNumberSystem, ConvertibleTo String,
    max()     == MOST_-POSITIVE_-FIXNUM$Lisp
    min()     == MOST_-NEGATIVE_-FIXNUM$Lisp
    x = y     == eql_SI(x, y)$Lisp
+   x ~= y    == neq_SI(x, y)$Lisp
    true      == 0
    false     == -1
    _~ x      == not_SI(x)$Lisp
