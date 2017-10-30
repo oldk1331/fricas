@@ -329,7 +329,7 @@ CommonOperators() : Exports == Implementation where
     startUp    : Boolean -> Void
     setDummyVar : (OP, NonNegativeInteger) -> OP
 
-    brandNew? : Reference(Boolean) := ref true
+    brandNew? : Boolean := true
 
     opalg   := operator('rootOf, 2)$OP
     oproot  := operator('nthRoot, 2)
@@ -543,7 +543,7 @@ CommonOperators() : Exports == Implementation where
     dummyvarop2 := [opdint, opdsum, opdprod]
 
     operator s ==
-      if (deref brandNew?) then startUp false
+      if brandNew? then startUp false
       for op in allop repeat
         is?(op, s) => return copy op
       operator(s)$OP
@@ -562,7 +562,7 @@ CommonOperators() : Exports == Implementation where
       e ^ x
 
     startUp b ==
-      brandNew?() := b
+      brandNew? := b
       display(oppren, paren)
       display(opbox, commaSeparate)
       display(oppi, dpi)
