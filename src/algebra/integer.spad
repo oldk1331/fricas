@@ -200,6 +200,17 @@ Integer : Join(IntegerNumberSystem, LinearlyExplicitOver Integer,
           2 * r + n <= 0 => r + n
           r
 
+      powmod(x, n, p) ==
+         if negative? x then x := positiveRemainder(x, p)
+         zero? x => 0
+         zero? n => 1
+         y : % := 1
+         z := x
+         repeat
+            if odd? n then y := mulmod(y, z, p)
+            zero?(n := shift(n, -1)) => return y
+            z := mulmod(z, z, p)
+
 )abbrev domain NNI NonNegativeInteger
 ++ Author:
 ++ Basic Operations:
