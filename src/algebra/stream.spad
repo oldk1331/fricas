@@ -201,11 +201,6 @@ LazyStreamAggregate(S : Type) : Category == StreamAggregate(S) with
           l := rest l
       res
 
-  --entries x ==
-    -- returns a list of the stream elements
-    -- error if the stream is not finite
-    --members x
-
 --% ELTAGG functions
 
   elt(x : %, n : I) ==
@@ -219,17 +214,6 @@ LazyStreamAggregate(S : Type) : Category == StreamAggregate(S) with
     elt(rst x, n - 1)
 
 --% IXAGG functions
-
--- following assumes % has finiteAggregate and S has SetCategory
---  entry?(s, x) ==
---    -- error message only when x is a stream with lazy
---    -- evaluation and 's' is not among the stream elements
---    -- which have been computed when the function is called
---    member?(s, x)
-
-  --entries x ==
-    -- error if the stream is not finite
-    --members x
 
   indexx?(n, x) ==
     empty? x => false
