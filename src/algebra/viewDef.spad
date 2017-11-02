@@ -25,45 +25,42 @@ ViewDefaultsPackage() : Exports == Implementation where
   SF      ==> DoubleFloat
   B       ==> Boolean
 
-  writeAvailable ==>  (["PIXMAP","BITMAP","POSTSCRIPT","IMAGE"]::L S)
-    -- need not worry about case of letters
-
   Exports ==> with
-    pointColorDefault   :  ()                          -> PAL
+    pointColorDefault : () -> PAL
       ++ pointColorDefault() returns the default color of points in a 2D
       ++ viewport.
-    pointColorDefault   :  PAL                         -> PAL
+    pointColorDefault : PAL -> PAL
       ++ pointColorDefault(p) sets the default color of points in a 2D viewport
       ++ to the palette p.
-    lineColorDefault    :  ()                          -> PAL
+    lineColorDefault : () -> PAL
       ++ lineColorDefault() returns the default color of lines connecting
       ++ points in a 2D viewport.
-    lineColorDefault    :  PAL                         -> PAL
+    lineColorDefault : PAL -> PAL
       ++ lineColorDefault(p) sets the default color of lines connecting points
       ++ in a 2D viewport to the palette p.
-    axesColorDefault    :  ()                          -> PAL
+    axesColorDefault : () -> PAL
       ++ axesColorDefault() returns the default color of the axes in a
       ++ 2D viewport.
-    axesColorDefault    :  PAL                         -> PAL
+    axesColorDefault : PAL -> PAL
       ++ axesColorDefault(p) sets the default color of the axes in a 2D
       ++ viewport to the palette p.
-    unitsColorDefault   :  ()                          -> PAL
+    unitsColorDefault : () -> PAL
       ++ unitsColorDefault() returns the default color of the unit ticks in
       ++ a 2D viewport.
-    unitsColorDefault   :  PAL                         -> PAL
+    unitsColorDefault : PAL -> PAL
       ++ unitsColorDefault(p) sets the default color of the unit ticks in
       ++ a 2D viewport to the palette p.
-    pointSizeDefault    :  ()                          -> PI
+    pointSizeDefault : () -> PI
       ++ pointSizeDefault() returns the default size of the points in
       ++ a 2D viewport.
-    pointSizeDefault    :  PI                          -> PI
+    pointSizeDefault : PI -> PI
       ++ pointSizeDefault(i) sets the default size of the points in a 2D
       ++ viewport to i.
-    viewPosDefault      :  () -> L NNI
+    viewPosDefault : () -> L NNI
       ++ viewPosDefault() returns the default X and Y position of a
       ++ viewport window unless overriden explicityly, newly created
       ++ viewports will have this X and Y coordinate.
-    viewPosDefault      :  L NNI -> L NNI
+    viewPosDefault : L NNI -> L NNI
       ++ viewPosDefault([x, y]) sets the default X and Y position of a
       ++ viewport window unless overriden explicityly, newly created
       ++ viewports will have th X and Y coordinates x, y.
@@ -72,127 +69,126 @@ ViewDefaultsPackage() : Exports == Implementation where
     viewSizeDefault : L PI -> L PI
       ++ viewSizeDefault([w, h]) sets the default viewport width to w and height
       ++ to h.
-    viewDefaults :  ()                          -> Void
+    viewDefaults : () -> Void
       ++ viewDefaults() resets all the default graphics settings.
-    viewWriteDefault  :  ()                          -> L S
+    viewWriteDefault : () -> L S
       ++ viewWriteDefault() returns the list of things to write in a viewport
       ++ data file; a viewAlone file is always generated.
-    viewWriteDefault  :  L S                         -> L S
+    viewWriteDefault : L S -> L S
       ++ viewWriteDefault(l) sets the default list of things to write in a
       ++ viewport data file to the strings in l; a viewAlone file is always
       ++ genereated.
-    viewWriteAvailable : ()                   -> L S
+    viewWriteAvailable : () -> L S
       ++ viewWriteAvailable() returns a list of available methods for writing,
       ++ such as BITMAP, POSTSCRIPT, etc.
-    var1StepsDefault       : () -> PI
+    var1StepsDefault : () -> PI
       ++ var1StepsDefault() is the current setting for the number of steps to
       ++ take when creating a 3D mesh in the direction of the first defined
       ++ free variable (a free variable is considered defined when its
       ++ range is specified (e.g. x=0..10)).
-    var2StepsDefault       : () -> PI
+    var2StepsDefault : () -> PI
       ++ var2StepsDefault() is the current setting for the number of steps to
       ++ take when creating a 3D mesh in the direction of the first defined
       ++ free variable (a free variable is considered defined when its
       ++ range is specified (e.g. x=0..10)).
-    var1StepsDefault       : PI -> PI
+    var1StepsDefault : PI -> PI
       ++ var1StepsDefault(i) sets the number of steps to take when creating a
       ++ 3D mesh in the direction of the first defined free variable to i
       ++ (a free variable is considered defined when its range is specified
       ++ (e.g. x=0..10)).
-    var2StepsDefault       : PI -> PI
+    var2StepsDefault : PI -> PI
       ++ var2StepsDefault(i) sets the number of steps to take when creating a
       ++ 3D mesh in the direction of the first defined free variable to i
       ++ (a free variable is considered defined when its range is specified
       ++ (e.g. x=0..10)).
-    tubePointsDefault  : PI -> PI
+    tubePointsDefault : PI -> PI
       ++ tubePointsDefault(i) sets the number of points to use when creating
       ++ the circle to be used in creating a 3D tube plot to i.
-    tubePointsDefault  : () -> PI
+    tubePointsDefault : () -> PI
       ++ tubePointsDefault() returns the number of points to be used when
       ++ creating the circle to be used in creating a 3D tube plot.
-    tubeRadiusDefault  : Float -> SF   -- current tube.spad asks for SF
+    tubeRadiusDefault : Float -> SF   -- current tube.spad asks for SF
       ++ tubeRadiusDefault(r) sets the default radius for a 3D tube plot to r.
-    tubeRadiusDefault  : () -> SF
+    tubeRadiusDefault : () -> SF
       ++ tubeRadiusDefault() returns the radius used for a 3D tube plot.
 
   Implementation ==> add
 
     import from Color()
     import from Palette()
-    --import from StringManipulations()
 
-    defaultPointColor : Reference(PAL)  := ref bright red()
-    defaultLineColor  : Reference(PAL)  := ref pastel green() --bright blue()
-    defaultAxesColor  : Reference(PAL)  := ref dim red()
-    defaultUnitsColor : Reference(PAL)  := ref dim yellow()
-    defaultPointSize  : Reference(PI)   := ref(3::PI)
-    defaultXPos       : Reference(NNI)  := ref(0::NNI)
-    defaultYPos       : Reference(NNI)  := ref(0::NNI)
-    defaultWidth      : Reference(PI)   := ref(400::PI)
-    defaultHeight     : Reference(PI)   := ref(400::PI)
-    defaultThingsToWrite : Reference(L S) := ref([]::L S)
-    defaultVar1Steps  : Reference(PI)   := ref(27::PI)
-    defaultVar2Steps  : Reference(PI)   := ref(27::PI)
-    defaultTubePoints : Reference(PI)   := ref(6::PI)
-    defaultTubeRadius : Reference(SF)   := ref(convert(0.5)@SF)
-    defaultClosed     : Reference(B)    := ref(false)
+    defaultPointColor : PAL := bright red()
+    defaultLineColor  : PAL := pastel green() --bright blue()
+    defaultAxesColor  : PAL := dim red()
+    defaultUnitsColor : PAL := dim yellow()
+    defaultPointSize  : PI  := 3
+    defaultXPos       : NNI := 0
+    defaultYPos       : NNI := 0
+    defaultWidth      : PI  := 400
+    defaultHeight     : PI  := 400
+    defaultThingsToWrite : L S := []
+    defaultVar1Steps  : PI  := 27
+    defaultVar2Steps  : PI  := 27
+    defaultTubePoints : PI  := 6
+    defaultTubeRadius : SF  := 0.5::SF
+    defaultClosed     : B   := false
 
 --%Viewport window dimensions specifications
-    viewPosDefault   == [defaultXPos(), defaultYPos()]
+    viewPosDefault   == [defaultXPos, defaultYPos]
     viewPosDefault l ==
-      #l < 2 => error "viewPosDefault expects a list with two elements"
-      [defaultXPos() := first l, defaultYPos() := last l]
+        not size?(l, 2) => error "viewPosDefault expects a list with two elements"
+        [defaultXPos := first l, defaultYPos := second l]
 
-    viewSizeDefault   == [defaultWidth(), defaultHeight()]
+    viewSizeDefault   == [defaultWidth, defaultHeight]
     viewSizeDefault l ==
-      #l < 2 => error "viewSizeDefault expects a list with two elements"
-      [defaultWidth() := first l, defaultHeight() := last l]
+        not size?(l, 2) => error "viewSizeDefault expects a list with two elements"
+        [defaultWidth := first l, defaultHeight := second l]
 
     viewDefaults ==
-      defaultPointColor : Reference(PAL)  := ref bright red()
-      defaultLineColor  : Reference(PAL)  := ref pastel green() --bright blue()
-      defaultAxesColor  : Reference(PAL)  := ref dim red()
-      defaultUnitsColor : Reference(PAL)  := ref dim yellow()
-      defaultPointSize  : Reference(PI)   := ref(3::PI)
-      defaultXPos       : Reference(NNI)  := ref(0::NNI)
-      defaultYPos       : Reference(NNI)  := ref(0::NNI)
-      defaultWidth      : Reference(PI)   := ref(400::PI)
-      defaultHeight     : Reference(PI)   := ref(427::PI)
+        defaultPointColor := bright red()
+        defaultLineColor  := pastel green() --bright blue()
+        defaultAxesColor  := dim red()
+        defaultUnitsColor := dim yellow()
+        defaultPointSize  := 3
+        defaultXPos       := 0
+        defaultYPos       := 0
+        defaultWidth      := 400
+        defaultHeight     := 427
 
 --%2D graphical output specifications
-    pointColorDefault   == defaultPointColor()
-    pointColorDefault p == defaultPointColor() := p
+    pointColorDefault   == defaultPointColor
+    pointColorDefault p == defaultPointColor := p
 
-    lineColorDefault   == defaultLineColor()
-    lineColorDefault p == defaultLineColor() := p
+    lineColorDefault   == defaultLineColor
+    lineColorDefault p == defaultLineColor := p
 
-    axesColorDefault   == defaultAxesColor()
-    axesColorDefault p == defaultAxesColor() := p
+    axesColorDefault   == defaultAxesColor
+    axesColorDefault p == defaultAxesColor := p
 
-    unitsColorDefault   == defaultUnitsColor()
-    unitsColorDefault p == defaultUnitsColor() := p
+    unitsColorDefault   == defaultUnitsColor
+    unitsColorDefault p == defaultUnitsColor := p
 
-    pointSizeDefault   == defaultPointSize()
-    pointSizeDefault x == defaultPointSize() := x
+    pointSizeDefault   == defaultPointSize
+    pointSizeDefault x == defaultPointSize := x
 
 
 --%3D specific stuff
-    var1StepsDefault   == defaultVar1Steps()
-    var1StepsDefault i == defaultVar1Steps() := i
+    var1StepsDefault   == defaultVar1Steps
+    var1StepsDefault i == defaultVar1Steps := i
 
-    var2StepsDefault   == defaultVar2Steps()
-    var2StepsDefault i == defaultVar2Steps() := i
+    var2StepsDefault   == defaultVar2Steps
+    var2StepsDefault i == defaultVar2Steps := i
 
-    tubePointsDefault   == defaultTubePoints()
-    tubePointsDefault i == defaultTubePoints() := i
+    tubePointsDefault   == defaultTubePoints
+    tubePointsDefault i == defaultTubePoints := i
 
-    tubeRadiusDefault   == defaultTubeRadius()
-    tubeRadiusDefault f == defaultTubeRadius() := convert(f)@SF
+    tubeRadiusDefault   == defaultTubeRadius
+    tubeRadiusDefault f == defaultTubeRadius := convert(f)@SF
 
 --%File output stuff
-    viewWriteAvailable == writeAvailable
+    viewWriteAvailable == ["PIXMAP", "BITMAP", "POSTSCRIPT", "IMAGE"]
 
-    viewWriteDefault == defaultThingsToWrite()
+    viewWriteDefault == defaultThingsToWrite
 
     viewWriteDefault listOfThings ==
       thingsToWrite : L S := []
@@ -202,8 +198,8 @@ ViewDefaultsPackage() : Exports == Implementation where
                " is not a valid file type for writing a viewport"]
              )$DisplayPackage
         else
-          thingsToWrite := append(thingsToWrite, [aTypeOfFile])
-      defaultThingsToWrite() := thingsToWrite
+          thingsToWrite := concat(aTypeOfFile, thingsToWrite)
+      defaultThingsToWrite := thingsToWrite
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.
