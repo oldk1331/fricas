@@ -6,15 +6,19 @@
 ++ AMS Classification:
 ++ Keywords: none
 ++ Description:
-++    \spadtype{None} implements an universal type, that is type
+++    \spadtype{None} implements the top type (also known as universal type)
+++    in type theory. It is the type
 ++    which can represent values of any normal type. It is mainly
 ++    used in technical situations where such a thing is needed (e.g.
 ++    the interpreter and some of the internal \spadtype{Expression}
 ++    code).
 
-None() : SetCategory == add
+None() : CoercibleTo OutputForm with
+    eq? : (%, %) -> Boolean
+        ++ eq?(x, y) returns true if x and y are the same object at Lisp Level.
+  == add
     coerce(none : %) : OutputForm == message("NONE")
-    x : % = y : % == EQ(x, y)$Lisp
+    eq?(x, y) == EQ(x, y)$Lisp
 
 )abbrev package NONE1 NoneFunctions1
 ++ Author:
