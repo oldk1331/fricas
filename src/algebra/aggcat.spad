@@ -201,10 +201,10 @@ Collection(S : Type) : Category == HomogeneousAggregate(S) with
      ++ \spad{construct([x, y, ..., z])} returns the collection of elements \spad{x, y, ..., z}
      ++ ordered as given. Equivalently written as \spad{[x, y, ..., z]$D}, where
      ++ D is the domain. D may be omitted for those of type List.
-   find : (S -> Boolean, %) -> Union(S, "failed")
-     ++ find(p, u) returns the first x in u such that \spad{p(x)} is true, and
-     ++ "failed" otherwise.
    if % has finiteAggregate then
+      find : (S -> Boolean, %) -> Union(S, "failed")
+        ++ find(p, u) returns the first x in u such that \spad{p(x)} is true, and
+        ++ "failed" otherwise.
       reduce : ((S, S) -> S, %) -> S
         ++ reduce(f, u) reduces the binary operation f across u. For example,
         ++ if u is \spad{[x, y, ..., z]} then \spad{reduce(f, u)} returns \spad{f(..f(f(x, y), ...), z)}.
