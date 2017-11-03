@@ -2368,8 +2368,7 @@ ListAggregate(S : Type) : Category == Join(StreamAggregate S,
        removeDuplicates! l ==
            p := l
            while not empty? p repeat
-               p := setrest!(p, remove!((x : S) : Boolean +-> x = first p,
-                                        rest p))
+               p := setrest!(p, remove!(first p, rest p))
            l
 
    if S has OrderedSet then
