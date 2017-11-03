@@ -120,6 +120,7 @@ CombinatorialFunction(R, F) : Exports == Implementation where
     equalsumprod  : (K, K) -> Boolean
     equaldsumprod : (K, K) -> Boolean
     fourth    : List F -> F
+    fifth     : List F -> F
     dvpow1    : List F -> F
     dvpow2    : List F -> F
     summand   : List F -> F
@@ -163,6 +164,7 @@ CombinatorialFunction(R, F) : Exports == Implementation where
 
     belong? op           == has?(op, COMB)
     fourth l             == third rest l
+    fifth  l             == fourth rest l
     dvpow1 l             == second(l) * first(l) ^ (second l - 1)
     factorials x         == facts(x, variables x)
     factorials(x, v)     == facts(x, [v])
@@ -214,13 +216,13 @@ CombinatorialFunction(R, F) : Exports == Implementation where
       prod(summand(l)::O, third(l)::O)
 
     ddprod l ==
-      prod(summand(l)::O, third(l)::O = fourth(l)::O, fourth(rest l)::O)
+      prod(summand(l)::O, third(l)::O = fourth(l)::O, fifth(l)::O)
 
     dsum l ==
       sum(summand(l)::O, third(l)::O)
 
     ddsum l ==
-      sum(summand(l)::O, third(l)::O = fourth(l)::O, fourth(rest l)::O)
+      sum(summand(l)::O, third(l)::O = fourth(l)::O, fifth(l)::O)
 
     equalsumprod(s1, s2) ==
       l1 := argument s1
@@ -284,12 +286,12 @@ CombinatorialFunction(R, F) : Exports == Implementation where
     idprod l ==
       member?(retract(second l)@SE, variables first l) =>
         kernel(opdprod, l)
-      first(l) ^ (fourth rest l - fourth l + 1)
+      first(l) ^ (fifth l - fourth l + 1)
 
     idsum l ==
       member?(retract(second l)@SE, variables first l) =>
         kernel(opdsum, l)
-      first(l) * (fourth rest l - fourth l + 1)
+      first(l) * (fifth l - fourth l + 1)
 
     ifact x ==
       zero? x or (x = 1) => 1
@@ -309,7 +311,7 @@ CombinatorialFunction(R, F) : Exports == Implementation where
       iidsum l ==
         (r1 := retractIfCan(fourth l)@Union(Z,"failed"))
          case "failed" or
-          (r2 := retractIfCan(fourth rest l)@Union(Z,"failed"))
+          (r2 := retractIfCan(fifth l)@Union(Z,"failed"))
             case "failed" or
              (k := retractIfCan(second l)@Union(K,"failed")) case "failed"
                => idsum l
@@ -318,7 +320,7 @@ CombinatorialFunction(R, F) : Exports == Implementation where
       iidprod l ==
         (r1 := retractIfCan(fourth l)@Union(Z,"failed"))
          case "failed" or
-          (r2 := retractIfCan(fourth rest l)@Union(Z,"failed"))
+          (r2 := retractIfCan(fifth l)@Union(Z,"failed"))
             case "failed" or
              (k := retractIfCan(second l)@Union(K,"failed")) case "failed"
                => idprod l
