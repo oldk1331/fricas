@@ -78,7 +78,7 @@ RealNumberSystem() : Category ==
 )abbrev category FPS FloatingPointSystem
 ++ Author:
 ++ Basic Operations: approximate, base, bits, digits, exponent, float,
-++    mantissa, order, precision, round?
+++    mantissa, order, precision
 ++ Related Constructors:
 ++ Keywords: float, floating point
 ++ Description:

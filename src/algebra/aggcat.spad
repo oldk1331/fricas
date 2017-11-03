@@ -905,7 +905,7 @@ TableAggregate(Key : Type, Entry : Type) : Category ==
   Join(KeyedDictionary(Key, Entry), IndexedAggregate(Key, Entry)) with
    setelt! : (%, Key, Entry) -> Entry
      ++ setelt!(t, k, e) (also written \spad{t.k := e}) is equivalent
-     ++ to \spad{(insert([k, e], t); e)}.
+     ++ to \spad{(insert!([k, e], t); e)}.
    table : () -> %
      ++ table()$T creates an empty table of type T.
    table : List Record(key : Key, entry : Entry) -> %
