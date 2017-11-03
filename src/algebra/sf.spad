@@ -454,14 +454,12 @@ DoubleFloat() : Join(FloatingPointSystem, DifferentialRing, OpenMath,
    atan x           == atan_DF(x)$Lisp
    acsc x           == asin(1/x)
 
-   pi_half ==> pi()/(2::%)
-
    acot x           ==
-       0 < x =>
-           not(x < 1) => atan(1/x)
-           pi_half - atan(x)
-       not(-1 < x) => pi() - atan(-1/x)
-       pi_half + atan(-x)
+       x >= 0 =>
+           x >= 1 => atan(1/x)
+           pi()/2 - atan(x)
+       x <= -1 => pi() - atan(-1/x)
+       pi()/2 + atan(-x)
 
    asec x           == acos(1/x)
    sinh x           == sinh_DF(x)$Lisp
