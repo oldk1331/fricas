@@ -96,8 +96,7 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
           r = 0 => empty()
           [[m, r]]
 
-        monomial?(x) ==
-            #(rep(x)) <= 1
+        monomial?(x) == empty? x or empty? rest x
 
         if (R has Finite and M has Finite) then
           size() == size()$R ^ size()$M
@@ -142,7 +141,6 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
         1                   == [[1, 1]]
         zero? a == empty? a
         one? a == size?(a, 1) and one?(a.first.Cf) and one?(a.first.Mn)
---        terms a             == (copy a) pretend List(Term)
         terms a             == copy rep a
         monomials a         == [[t] for t in a]
         coefficients a      == [t.Cf for t in a]
@@ -182,24 +180,22 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
         numberOfMonomials a == #a
 
         retractIfCan(a:%):Union(M, "failed") ==
-          ((#a) = 1) and ((a.first.Cf) = 1) => a.first.Mn
+          size?(a, 1) and (a.first.Cf) = 1 => a.first.Mn
           "failed"
 
         retractIfCan(a:%):Union(R, "failed") ==
-          ((#a) = 1) and ((a.first.Mn) = 1) => a.first.Cf
+          size?(a, 1) and (a.first.Mn) = 1 => a.first.Cf
           "failed"
 
         if R has noZeroDivisors then
           if M has Group then
             recip a ==
-              lt := terms a
-              #lt ~= 1 => "failed"
-              (u := recip lt.first.Cf) case "failed" => "failed"
-              --(u::R) * inv lt.first.Mn
-              monomial((u::R), inv lt.first.Mn)$%
+              not size?(a, 1) => "failed"
+              (u := recip a.first.Cf) case "failed" => "failed"
+              monomial((u::R), inv a.first.Mn)$%
           else
             recip a ==
-              #a ~= 1 or a.first.Mn ~= 1 => "failed"
+              not size?(a, 1) or a.first.Mn ~= 1 => "failed"
               (u := recip a.first.Cf) case "failed" => "failed"
               u::R::%
 
@@ -219,7 +215,7 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
             leadingSupport a    == (empty? a => 1; a.first.Mn)
             leadingMonomial a    ==
                 empty? rep a => error "empty support"
-                monomial((first rep a).Cf, (first rep a).Mn)
+                [first a]
 
             leadingTerm a    ==
                 empty? a => error "empty support"
