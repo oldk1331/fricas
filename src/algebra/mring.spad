@@ -140,6 +140,8 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
 
         0                   == empty()
         1                   == [[1, 1]]
+        zero? a == empty? a
+        one? a == size?(a, 1) and one?(a.first.Cf) and one?(a.first.Mn)
 --        terms a             == (copy a) pretend List(Term)
         terms a             == copy rep a
         monomials a         == [[t] for t in a]
@@ -158,19 +160,23 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
            then
             (r : R) * (a : %) ==
               r = 0 => 0
+              one? r => a
               [[t.Mn, r*t.Cf] for t in a]
            else
             (r : R) * (a : %) ==
               r = 0 => 0
+              one? r => a
               [[t.Mn, rt] for t in a | (rt := r*t.Cf) ~= 0]
         if R has noZeroDivisors
            then
             (n : Integer) * (a : %) ==
               n = 0 => 0
+              n = 1 => a
               [[t.Mn, n*t.Cf] for t in a]
            else
             (n : Integer) * (a : %) ==
               n = 0 => 0
+              n = 1 => a
               [[t.Mn, nt] for t in a | (nt := n*t.Cf) ~= 0]
         map(f, a)           == [[t.Mn, ft] for t in a | (ft := f(t.Cf)) ~= 0]
         numberOfMonomials a == #a
@@ -264,6 +270,8 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
                 true
 
             a + b ==
+                zero? a => b
+                zero? b => a
                 repa:Rep := rep a
                 repb:Rep := rep b
                 res : Rep := empty()
@@ -271,13 +279,13 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
                   ta:Term := first repa; tb:Term := first repb
                   ra:Rep := rest repa;  rb:Rep := rest repb
                   res :=
-                    smaller?(tb.Mn, ta.Mn)  => (repa := ra; concat!(res, ta))
-                    smaller?(ta.Mn, tb.Mn) => (repb := rb; concat!(res, tb))
+                    smaller?(tb.Mn, ta.Mn) => (repa := ra; concat(ta, res))
+                    smaller?(ta.Mn, tb.Mn) => (repb := rb; concat(tb, res))
                     repa := ra; repb := rb
                     not zero?(r := ta.Cf + tb.Cf) =>
-                                        concat!(res, [ta.Mn, r])
+                                        concat([ta.Mn, r], res)
                     res
-                per concat!(res, concat(repa, repb))
+                per concat!(reverse! res, if empty? repa then repb else repa)
 
             coefficient(a, m) ==
                 for t in a repeat
@@ -293,13 +301,19 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
 
               if R has noZeroDivisors then
                 a : % * b : % ==
+                  zero? a or zero? b => a
+                  one? a => b
+                  one? b => a
                   +/[[[ta.Mn*tb.Mn, ta.Cf*tb.Cf]$Term
-                    for tb in b ] for ta in reverse a]
+                    for tb in b ] for ta in a]
               else
                 a : % * b : % ==
+                  zero? a or zero? b => a
+                  one? a => b
+                  one? b => a
                   +/[[[ta.Mn*tb.Mn, r]$Term
                     for tb in b | not zero?(r := ta.Cf*tb.Cf)]
-                      for ta in reverse a]
+                      for ta in a]
             else -- M hasn't OrderedMonoid
 
             -- we cannot assume that mutiplying an ordered list of
@@ -308,8 +322,9 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
             -- using 'construct', and it can handle the ZeroDivisors case
 
               a : % * b : % ==
-                  zero? a => a
-                  zero? b => b
+                  zero? a or zero? b => a
+                  one? a => b
+                  one? b => a
                   +/[construct [[ta.Mn*tb.Mn, ta.Cf*tb.Cf]$Term
                     for tb in b ] for ta in a]
 
