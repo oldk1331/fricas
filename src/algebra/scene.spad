@@ -731,23 +731,7 @@ writeSvg(sc,"test3.svg")
 \item add text annotations.
 \item export to SVG, X3D, VRML and Wavefront(obj) files.
 \end{itemize}
-\section{Programming Issues}
-Usually, when programming using SPAD, I try to use a functional programming
-style as much as possible, for instance making objects (representations)
-immutable. However I don't think it would be practical to implement the
-scenegraph in this way. A design requirement is that the scenegraph needs
-to hold a large amount of information, A 3D scene might be made from
-thousands (perhaps millions?) of polygons. For the sake of efficiency we
-need to be able to modify it without copying the whole thing into a new
-object for each change.
 
-The object oriented style of programming would seem to be ideal for a
-scenegraph. Each type of node in the scenegraph could be a different object
-all inheriting from a common object. Unfortunately is is not easy to do
-this in SPAD because it does not support polymorphism.
-
-So what I have ended up with is perhaps the worst of both styles of
-programming?
 \section{Transforms in scene graph STransform}
 Existing transforms in Axiom (such as dhmatrix.spad.pamphlet and
 moebius.spad.pamphlet) are stand alone chunks of algebra which don't
