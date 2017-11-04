@@ -230,20 +230,20 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
             termless(t1:Term, t2:Term):Boolean == smaller?(t1.k, t2.k)
 
             construct(x : List Term) : % ==
+                empty? x => x
                 xs : List Term := sort(termless, x)
                 res : List Term := empty()
                 -- find duplicates
-                while not empty? xs repeat
-                    t1:= first xs
-                    xs := rest xs
-                    while not empty? xs repeat
-                        t2:= first xs
-                        if t1.k = t2.k then
-                           t1.c:= t1.c+t2.c
-                           xs:= rest xs
-                        else break
-                    if not zero? t1.c then
-                        res := cons (t1, res)
+                m  : M := xs.first.Mn
+                cf : R := xs.first.Cf
+                for te in rest xs repeat
+                    if m = te.Mn then
+                        cf := cf + te.Cf
+                    else
+                        if not zero? cf then res := cons([m, cf]$Term, res)
+                        m := te.Mn
+                        cf := te.Cf
+                if not zero? cf then res := cons([m, cf]$Term, res)
                 res
 
             if R has CommutativeRing then
@@ -305,40 +305,13 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
             -- we cannot assume that mutiplying an ordered list of
             -- monoid elements by a single element respects the ordering:
             -- we have to order and to collect equal terms
-              ge : (Term, Term) -> Boolean
-              ge(s, t) == not smaller? (s.Mn, t.Mn)
+            -- using 'construct', and it can handle the ZeroDivisors case
 
-              sortAndAdd : List Term -> List Term
-              sortAndAdd(liTe) ==  -- assume liTe not empty
-                liTe := sort(ge, liTe)
-                m : M :=  (first liTe).Mn
-                cf : R := (first liTe).Cf
-                res : List Term := []
-                for te in rest liTe repeat
-                  if m = te.Mn then
-                    cf := cf + te.Cf
-                  else
-                    if not zero? cf then res := cons([m, cf]$Term, res)
-                    m := te.Mn
-                    cf := te.Cf
-                if not zero? cf then res := cons([m, cf]$Term, res)
-                reverse res
-
-
-              if R has noZeroDivisors then
-                a : % * b : % ==
+              a : % * b : % ==
                   zero? a => a
-                  zero? b => b  -- avoid calling sortAndAdd with []
-                  +/[sortAndAdd [[ta.Mn*tb.Mn, ta.Cf*tb.Cf]$Term
-                    for tb in b ] for ta in reverse a]
-              else
-                a : % * b : % ==
-                  zero? a => a
-                  zero? b => b  -- avoid calling sortAndAdd with []
-                  +/[sortAndAdd [[ta.Mn*tb.Mn, r]$Term
-                    for tb in b | not zero?(r := ta.Cf*tb.Cf)]
-                      for ta in reverse a]
-
+                  zero? b => b
+                  +/[construct [[ta.Mn*tb.Mn, ta.Cf*tb.Cf]$Term
+                    for tb in b ] for ta in a]
 
         else -- M hasn't OrderedSet
             -- Terms are stored in random order.
