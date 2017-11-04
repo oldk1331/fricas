@@ -60,8 +60,8 @@ AbelianMonoid() : Category == AbelianSemiGroup with
         ++ zero?(x) tests if x is equal to 0.
       "*": (NonNegativeInteger,%) -> %
         ++ n * x is left-multiplication by a non negative integer
-      opposite? : (%,%) -> Boolean
-        ++ \spad{opposite?(x,y)} holds if the sum of \spad{x}
+      opposite? : (%, %) -> Boolean
+        ++ \spad{opposite?(x, y)} holds if the sum of \spad{x}
         ++ and \spad{y} is \spad{0}.
     add
       import from RepeatedDoubling(%)
@@ -226,7 +226,6 @@ CharacteristicZero() : Category == Ring
 ++ element.
 CommutativeRing() : Category == Join(Ring, Algebra(%), CommutativeStar)
 
-
 )abbrev category DIFRING DifferentialRing
 ++ Author:
 ++ Basic Functions:
@@ -359,8 +358,8 @@ DivisionRing() : Category ==
 ++ not necessarily commutative which has no zero divisors.
 ++
 ++ Axioms:
-++   \spad{ab=0 => a=0 or b=0}  -- known as noZeroDivisors
-++   \spad{not(1=0)}
+++   \spad{a * b = 0 => a = 0 or b = 0}  -- known as noZeroDivisors
+++   \spad{1 ~= 0}
 ++
 ++ Conditional attributes:
 ++   canonicalUnitNormal\tab{20}the canonical field is the same for
@@ -768,9 +767,12 @@ GcdDomain() : Category == Join(IntegralDomain, LeftOreRing) with
 ++   \spad{rightInverse("*":(%,%)->%,inv)}\tab{30}\spad{ x*inv(x) = 1 }
 Group() : Category == Join(Monoid, TwoSidedRecip, unitsKnown) with
     --operations
-      inv : % -> %               ++ inv(x) returns the inverse of x.
-      "/": (%,%) -> %           ++ x/y is the same as x times the inverse of y.
-      "^": (%,Integer) -> %    ++ x^n returns x raised to the integer power n.
+      inv : % -> %
+          ++ inv(x) returns the inverse of x.
+      "/" : (%, %) -> %
+          ++ x/y is the same as x times the inverse of y.
+      "^" : (%, Integer) -> %
+          ++ x^n returns x raised to the integer power n.
       conjugate : (%, %) -> %
         ++ conjugate(p, q) computes \spad{inv(q) * p * q}; this is 'right action
         ++ by conjugation'.
@@ -817,6 +819,8 @@ IntegralDomain() : Category ==
 ++ the rng.
 ++
 ++ Axioms:
+++   a, b : R
+++   x, y : %
 ++   \spad{ (a*b)*x = a*(b*x) }
 ++   \spad{ (a+b)*x = (a*x)+(b*x) }
 ++   \spad{ a*(x+y) = (a*x)+(a*y) }
@@ -824,10 +828,9 @@ LeftModule(R : SemiRng) : Category == AbelianSemiGroup with
       if R has AbelianMonoid then AbelianMonoid
       if R has AbelianGroup then AbelianGroup
       --operations
-      "*": (R,%) -> %     ++ r*x returns the left multiplication of the module element x
-                          ++ by the ring element r.
-
-
+      "*" : (R, %) -> %
+          ++ r*x returns the left multiplication of the module element x
+          ++ by the ring element r.
 
 )abbrev category LORER LeftOreRing
 
@@ -1056,7 +1059,7 @@ OrderedMonoid() : Category == Join(OrderedSemiGroup, Monoid)
 ++ operations are compatible with the ordering.
 ++
 ++ Axiom:
-++   \spad{0<a and b<c => ab< ac}
+++   \spad{0 < a and b < c => a*b < a*c}
 
 OrderedRing() : Category == Join(OrderedAbelianGroup, Ring,
          CharacteristicZero) with
@@ -1099,13 +1102,13 @@ Comparable() : Category == SetCategory with
 ++ transitive and reflexive relation \spad{<=}.
 
 PartialOrder() : Category == with
-    "<": (%,%) -> Boolean
+    "<": (%, %) -> Boolean
       ++ x < y is a less than test.
-    ">":         (%, %) -> Boolean
+    ">": (%, %) -> Boolean
       ++ x > y is a greater than test.
-    ">=":        (%, %) -> Boolean
+    ">=" : (%, %) -> Boolean
       ++ x >= y is a greater than or equal test.
-    "<=":        (%, %) -> Boolean
+    "<=" : (%, %) -> Boolean
       ++ x <= y is a less than or equal test.
 
   add
