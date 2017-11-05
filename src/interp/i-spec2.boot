@@ -120,7 +120,13 @@ upDollarTuple(op, f, t, t2, args, nargs) ==
 
 upLispCall(op,t) ==
   -- process $Lisp calls
-  if atom t then code:=getUnname t else
+  rt := '(SExpression)
+  if atom t then
+    code := getUnname t
+    if code = $immediateDataSymbol then
+      putValue(op, getValue t)
+      return putModeSet(op, [rt])
+  else
     [lispOp,:argl]:= t
     not(functionp(lispOp.0) or macrop(lispOp.0)) =>
       throwKeyedMsg("S2IS0024",[lispOp.0])
@@ -130,7 +136,6 @@ upLispCall(op,t) ==
   code :=
     $genValue => wrap timedEVALFUN code
     code
-  rt := '(SExpression)
   putValue(op,objNew(code,rt))
   putModeSet(op,[rt])
 
