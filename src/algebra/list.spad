@@ -520,6 +520,7 @@ AssociationList(Key : SetCategory, Entry : Type):
           for r in deref t repeat
             k = r.key => return(r.entry)
           "failed"
+        copy l == ref [[r.key, r.entry] for r in deref l]
 
         if Entry has SetCategory then
             latex(a : %) : String ==
