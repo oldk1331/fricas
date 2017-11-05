@@ -58,9 +58,12 @@ AbelianMonoidRing(R : Join(SemiRng, AbelianMonoid), E : OrderedAbelianMonoid
     map(fn : R -> R, x : %) ==
           -- this default definition assumes that reductum is cheap
        zero? x => 0
-       r := fn leadingCoefficient x
-       zero? r => map(fn, reductum x)
-       monomial(r, degree x) + map(fn, reductum x)
+       res : % := 0
+       while not zero? x repeat
+           r := fn leadingCoefficient x
+           if not zero? r then res := res + monomial(r, degree x)
+           x := reductum x
+       res
 
     if R has Algebra Fraction Integer then
       q : Fraction(Integer) * p : % == map(x1+->q*x1, p)
