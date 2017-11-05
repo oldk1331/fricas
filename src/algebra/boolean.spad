@@ -96,6 +96,8 @@ Boolean() : Join(OrderedSet, Finite, Logic, ConvertibleTo InputForm) with
       even?(random(2)$Integer) => false
       true
 
+    hashUpdate!(hs : HashState, x : %) == hashUpdate!(hs, lookup x)
+
     convert(x : %) : InputForm ==
       test x => convert('true)
       convert('false)
