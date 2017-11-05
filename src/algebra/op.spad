@@ -142,8 +142,7 @@ BasicOperator() : Exports == Implementation where
       convert(n)@Integer :: NonNegativeInteger
 
     copy op ==
-      oper(name op, op.narg,
-          table([[r.key, r.entry] for r in entries(properties op)@L]$L))
+      oper(name op, op.narg, copy(properties op))
 
 -- property EQUAL? contains a function f: (BOP, BOP) -> Boolean
 -- such that f(o1, o2) is true iff o1 = o2
