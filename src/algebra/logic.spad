@@ -826,9 +826,8 @@ Poset(S) : Category == Definition where
           for x in arr repeat
               if row = a then
                   setelt!(x, b, c)
-                  return void
+                  return void()
               row = row + 1
-          void
 
       -- start of FiniteGraph implementation
 
@@ -1514,12 +1513,10 @@ FinitePoset(S) : Exports == Impl where
       -- sets the list of all vertices (or objects)
       setVert(s : %, v : List S) : Void ==
           s.set1 := v
-          void
 
       -- sets the list of all arrows (or edges)
       setArr(s : %, v : List List Boolean) : Void ==
           s.struct1 := v
-          void
 
 )if false
 \section{Complete Partial Order}

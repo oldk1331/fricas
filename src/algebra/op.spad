@@ -609,7 +609,6 @@ CommonOperators() : Exports == Implementation where
       for op in dummyvarop1 repeat setDummyVar(op, 1)
       for op in dummyvarop2 repeat setDummyVar(op, 2)
       assert(oppren, 'linear)
-      void
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.

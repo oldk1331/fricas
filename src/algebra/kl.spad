@@ -59,7 +59,6 @@ SortedCache(S : CachableSet) : Exports == Implementation where
             cache := new(cache_size, x)$(PrimitiveArray S)
             for k in 0..(cache_use - 1) repeat
                 cache(k) := ocache(k)
-        void
 
     insertBefore(l, x) ==
         k : Integer
@@ -69,7 +68,6 @@ SortedCache(S : CachableSet) : Exports == Implementation where
             vscan(cache_use - k) := vscan(cache_use - k - 1)
         vscan(l) := x
         cache_use := cache_use + 1
-        void
 
     shiftCache(l, n) ==
         k : Integer
@@ -77,7 +75,6 @@ SortedCache(S : CachableSet) : Exports == Implementation where
         for k in l..(cache_use - 1) repeat
             x := vscan(k)
             setPosition(x, n + position x)
-        void
 
     clearCache() ==
         k : Integer
@@ -88,13 +85,11 @@ SortedCache(S : CachableSet) : Exports == Implementation where
         cache := empty()$(PrimitiveArray S)
         cache_size := 0
         cache_use := 0
-        void
 
     insertAtEnd(x : S) : Void ==
         expandCache(x)
         cache(cache_use) := x
         cache_use := cache_use + 1
-        void
 
     linearSearch(x : S, equal? : S -> Boolean) ==
         k : Integer := 0
@@ -198,7 +193,7 @@ MakeCachableSet(S : SetCategory) : Exports == Implementation where
     clearCache()
 
     position x             == x.pos
-    setPosition(x, n)      == (x.pos := n; void)
+    setPosition(x, n)      == x.pos := n
     coerce(x : %) : S          == x.setpart
     coerce(x : %) : OutputForm == x::S::OutputForm
     coerce(s : S) : %          == enterInCache([s, 0]$Rep,

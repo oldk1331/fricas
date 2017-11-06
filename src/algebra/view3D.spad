@@ -661,7 +661,6 @@ ThreeDimensionalViewport() : Exports == Implementation where
         checkViewport viewport =>
           sendI(VIEW, RESET)
           getI(VIEW)          -- acknowledge
-      void()
 
     close viewport ==
       (key(viewport) ~= 0$I) =>
@@ -670,7 +669,6 @@ ThreeDimensionalViewport() : Exports == Implementation where
         checkViewport viewport =>
           getI(VIEW)          -- acknowledge
           viewport.key := 0$I
-      void()
 
     viewpoint (viewport : %) : V ==
       (key(viewport) ~= 0$I) =>
