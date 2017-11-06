@@ -153,7 +153,6 @@ PermutationGroup(S : SetCategory) : public == private where
     import from Permutation S
     import from OutputForm
     import from Symbol
-    import from Void
 
   --local functions first, signatures:
 
@@ -667,7 +666,6 @@ PermutationGroup(S : SetCategory) : public == private where
         -- do we know the group already?
         if gp.information.order = 0 then
             bsgs(gp, false, 20, 0)
-        void
 
     subgroup(gp1 : %, gp2 : %) : B ==
         gpset1 := initialize gp1
@@ -1003,7 +1001,6 @@ PermutationGroup(S : SetCategory) : public == private where
 
     initializeGroupForWordProblem(gp, maxLoops, diff) ==
         bsgs(gp, true, maxLoops, diff)
-        void
 
     initializeGroupForWordProblem(gp) ==
         initializeGroupForWordProblem(gp, 0, 1)
