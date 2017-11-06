@@ -1308,8 +1308,8 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
 
   ROWREC ==> Record(Indices : L C, Entries : L D)
 
-  iter ==> "iterated"::Sy
-  rand ==> "random"::Sy
+  iter ==> 'iterated
+  rand ==> 'random
 
   Cat ==> CoercibleTo OUT with
 
@@ -2198,9 +2198,9 @@ JetBundle(IVar : LS, DVar : LS) : Cat == Def where
         opname : Sy := name jv
         jop := operator(opname)$BOP
         display(jop, opdisp)
-        jop := setProperty(jop, "%symbol"::Symbol, jv)$BOP
-        jop := setProperty(jop, "%weight"::Symbol, weight(jv))$BOP
-        jop := setProperty(jop, "%jet"::Symbol, type(jv))$BOP
+        jop := setProperty(jop, '%symbol, jv)$BOP
+        jop := setProperty(jop, '%weight, weight(jv))$BOP
+        jop := setProperty(jop, '%jet, type(jv))$BOP
         arg : L EI := concat!([opname::EI, index(jv)::EI], _
                               [i::EI  for i in repeatedIndex jv])
         kernel(jop, arg)
@@ -2334,9 +2334,9 @@ IndexedJetBundle(x, u, p, n, m) : Cat == Def where
         opname : Sy := name jv
         jop := operator(opname)$BOP
         display(jop, opdisp)
-        jop := setProperty(jop, "%symbol"::Symbol, jv)$BOP
-        jop := setProperty(jop, "%weight"::Symbol, weight(jv))$BOP
-        jop := setProperty(jop, "%jet"::Symbol, type(jv))$BOP
+        jop := setProperty(jop, '%symbol, jv)$BOP
+        jop := setProperty(jop, '%weight, weight(jv))$BOP
+        jop := setProperty(jop, '%jet, type(jv))$BOP
         if getNotation() = Multi then
             arg := [i::EI  for i in multiIndex jv]
         else
@@ -2689,8 +2689,8 @@ JetBundleExpression(JB : JBC) : Cat == Def where
         JV : L JB := empty
         LKernels := tower Phi
         LOps := [operator Ke  for Ke in LKernels]
-        for Ke in LKernels  for Op in LOps | has?(Op, "%jet"::Symbol)$BOP repeat
-            typ := property(Op, "%jet"::Symbol)::None pretend Sy
+        for Ke in LKernels  for Op in LOps | has?(Op, '%jet)$BOP repeat
+            typ := property(Op, '%jet)::None pretend Sy
             arg := argument Ke
             if typ = Indep then
                 xindex : I := retract(second arg)
@@ -2788,8 +2788,8 @@ JetBundleExpression(JB : JBC) : Cat == Def where
 
         oldarg := first(oldarg, (num + 3)::NNI)
         op := operator(name)$BOP
-        setProperty(op, "%specialDisp"::Symbol, hidedisp)
-        setProperty(op, "%specialDiff"::Symbol, hidediff)
+        setProperty(op, '%specialDisp, hidedisp)
+        setProperty(op, '%specialDiff, hidediff)
         res : % := 0
         for k in num..1 by -1  for arg in args repeat
             da := differentiate(arg, x)
@@ -2802,8 +2802,8 @@ JetBundleExpression(JB : JBC) : Cat == Def where
         -- Special output and differentiation routines are added using the
         -- two hooks provided by FunctionSpace and BasicOperator.
         op := operator(f)$BOP
-        setProperty(op, "%specialDisp"::Symbol, hidedisp)
-        setProperty(op, "%specialDiff"::Symbol, hidediff)
+        setProperty(op, '%specialDisp, hidedisp)
+        setProperty(op, '%specialDiff, hidediff)
         args := append([sy2jbe f, #arg::%, show::%], arg)
         kernel0(op, args)
 
@@ -5288,8 +5288,8 @@ SymmetryAnalysis(JB1 : JBC, xi : US, eta : US) : Cat == Def where
         LKernels := tower f
         LOps := [operator Ke  for Ke in LKernels]
         for Ke in LKernels  for Op in LOps repeat
-            has?(Op, "%jet"::Sy)$BOP =>
-                typ := property(Op, "%jet"::Sy)::None pretend Sy
+            has?(Op, '%jet)$BOP =>
+                typ := property(Op, '%jet)::None pretend Sy
                 typ = 'Deriv =>
                     error "function contains illegal jet variables in transform"
                 ind : I := retract second argument Ke
