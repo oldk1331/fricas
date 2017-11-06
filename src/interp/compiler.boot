@@ -351,7 +351,7 @@ compAtom1(x, m, e) ==
       compSymbol(x,m,e) or return nil
     STRINGP x => [x,x,e]
     [x,primitiveType x or return nil,e]
-  convert(t,m)
+  coerce(t, m)
 
 primitiveType x ==
   x is nil => $EmptyMode
@@ -380,6 +380,7 @@ compSymbol(s,m,e) ==
   m':= getmode(s,e) =>
     if not member(s,$formalArgList) and not MEMQ(s,$FormalMapVariableList) and
       not isFunction(s,e) and null ($compForModeIfTrue=true) then errorRef s
+    m = ["None"] and isFunction(s, e) => comp(s, m', e)
     [s,m',e] --s is a declared argument
   MEMQ(s,$FormalMapVariableList) => stackMessage ["no mode found for",s]
   not isFunction(s,e) => errorRef s
@@ -1173,10 +1174,12 @@ coerceExtraHard(T is [x,m',e],m) ==
       (T'':= coerce(T',m)) => T''
   m' is ['Record, :.] and m = $OutputForm =>
       [['coerceRe2E,x,['ELT,COPY m',0]],m,e]
+  m = ["None"] => T
   nil
 
 coerceable(m,m',e) ==
   m=m' => m
+  m' = ["None"] => m -- any type can coerce to None
   -- must find any free parameters in m
   sl:= pmatch(m',m) => SUBLIS(sl,m')
   coerce(["$fromCoerceable$",m,e],m') => m'
@@ -1203,8 +1206,15 @@ compCoerce1(x,m',e) ==
     T.mode
   m':=resolve(m1,m')
   T:=[T.expr,m1,T.env]
-  T':= coerce(T,m') => T'
-  T':= coerceByModemap(T,m') => T'
+  if m' = ["None"] then
+      -- If the coercion target is None, then we try 'coerceByModemap' first,
+      -- because 'coerce' will always return T as is. This way we can catch
+      -- cases like m1 (type of x) is 'Union(None, "failed")'
+      T' := coerceByModemap(T, m') => return T'
+      T' := coerce(T, m') => return T'
+  else
+      T' := coerce(T, m') => return T'
+      T' := coerceByModemap(T, m') => return T'
   pred:=isSubset(m',T.mode,e) =>
     gg:=GENSYM()
     pred:= substitute(gg,"*",pred)
