@@ -111,6 +111,8 @@ moment, similar to the indexing variable in sum and product.
 
 )endif
 
+    errMsg ==> "can not get property from RecurrenceOperator"
+
     INFOREC ==> Record(eqn : F,
                        idx : Symbol,
                        fnc : BasicOperator,
@@ -120,7 +122,8 @@ moment, similar to the indexing variable in sum and product.
                        gen : Union(List F -> List F, "failed"))
 
     getINFOREC(infoOp : BasicOperator) : INFOREC ==
-        property(infoOp, '%INFOREC)::None pretend INFOREC
+        (p := property(infoOp, '%INFOREC)) case "failed" => error errMsg
+        p::None pretend INFOREC
 
     setINFOREC(infoOp : BasicOperator, rec : INFOREC) : Void ==
         setProperty(infoOp, '%INFOREC, rec pretend None)
@@ -137,7 +140,8 @@ moment, similar to the indexing variable in sum and product.
                        ex? : Boolean)
 
     getINFOSER(infoOp : BasicOperator) : INFOSER ==
-        property(infoOp, '%INFOSER)::None pretend INFOSER
+        (p := property(infoOp, '%INFOSER)) case "failed" => error errMsg
+        p::None pretend INFOSER
 
     setINFOSER(infoOp : BasicOperator, ser : INFOSER) : Void ==
         setProperty(infoOp, '%INFOSER, ser pretend None)
