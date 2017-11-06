@@ -944,7 +944,7 @@ FunctionSpaceAttachPredicates(R, F, D) : Exports == Implementation where
     -- Looks fishy, but we try to preserve meaning
     st(k, l) ==
       kk := copy operator k
-      setProperty(kk, PMPRED, concat(preds k, l) pretend None)
+      setProperty(kk, PMPRED, concat(preds k, l))
       kernel(kk, empty()$List(F))
 
     suchThat(p : F, l : List(D -> Boolean)) ==

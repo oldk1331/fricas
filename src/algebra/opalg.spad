@@ -75,7 +75,7 @@ ModuleOperator(R : Ring, M : LeftModule(R)) : Exports == Implementation where
     termcopy t          == [[rm.coef, rm.monom] for rm in t]
     characteristic()    == characteristic()$R
     mkop(r, fg)         == [[r, fg]$RM]$TERM :: %
-    evaluate(f, g)   == nocopy setProperty(retract(f)@OP, OPEVAL, g pretend None)
+    evaluate(f, g)   == nocopy setProperty(retract(f)@OP, OPEVAL, g)
 
     if R has OrderedSet then
       makeop(r, fg) == (r >= 0 => mkop(r, fg); - mkop(-r, fg))
@@ -93,7 +93,7 @@ ModuleOperator(R : Ring, M : LeftModule(R)) : Exports == Implementation where
       (inv(retract(x)@TERM)) ^ (-i)
 
     evaluateInverse(f, g) ==
-      nocopy setProperty(retract(f)@OP, INVEVAL, g pretend None)
+      nocopy setProperty(retract(f)@OP, INVEVAL, g)
 
     coerce(x : %) : O ==
       zero? x => (0$R)::O
@@ -196,7 +196,7 @@ ModuleOperator(R : Ring, M : LeftModule(R)) : Exports == Implementation where
       x : % * r : R        == x * (r::%)
       adjoint x        == +/[t.c * termadj(t.k) for t in listOfTerms x]
       rmadj t          == conjug(t.coef) * monomadj(t.monom)
-      adjoint(op, adj) == nocopy setProperty(retract(op)@OP, OPADJ, adj::None)
+      adjoint(op, adj) == nocopy setProperty(retract(op)@OP, OPADJ, adj)
 
       termadj t ==
         ans : % := 1

@@ -221,11 +221,11 @@ LiouvillianFunction(R, F) : Exports == Implementation where
     derivative(opli2, (z1 : F) : F +-> log(z1) / (1 - z1))
     derivative(opfis, (z1 : F) : F +-> sin(pi()*z1^2/(2::F)))
     derivative(opfic, (z1 : F) : F +-> cos(pi()*z1^2/(2::F)))
-    setProperty(opint, SPECIALEQUAL, eqint@((K, K) -> Boolean) pretend None)
-    setProperty(opint, SPECIALDIFF, dvint@((List F, SE) -> F) pretend None)
-    setProperty(opiint, SPECIALDIFF, dviint@((List F, SE) -> F) pretend None)
-    setProperty(opdint, SPECIALDIFF, dvdint@((List F, SE)->F) pretend None)
-    setProperty(opdint, SPECIALDISP, ddint@(List F -> O) pretend None)
+    setProperty(opint, SPECIALEQUAL, eqint)
+    setProperty(opint, SPECIALDIFF, dvint)
+    setProperty(opiint, SPECIALDIFF, dviint)
+    setProperty(opdint, SPECIALDIFF, dvdint)
+    setProperty(opdint, SPECIALDISP, ddint)
 
     if R has ConvertibleTo INP then
       inint : List F -> INP
@@ -246,8 +246,8 @@ LiouvillianFunction(R, F) : Exports == Implementation where
                                             [convert(third rest l)@INP,
                                              convert(third rest rest l)@INP])])]
 
-      setProperty(opint, SPECIALINPUT, inint@(List F -> INP) pretend None)
-      setProperty(opdint, SPECIALINPUT, indint@(List F -> INP) pretend None)
+      setProperty(opint, SPECIALINPUT, inint)
+      setProperty(opdint, SPECIALINPUT, indint)
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.

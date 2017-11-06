@@ -2198,12 +2198,9 @@ JetBundle(IVar : LS, DVar : LS) : Cat == Def where
         opname : Sy := name jv
         jop := operator(opname)$BOP
         display(jop, opdisp)
-        tmp : None := coerce(jv)$NoneFunctions1(%)
-        jop := setProperty(jop, "%symbol"::Symbol, tmp)$BOP
-        tmp := coerce(weight(jv))$NoneFunctions1(NNI)
-        jop := setProperty(jop, "%weight"::Symbol, tmp)$BOP
-        tmp := coerce(type(jv))$NoneFunctions1(Sy)
-        jop := setProperty(jop, "%jet"::Symbol, tmp)$BOP
+        jop := setProperty(jop, "%symbol"::Symbol, jv)$BOP
+        jop := setProperty(jop, "%weight"::Symbol, weight(jv))$BOP
+        jop := setProperty(jop, "%jet"::Symbol, type(jv))$BOP
         arg : L EI := concat!([opname::EI, index(jv)::EI], _
                               [i::EI  for i in repeatedIndex jv])
         kernel(jop, arg)
@@ -2337,12 +2334,9 @@ IndexedJetBundle(x, u, p, n, m) : Cat == Def where
         opname : Sy := name jv
         jop := operator(opname)$BOP
         display(jop, opdisp)
-        tmp : None := coerce(jv)$NoneFunctions1(%)
-        jop := setProperty(jop, "%symbol"::Symbol, tmp)$BOP
-        tmp := coerce(weight(jv))$NoneFunctions1(NNI)
-        jop := setProperty(jop, "%weight"::Symbol, tmp)$BOP
-        tmp := coerce(type(jv))$NoneFunctions1(Sy)
-        jop := setProperty(jop, "%jet"::Symbol, tmp)$BOP
+        jop := setProperty(jop, "%symbol"::Symbol, jv)$BOP
+        jop := setProperty(jop, "%weight"::Symbol, weight(jv))$BOP
+        jop := setProperty(jop, "%jet"::Symbol, type(jv))$BOP
         if getNotation() = Multi then
             arg := [i::EI  for i in multiIndex jv]
         else
@@ -2794,10 +2788,8 @@ JetBundleExpression(JB : JBC) : Cat == Def where
 
         oldarg := first(oldarg, (num + 3)::NNI)
         op := operator(name)$BOP
-        setProperty(op, "%specialDisp"::Symbol,
-                    hidedisp@(L % -> OUT) pretend None)
-        setProperty(op, "%specialDiff"::Symbol,
-                    hidediff@((L %, Sy) -> %) pretend None)
+        setProperty(op, "%specialDisp"::Symbol, hidedisp)
+        setProperty(op, "%specialDiff"::Symbol, hidediff)
         res : % := 0
         for k in num..1 by -1  for arg in args repeat
             da := differentiate(arg, x)
@@ -2810,10 +2802,8 @@ JetBundleExpression(JB : JBC) : Cat == Def where
         -- Special output and differentiation routines are added using the
         -- two hooks provided by FunctionSpace and BasicOperator.
         op := operator(f)$BOP
-        setProperty(op, "%specialDisp"::Symbol,
-                    hidedisp@(L % -> OUT) pretend None)
-        setProperty(op, "%specialDiff"::Symbol,
-                    hidediff@((L %, Sy) -> %) pretend None)
+        setProperty(op, "%specialDisp"::Symbol, hidedisp)
+        setProperty(op, "%specialDiff"::Symbol, hidediff)
         args := append([sy2jbe f, #arg::%, show::%], arg)
         kernel0(op, args)
 

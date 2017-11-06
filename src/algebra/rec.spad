@@ -82,8 +82,8 @@ Taylor series expansion.
     oprecur := operator('rootOfRec)$BasicOperator
     opADE := operator('rootOfADE)$BasicOperator
 
-    setProperty(oprecur, '%dummyVar, 1 pretend None)
-    setProperty(opADE, '%dummyVar, 1 pretend None)
+    setProperty(oprecur, '%dummyVar, 1)
+    setProperty(opADE, '%dummyVar, 1)
 
 )if false
 
@@ -126,7 +126,7 @@ moment, similar to the indexing variable in sum and product.
         p::None pretend INFOREC
 
     setINFOREC(infoOp : BasicOperator, rec : INFOREC) : Void ==
-        setProperty(infoOp, '%INFOREC, rec pretend None)
+        setProperty(infoOp, '%INFOREC, rec)
 
 
     INFOSER ==> Record(eqn : F,
@@ -144,7 +144,7 @@ moment, similar to the indexing variable in sum and product.
         p::None pretend INFOSER
 
     setINFOSER(infoOp : BasicOperator, ser : INFOSER) : Void ==
-        setProperty(infoOp, '%INFOSER, ser pretend None)
+        setProperty(infoOp, '%INFOSER, ser)
 
 )if false
 
@@ -366,8 +366,7 @@ how many initial values are necessary.
 
         bracket(cons(RecEq, RecList))$OutputForm
 
-    setProperty(oprecur, '%specialDisp,
-                ddrec@(List F -> OutputForm) pretend None)
+    setProperty(oprecur, '%specialDisp, ddrec)
 
     opdiff := operator(operator('%diff)$CommonOperators)$F
 
@@ -376,8 +375,7 @@ how many initial values are necessary.
         xF := x::F
         kernel(opdiff, [eval(kernel(oprecur, l), xF, dummyF), dummyF, xF])
 
-    setProperty(oprecur, '%specialDiff,
-                diffRec@((List F, Symbol) -> F) pretend None)
+    setProperty(oprecur, '%specialDiff, diffRec)
 
 )if false
 
@@ -556,16 +554,14 @@ solution and determine the valuation.
 
 
 
-    setProperty(opADE, '%specialDisp,
-                ddADE@(List F -> OutputForm) pretend None)
+    setProperty(opADE, '%specialDisp, ddADE)
 
     diffADE(l : List F, x : Symbol) : F ==
         dummyF := new()$Symbol :: F
         xF := x::F
         kernel(opdiff, [eval(kernel(opADE, l), xF, dummyF), dummyF, xF])
 
-    setProperty(opADE, '%specialDiff,
-                diffADE@((List F, Symbol) -> F) pretend None)
+    setProperty(opADE, '%specialDiff, diffADE)
 
 
 --Copyright (c) 2006-2007, Martin Rubey <Martin.Rubey@univie.ac.at>
