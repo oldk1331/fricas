@@ -247,7 +247,7 @@ LaplaceTransform(R, F) : Exports == Implementation where
 --        ss * locallaplace(fint, t, tt, s, ss) - eval(fint, tt = 0)
       oplap(f, tt, ss)
 
-    setProperty(oplap, SPECIALDIFF, dvlap@((List F, SE)->F) pretend None)
+    setProperty(oplap, SPECIALDIFF, dvlap)
 
 )abbrev package INVLAPLA InverseLaplaceTransform
 ++ Inverse Laplace transform

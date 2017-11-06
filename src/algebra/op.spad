@@ -116,18 +116,18 @@ BasicOperator() : Exports == Implementation where
     assert(op, s)        == setProperty(op, s, NIL$Lisp)
     has?(op, name)       == key?(name, op.props)
     oper(se, n, prop)    == [se, n, prop]
-    weight(op, n)        == setProperty(op, WEIGHT, n pretend None)
+    weight(op, n)        == setProperty(op, WEIGHT, n)
     nullary? op          == zero?(op.narg)
     unary? op            == ((op.narg) = 1)
     nary? op             == negative?(op.narg)
-    equality(op, func)   == setProperty(op, EQUAL?, func pretend None)
-    comparison(op, func) == setProperty(op, LESS?, func pretend None)
+    equality(op, func)   == setProperty(op, EQUAL?, func)
+    comparison(op, func) == setProperty(op, LESS?, func)
     display(op : %, f : O -> O)        == display(op, (l1 : List(O)) : O +-> f first l1)
     deleteProperty!(op, name)     == (remove!(name, properties op); op)
     setProperty(op, name, valu)    == (op.props.name := valu; op)
     coerce(op : %) : OutputForm        == name(op)::OutputForm
-    input(op : %, f : List SEX -> SEX) == setProperty(op, SEXPR, f pretend None)
-    display(op : %, f : List O -> O)   == setProperty(op, DISPLAY, f pretend None)
+    input(op : %, f : List SEX -> SEX) == setProperty(op, SEXPR, f)
+    display(op : %, f : List O -> O)   == setProperty(op, DISPLAY, f)
 
     display op ==
       (u := property(op, DISPLAY)) case "failed" => "failed"
@@ -242,14 +242,14 @@ BasicOperatorFunctions1(A : SetCategory) : Exports == Implementation where
       ((func::None) pretend (List A -> A)) args
 
     evaluate(op : OP, func : List A -> A) ==
-      setProperty(op, EVAL, func pretend None)
+      setProperty(op, EVAL, func)
 
     derivative op ==
       (func := property(op, DIFF)) case "failed" => "failed"
       ((func::None) pretend List(List A -> A))
 
     derivative(op : OP, grad : List(List A -> A)) ==
-      setProperty(op, DIFF, grad pretend None)
+      setProperty(op, DIFF, grad)
 
     derivative(op : OP, f : A -> A) ==
       unary? op or nary? op =>
@@ -283,7 +283,7 @@ BasicOperatorFunctions1(A : SetCategory) : Exports == Implementation where
     constOp a ==
       setProperty(display(copy opconst,
         (l1 : List(OutputForm)) : OutputForm +-> cdisp(a::OutputForm, l1)),
-                                                  CONST, a pretend None)
+                                                  CONST, a)
 
     constantOpIfCan op ==
       is?(op, 'constant) and
@@ -553,7 +553,7 @@ CommonOperators() : Exports == Implementation where
     dgamma l == prefix('Gamma::O, l)
     dEllipticE2(l : List O) : O == prefix('ellipticE::O, l)
 
-    setDummyVar(op, n) == setProperty(op, DUMMYVAR, n pretend None)
+    setDummyVar(op, n) == setProperty(op, DUMMYVAR, n)
 
     dexp x ==
       e := '%e::O

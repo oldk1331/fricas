@@ -390,11 +390,9 @@ AlgebraicFunction(R, F) : Exports == Implementation where
         lc2*p1 = lc1*p2
 
     evaluate(opalg, ialg)$BasicOperatorFunctions1(F)
-    setProperty(opalg, SPECIALDIFF,
-                              dvalg@((List F, SE) -> F) pretend None)
-    setProperty(opalg, SPECIALDISP,
-                              dalg@(List F -> OutputForm) pretend None)
-    setProperty(opalg, SPECIALEQUAL, eqopalg@((K, K) -> Boolean) pretend None)
+    setProperty(opalg, SPECIALDIFF, dvalg)
+    setProperty(opalg, SPECIALDISP, dalg)
+    setProperty(opalg, SPECIALEQUAL, eqopalg)
 
     POLYCATQ ==> PolynomialCategoryQuotientFunctions(IndexedExponents(K),
                                                      K, R, P, F)
@@ -449,10 +447,8 @@ AlgebraicFunction(R, F) : Exports == Implementation where
 
     evaluate(oprootsum, irootsum)$BasicOperatorFunctions1(F)
 
-    setProperty(oprootsum, SPECIALDIFF,
-                        dvrootsum@((List F, SE) -> F) pretend None)
-    setProperty(oprootsum, SPECIALDISP,
-                        drootsum@(List F -> OutputForm) pretend None)
+    setProperty(oprootsum, SPECIALDIFF, dvrootsum)
+    setProperty(oprootsum, SPECIALDISP, drootsum)
 
     if R has RetractableTo Integer then
       import from PolynomialRoots(IndexedExponents K, K, R, P, F)
@@ -570,8 +566,7 @@ AlgebraicFunction(R, F) : Exports == Implementation where
                                            retract(second argument k)@K)
         monomial(1, 1) - k::F::UP
 
-    setProperty(oproot, SPECIALDISP,
-                              droot@(List F -> OutputForm) pretend None)
+    setProperty(oproot, SPECIALDISP, droot@(List F -> OutputForm))
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.
