@@ -609,7 +609,7 @@ FunctionSpace(R : Comparable) : Category == Definition where
       eval(f : %, ls : List OP, lg : List %, x : SY) ==
         eval(f, ls, [compiledFunction(g, x) for g in lg])
 
-      setProperty(opdiff, SPECIALINPUT, indiff@(List % -> InputForm) pretend None)
+      setProperty(opdiff, SPECIALINPUT, indiff)
 
     variables(lx : List(%)) ==
       l := empty()$List(SY)
@@ -959,12 +959,9 @@ FunctionSpace(R : Comparable) : Category == Definition where
         sk1 : % := subst(ok1, od, r2.dummies)
         sk1 = (r2.orig_k)::%
 
-      setProperty(opdiff, SPECIALEQUAL,
-                          equaldiff@((K, K) -> Boolean) pretend None)
-      setProperty(opdiff, SPECIALDIFF,
-                          diffdiff@((List %, SY) -> %) pretend None)
-      setProperty(opdiff, SPECIALDISP,
-                              ddiff@(List % -> OutputForm) pretend None)
+      setProperty(opdiff, SPECIALEQUAL, equaldiff)
+      setProperty(opdiff, SPECIALDIFF, diffdiff)
+      setProperty(opdiff, SPECIALDISP, ddiff)
 
       if not(R has IntegralDomain) then
         mainKernel x         == mainVariable numer x
