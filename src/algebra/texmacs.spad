@@ -944,7 +944,6 @@ TexmacsFormat() : public == private where
         sayExpr "scheme: (with _"mode_" _"math_""
         sayExpr texmacs
         sayExpr ")"
-        void()$Void
 
     ungroup(str : S) : S ==
         -- not really correct, but should not matter

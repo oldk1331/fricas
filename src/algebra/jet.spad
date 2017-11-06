@@ -1477,13 +1477,11 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
     setRow!(A : %, i : I, r : ROWREC) : Void ==
         -- i < 0 or i > A.NRows => error "index out of range"
         qsetelt!(A.Rows, i, r)
-        void
 
     setRow!(A : %, i : I, inds : L C, ents : L D) : Void ==
         -- i < 0 or i > A.NRows => error "index out of range"
         -- #inds  ~=  #ents => error "improper row"
         qsetelt!(A.Rows, i, [inds, ents])
-        void
 
     new(inds : L C, n : I) : % ==
         [#inds, n::NNI, inds, [copy emptyRec  for i in 1..n]]
@@ -1506,7 +1504,6 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
             r.Indices := insert!(c, r.Indices, j)
             r.Entries := insert!(d, r.Entries, j)
         qsetelt!(A.Rows, i, r)
-        void
 
     coerce(A : %) : MD ==
         zero? A.NCols => error "cannot coerce matrix with zero columns"
@@ -1543,7 +1540,6 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
             newInds := removeDuplicates! merge!((x, y) +-> y < x,
                                                 newInds, r.Indices)
         A.AllInds := newInds
-        void
 
     purge!(A : %, crit : C-> B) : Void ==
         newInds : L C := empty
@@ -1562,7 +1558,6 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
                         newInds := cons(c, newInds)
                         newEnts := cons(e, newEnts)
                 qsetelt!(A.Rows, l, [reverse! newInds, reverse! newEnts])
-        void
 
     sortedPurge!(A : %, crit : C-> B) : Void ==
         if crit first A.AllInds then
@@ -1574,7 +1569,6 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
                     r.Indices := rest r.Indices
                     r.Entries := rest r.Entries
                 qsetelt!(A.Rows, l, r)
-        void
 
     deleteRow!(A : %, i : I) : Void ==
         i > A.NRows => A
@@ -1586,7 +1580,6 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
             qsetelt!(resRows, l-1, qelt(A.Rows, l))
         A.NRows := nr
         A.Rows := resRows
-        void
 
     consRow!(A : %, r : ROWREC) : Void ==
         A.NRows := A.NRows + 1
@@ -1596,7 +1589,6 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
         if not empty? newInds then
             A.AllInds := merge((x, y) +-> y < x, A.AllInds,
                                sort!((x, y) +-> y < x, newInds))
-        void
 
     appendRow!(A : %, r : ROWREC) : Void ==
         A.NRows := A.NRows + 1
@@ -1606,7 +1598,6 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
         if not empty? newInds then
             A.AllInds := merge((x, y) +-> y < x, A.AllInds,
                                sort!((x, y) +-> y < x, newInds))
-        void
 
     extract(A : %, i1 : I, i2 : I) : % ==
         nr := (i2-i1+1)::NNI
@@ -3971,7 +3962,6 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
             print(hconcat(message("    "), allIndices(sys.JM)::OUT))$OUT
             print(message("  Last derivations:"))$OUT
             print(hconcat(message("    "), sys.Deriv::OUT))$OUT
-        void
 
     -- --------------------------- --
     -- Basic Operations on Systems --
@@ -4714,7 +4704,6 @@ CartanKuranishi(JB : JBC, D : JBFC) : Cat == Def where
               display(str::TEX)$TEX
           else
               print(str)$OUT
-          void
 
       outR(q : NNI, s : NNI) : OUT ==
           -- Output form for R(q, s).
@@ -4728,7 +4717,7 @@ CartanKuranishi(JB : JBC, D : JBFC) : Cat == Def where
 
       info(flag : NNI, q : NNI, s : NNI, dim : NNI) : Void ==
           -- Displays some trace information.
-          Out < 4 => void
+          Out < 4 => void()
           write message(" ")
           if flag = 1 then
               write(hconcat [message("Symbol "), outM(q, s),
@@ -4742,12 +4731,11 @@ CartanKuranishi(JB : JBC, D : JBFC) : Cat == Def where
               write(hconcat [message("Equation "), outR(q, s),
                              message(" not involutive! "),
                              message("Dimension: "), dim::OUT])
-          void
 
       display(q : NNI, s : NNI, Sys : L D, Symb : SEM, DimRq : NNI,
               DimMq : NNI) : Void ==
           -- Displays intermediate systems and symbols.
-          Out < 5 => void
+          Out < 5 => void()
           write message(" ")
           write message("****************************************")
           write message(" ")
@@ -4761,23 +4749,21 @@ CartanKuranishi(JB : JBC, D : JBFC) : Cat == Def where
               write message(" ")
               write hconcat(message("Symbol. Dimension: "), DimMq::OUT)
               write(Symb::OUT)
-          void
 
       displayIntCond(s : NNI, Cond : L D) : Void ==
           -- Displays integrability conditions.
-          Out < 3 => void
+          Out < 3 => void()
           write message(" ")
           write hconcat [message("======= "), s::OUT,
                          message(". Projection =======")]
           write message("Integrability condition(s)")
           write printSys Cond
           write message("=============================")
-          void
 
       displayCartan(Sys : L D, dim : NNI, q : NNI, s : NNI,
                     CarChar : L NNI) : Void ==
           -- Displays final result.
-          Out = 0 => void
+          Out = 0 => void()
           write message(" ")
           write message("*************** Final Result ***************")
           write message(" ")
@@ -4794,7 +4780,6 @@ CartanKuranishi(JB : JBC, D : JBFC) : Cat == Def where
               else
                   write hconcat(message("Cartan characters: "), _
                           commaSeparate [cc::OUT for cc in CarChar])
-          void
 
       -- ----------------- --
       -- Cartan Characters --
@@ -4932,7 +4917,6 @@ CartanKuranishi(JB : JBC, D : JBFC) : Cat == Def where
 
       complete(De : DE) : Void ==
           tmp := complete2 De
-          void
 
       complete2(De : DE) : CREC ==
           -- Completion procedure.
@@ -5532,7 +5516,6 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
                      LazyDiff::OUT))$OUT
         print(assign(message("Number of subsequent evaluations"),
                      LazyEval::OUT))$OUT
-        void
 
 
     -- -------------- --

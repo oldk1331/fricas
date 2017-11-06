@@ -176,16 +176,13 @@ TexFormat() : public == private where
           formatExpr(precondition expr, minPrec)]$(L S)
       f
 
-    sayExpr(s : S) : Void ==
-        sayTeX$Lisp s
+    sayExpr ==> sayTeX$Lisp
 
     display(f : %, len : I) ==
-      s, t : S
       for s in f.prolog repeat sayExpr s
       for s in f.TeX repeat
         for t in splitLong(s, len) repeat sayExpr t
       for s in f.epilog repeat sayExpr s
-      void()$Void
 
     display(f : %) ==
       display(f, _$LINELENGTH$Lisp pretend I)
