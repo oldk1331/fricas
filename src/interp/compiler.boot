@@ -992,7 +992,13 @@ compFromIf(a,m,E) ==
   true => comp(a,m,E)
 
 compImport(["import",:doms],m,e) ==
-  for dom in doms repeat e:=addDomain(dom,e)
+  for dom in doms repeat
+      e := addDomain(dom, e)
+      if $compErrorMessageStack and _
+          first $compErrorMessageStack = [dom, " is an unknown mode"] then
+          -- the " is an unknown mode" error message
+          -- is from function augModemapsFromDomain1
+              stackAndThrow [dom, " is an unknown import"]
   ["/throwAway",$NoValueMode,e]
 
 --Will the jerk who commented out these two functions please NOT do so
