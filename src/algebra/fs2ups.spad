@@ -792,12 +792,12 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
         arg := first args
         is?(ker, 'abs) =>
             nthRootToUPS(arg*arg, 2, opt_rec)
-        is?(ker, "%paren"::Symbol) => i_expr_to_PS(arg, opt_rec)
+        is?(ker, '%paren) => i_expr_to_PS(arg, opt_rec)
         is?(ker, 'log) => logToUPS(arg, opt_rec)
         is?(ker, 'exp) =>
             applyIfCan(expIfCan, arg, "exp", opt_rec)
         tranToUPS(ker, arg, opt_rec)
-      is?(ker, "%power"::Symbol) => powToUPS(args, opt_rec)
+      is?(ker, '%power) => powToUPS(args, opt_rec)
       is?(ker, 'nthRoot) =>
         n := retract(second args)@I
         nthRootToUPS(first args, n::NNI, opt_rec)
@@ -1127,11 +1127,11 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
           arg := first args
           is?(ker, 'abs) =>
               nthRootToGenUPS(arg*arg, 2, opt_rec)
-          is?(ker, "%paren"::Symbol) => iExprToGenUPS(arg, opt_rec)
+          is?(ker, '%paren) => iExprToGenUPS(arg, opt_rec)
           is?(ker, 'log) => logToGenUPS(arg, opt_rec)
           is?(ker, 'exp) => expToGenUPS(arg, opt_rec)
           tranToGenUPS(ker, arg, opt_rec)
-      is?(ker, "%power"::Symbol) => powToGenUPS(args, opt_rec)
+      is?(ker, '%power) => powToGenUPS(args, opt_rec)
       is?(ker, 'nthRoot) =>
         n := retract(second args)@I
         nthRootToGenUPS(first args, n::NNI, opt_rec)
