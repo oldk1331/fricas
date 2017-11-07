@@ -67,9 +67,10 @@ compToApply(op,argl,m,e) ==
   T:= compNoStacking(op,$EmptyMode,e) or return nil
   m1:= T.mode
   T.expr is ["QUOTE", =m1] => nil
-  compApplication(op,argl,m,T.env,T)
+  compApplication(op,argl,m,T)
 
-compApplication(op,argl,m,e,T) ==
+compApplication(op,argl,m,T) ==
+  e := T.env
   T.mode is ['Mapping, retm, :argml] =>
     #argl ~= #argml => nil
     retm := resolve(m, retm)

@@ -48,12 +48,10 @@ compTopLevel(x,m,e) ==
   $envHashTable : local := MAKE_HASHTABLE('EQUAL)
   initEnvHashTable(e)
   initEnvHashTable($CategoryFrame)
-  -- The next line allows the new compiler to be tested interactively.
-  compFun := 'compOrCroak
   x is ["DEF",:.] or x is ["where",["DEF",:.],:.] =>
-    ([val,mode,.]:= FUNCALL(compFun,x,m,e); [val,mode,e])
+    ([val,mode,.]:= compOrCroak(x,m,e); [val,mode,e])
         --keep old environment after top level function defs
-  FUNCALL(compFun,x,m,e)
+  compOrCroak(x,m,e)
 
 compUniquely(x,m,e) ==
   $compUniquelyIfTrue: local:= true
@@ -118,7 +116,7 @@ comp3(x, m, e) ==
   m is ["Mapping",:.] => compWithMappingMode(x,m,e)
   m is ["QUOTE",a] => (x=a => [x, m, e]; nil)
   STRINGP m => (atom x => (m=x or m=STRINGIMAGE x => [m,m,e]; nil); nil)
-  not x or atom x => compAtom(x,m,e)
+  atom x => compAtom(x,m,e)
   op:= first x
   getmode(op,e) is ["Mapping",:ml] and (u:= applyMapping(x,m,e,ml)) => u
   op=":" => compColon(x,m,e)
@@ -449,7 +447,6 @@ compForm1(form is [op,:argl],m,e) ==
       nil
   op is ["Sel", domain, op'] => compSel1(domain, op', argl, m, e)
 
-  e:= addDomain(m,e) --???unneccessary because of comp2's call???
   (mmList:= getFormModemaps(form,e)) and (T:= compForm2(form,m,e,mmList)) => T
   compToApply(op,argl,m,e)
 
@@ -1283,9 +1280,6 @@ compileSpad2Cmd args ==
       vartrace _
       quiet _
         )
-
-    -- next three are for the OLD NEW compiler
-    -- should be unhooked
 
     $scanIfTrue              : local := nil
     $f                       : local := nil  -- compiler
