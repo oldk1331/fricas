@@ -154,9 +154,6 @@ parseOr u ==
   (x:= parseTran first u) is ['not,y] => parseIf [y,parseOr rest u,'true]
   true => parseIf [x,'true,parseOr rest u]
 
-parseNot u ==
-  parseTran ['IF,first u,:'(false true)]
-
 parseExit [a,:b] ==
   --  note: I wanted to convert 1s to 0s here to facilitate indexing in
   --   comp code; unfortunately, parseTran-ning is sometimes done more
