@@ -291,7 +291,6 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
   (|Join| |parseJoin|)
   (|leave| |parseLeave|)
   (MDEF |parseMDEF|)
-  (|not| |parseNot|)
   (|or| |parseOr|)
   (SEGMENT |parseSegment|)
   (SEQ |parseSeq|)
