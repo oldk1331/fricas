@@ -616,6 +616,7 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
     logArgs   : List F -> F
     opexp := operator(operator('exp)$CommonOperators)$F
     oplog := operator(operator('log)$CommonOperators)$F
+    oppow := operator(operator(POWER)$CommonOperators)$F
 
     import from F
     import from List F
@@ -808,7 +809,27 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
                     if is?(k1, POWER) and args.1 = first argument k1 then
                         term := term * kernel(op, [args.1, -(args.2)], h)::F
                         break
-        termexp(numer(p*term))/termexp(numer(q*term))
+        -- check if the coefficient of denominator is the base of a term
+        -- in numerator, for example 2^c/2 should return 2^(c-1)
+        coeff1 : F := leadingCoefficient(p1)::F
+        coeff2 : F := leadingCoefficient(q1)::F
+        termp2 : F := 1; termq2 : F := 1
+        powerbasep := [first argument k for k in lk1 | is?(operator k, POWER)]
+        powerbaseq := [first argument k for k in lk2 | is?(operator k, POWER)]
+        if member?(coeff1, powerbasep) then
+            termp2 := termp2/coeff1*kernel(oppow, [coeff1, 1])::F
+        else if member?(coeff1, powerbaseq) then
+            termp2 := termp2/coeff1
+            termq2 := termq2*kernel(oppow, [coeff1, -1])::F
+
+        if member?(coeff2, powerbasep) then
+            termp2 := termp2*kernel(oppow, [coeff2, -1])::F
+            termq2 := termq2/coeff2
+        else if member?(coeff2, powerbaseq) then
+            termq2 := termq2/coeff2*kernel(oppow, [coeff2, 1])::F
+        -- should a^b/c^d return a^b*c^(-d)?
+        -- what is canonical?
+        termexp(numer(p*term*termp2))/termexp(numer(q*term*termq2))
 
     htrigs f ==
       (m := mainKernel f) case "failed" => f
