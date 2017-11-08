@@ -145,7 +145,7 @@ pushDownTargetInfo(op,target,arglist) ==
       if not getTarget CADR arglist then putTarget(CADR arglist,target)
       getTarget(x := first arglist) => NIL
       if getUnname(x) ~= $immediateDataSymbol then putTarget(x,target)
-    op = "**" or op = "^" =>           -- push down on base
+    op = "^" =>           -- push down on base
       if not getTarget first arglist then putTarget(first arglist, target)
     (op = 'equation) and (target is ['Equation,S]) =>
       for x in arglist repeat
