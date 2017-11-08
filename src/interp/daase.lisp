@@ -380,7 +380,7 @@ database.
   (getdatabase con 'constructormodemap)
   (getdatabase con 'operationalist))
  (setq operation '(
-  |+| |-| |*| |/| |**| |coerce| |convert| |elt| |equation|
+  |+| |-| |*| |/| |^| |coerce| |convert| |elt| |equation|
   |float| |sin| |cos| |map| |SEGMENT|))
  (dolist (op operation) (getdatabase op 'operation))
  (setq constr '( ;these are sorted least-to-most freq. delete early ones first

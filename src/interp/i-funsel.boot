@@ -366,7 +366,7 @@ defaultTarget(opNode,op,nargs,args) ==
             else target := nil
             target
 
-    op = "**" or op = "^" =>
+    op = "^" =>
       a2 = $Integer =>
         if (target := resolveTCat(a1,'(Field))) then
           putTarget(opNode,target)

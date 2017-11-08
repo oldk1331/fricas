@@ -416,8 +416,7 @@ timesApp(u,x,y,d) ==
   d
 
 needBlankForRoot(lastOp,op,arg) ==
-  lastOp ~= "^" and lastOp ~= "**" and not(subspan(arg)>0) => false
-  op = "**" and keyp CADR arg = 'ROOT => true
+  lastOp ~= "^" and not(subspan(arg)>0) => false
   op = "^" and keyp CADR arg = 'ROOT => true
   op = 'ROOT and CDDR arg => true
   false
@@ -503,7 +502,7 @@ exptWidth [.,a,b] == WIDTH a+WIDTH b+(exptNeedsPren a => 2;0)
 needStar(wasSimple,wasQuotient,wasNumber,cur,op) ==
   wasNumber or wasQuotient or isQuotient op => true
   wasSimple =>
-    atom cur or keyp cur="SUB" or keyp cur = "OVERBAR" or op="**" or
+    atom cur or keyp cur="SUB" or keyp cur = "OVERBAR" or
       op = "^" or (atom op and not NUMBERP op and not GETL(op,"APP"))
 
 isQuotient op ==
