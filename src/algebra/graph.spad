@@ -1042,7 +1042,7 @@ Loop() : Exports == Implementation where
     -- rotate so that smallest index is always at the beginning
     -- (thanks to Ralf for patch to this constructor)
     loop(lis : List NNI) : % ==
-      li : List NNI := [x for x in lis]
+      li := lis
       empty? li => error "cannot form empty loop"
       minValue : NNI := first li
       lx : List(NNI) := []
@@ -1669,7 +1669,7 @@ FiniteGraph(S) : Category == Definition where
     removeDuplicates(res)
 
    -- returns true if there are no loops
-   isAcyclic?(s : %) : Boolean == loopsNodes(s) = []
+   isAcyclic?(s : %) : Boolean == empty? loopsNodes(s)
 
    -- returns true if 'b' is a direct successor of 'a'
    -- that is, if there is a direct arrow from 'a' to 'b'
@@ -1784,10 +1784,10 @@ FiniteGraph(S) : Category == Definition where
     for arr in getArrows(s) repeat
       if isDirectSuccessor?(s, a, arr.fromOb) then
         d := routeNodeRecursive(s, arr.fromOb, b, concat(visited, a)$List(NNI))
-        if shortest = []
+        if empty? shortest
           then shortest := d
-          else if (d ~= []) and #d < #shortest then shortest := d
-    if shortest = [] then return []
+          else if not empty? d and #d < #shortest then shortest := d
+    if empty? shortest then return []
     concat(a, shortest)
 
    -- the shortest route between 'a' and 'b' as a
@@ -1833,9 +1833,9 @@ FiniteGraph(S) : Category == Definition where
    -- sequence of arrows but we can't go in the opposite
    -- direction from 'b' to 'a'
    isGreaterThan?(s : %, a : NNI, b : NNI) : Boolean ==
-     if routeNodeRecursive(s, a, b, []) = [] then return false
-     if routeNodeRecursive(s, b, a, []) ~= [] then return false
-     true
+     empty? routeNodeRecursive(s, a, b, []) => false
+     empty? routeNodeRecursive(s, b, a, []) => true
+     false
 
    -- index of the vertex which can be reached from all other
    -- vertices. Gives 0 if no such node exists or if it is not
@@ -1967,7 +1967,7 @@ FiniteGraph(S) : Category == Definition where
        then
         subgraph : DirectedGraph(String) := (i.value) pretend DirectedGraph(String)
         SHAPE ==> Record(shptype : Symbol, centre : PT, size : PT, fill : Boolean)
-        sh:SHAPE := ["ellipse"::Symbol,sipnt(x,y)+svec(0.7::DF,0.7::DF),_
+        sh:SHAPE := ['ellipse, sipnt(x,y)+svec(0.7::DF,0.7::DF),_
                                        svec(0.7::DF, 0.7::DF), false]
         ellip := addSceneShape(sc, sh)
         tn := addSceneGraph(sc, subgraph, x, y, dispArrowName)
@@ -1977,7 +1977,7 @@ FiniteGraph(S) : Category == Definition where
         indexBounds := concat(indexBounds, tn)
     arrs : List ARROW := getArrows(n)
     -- if no arrows then just write vertex names
-    if arrs = [] then return void
+    if empty? arrs then return void()
     -- if this is a second order graph then we need to get the inner objects
     IOBJT ==> Record(value : DirectedGraph(String), posX : NNI, posY : NNI)
     innerOb : List List IOBJT := []
@@ -2034,7 +2034,7 @@ FiniteGraph(S) : Category == Definition where
           subToY : DF := (toY::DF)+((innerObTo.posY)::DF)*(0.25::DF)
           subArrNode := addSceneArrows(mt, [[spnt(subFromX, subFromY)$PT, _
                      spnt(subToX, subToY)$PT]], _
-                     "fixed"::Symbol,0.1::DF)
+                     'fixed, 0.1::DF)
           --print("fgraph subarrow from="::Symbol << (arrow.fromOb) << _
           --           " to="::Symbol << (arrow.toOb) << _
           --           " arrn="::Symbol << arrn << _
@@ -2053,10 +2053,10 @@ FiniteGraph(S) : Category == Definition where
         if S has DirectedGraph(String)
          then
           arrNode := addSceneArrow(mt, fnode, tnode, offset, _
-                     "fixed"::Symbol,0.1::DF,(diagramWidth(n)+10)::DF)
+                     'fixed, 0.1::DF,(diagramWidth(n)+10)::DF)
          else
           arrNode := addSceneArrow(mt, fnode, tnode, offset, _
-                     "proportional"::Symbol,0.1::DF,(diagramWidth(n)+10)::DF)
+                     'proportional, 0.1::DF,(diagramWidth(n)+10)::DF)
         -- print("fgraph subdiagramSvg sc="::Symbol << sc )
         -- print(" n="::Symbol << n)
         -- print(" arrNode="::Symbol << arrNode)
@@ -2157,18 +2157,17 @@ FiniteGraph(S) : Category == Definition where
         then s := latex(i.value)
         else s := concat([s,",",latex(i.value)])
     arrs : List ARROW := getArrows(n)
-    if arrs = [] then return s
+    if empty? arrs then return s
     -- now represent arrows in s
     -- arrs is List ARROW
-    if arrs = [] then return s
     s := concat([s,"|"])$String
-    fst : Boolean := true()
+    fst : Boolean := true
     arrStr:String := "->"
     for arrow in arrs repeat
       if not fst then s := concat(s,",")
       s := concat([s,arrow.name,":",latex(ls.(arrow.fromOb).value),arrStr,_
              latex(ls.(arrow.toOb).value)])$String
-      fst := false()
+      fst := false
     s
 
    -- returns true if x equals y
@@ -2200,12 +2199,11 @@ FiniteGraph(S) : Category == Definition where
         then s := st
         else s := hconcat([s, message(","), st])$OutputForm
     arrs : List ARROW := getArrows(n)
-    if arrs = [] then return s
+    if empty? arrs then return s
     -- now represent arrows in s
     -- arrs is List ARROW
-    if arrs = [] then return s
     s := hconcat([s, message("|")])$OutputForm
-    fst : Boolean := true()
+    fst : Boolean := true
     arrStr : OutputForm := message("->")
     for arrow in arrs repeat
       stFrom : OutputForm := (arrow.fromOb)::OutputForm
@@ -2213,7 +2211,7 @@ FiniteGraph(S) : Category == Definition where
       if not fst then s := hconcat(s, message(","))
       s := hconcat([s,(arrow.name)::OutputForm, message(":"), _
              stFrom, arrStr, stTo])$OutputForm
-      fst := false()
+      fst := false
     s
 
    -- output graph to OutputForm
@@ -2229,12 +2227,11 @@ FiniteGraph(S) : Category == Definition where
         then s := st
         else s := hconcat([s, message(","), st])$OutputForm
     arrs : List ARROW := getArrows(n)
-    if arrs = [] then return s
+    if empty? arrs then return s
     -- now represent arrows in s
     -- arrs is List ARROW
-    if arrs = [] then return s
     s := hconcat([s, message("|")])$OutputForm
-    fst : Boolean := true()
+    fst : Boolean := true
     arrStr:OutputForm := message("->")
     for arrow in arrs repeat
       stFrom : OutputForm := (ls.(arrow.fromOb).value)::OutputForm
@@ -2242,7 +2239,7 @@ FiniteGraph(S) : Category == Definition where
       if not fst then s := hconcat(s, message(","))
       s := hconcat([s,(arrow.name)::OutputForm, message(":"), _
              stFrom, arrStr, stTo])$OutputForm
-      fst := false()
+      fst := false
     s
 
 )if false
@@ -2502,19 +2499,13 @@ DirectedGraph(S) : Exports == Implementation where
   -- if you don't intend to create diagrams and therefore don't
   -- care about x, y coordinates.
   addObject!(s : %, n : S) : % ==
-    obs : List OBJT := s.objects
     obj : OBJT := [n, 0::NNI, 0::NNI]
-    if obs = []
-      then s.objects := [obj]
-      else s.objects := concat(obs, obj)
+    s.objects := concat(s.objects, obj)
     s
 
   -- adds an object to this graph
   addObject!(s : %, n : OBJT) : % ==
-    obs : List OBJT := s.objects
-    if obs = []
-      then s.objects := [n]
-      else s.objects := concat(obs, n)
+    s.objects := concat(s.objects, n)
     s
 
   -- adds an arrow to this graph, its endpoints are specified by ar.
@@ -3149,9 +3140,7 @@ FunctionGraph(S) : Exports == Implementation where
   addObject!(s : %, n : S) : % ==
     obs : List FOBJT := s.objects
     obj : FOBJT := [n, 0::NNI, 0::NNI, #obs, []]
-    if obs = []
-      then s.objects := [obj]
-      else s.objects := concat(obs, obj)
+    s.objects := concat(obs, obj)
     s
 
   -- this form of addObject! not supported in functionGraph but
@@ -3626,19 +3615,13 @@ UndirectedGraph(S) : Exports == Implementation where
   -- if you don't intend to create diagrams and therefore don't
   -- care about x, y coordinates.
   addObject!(s : %, n : S) : % ==
-    obs : List OBJT := s.objects
     obj : OBJT := [n, 0::NNI, 0::NNI]
-    if obs = []
-      then s.objects := [obj]
-      else s.objects := concat(obs, obj)
+    s.objects := concat(s.objects, obj)
     s
 
   -- adds an object to this graph
   addObject!(s : %, n : OBJT) : % ==
-    obs : List OBJT := s.objects
-    if obs = []
-      then s.objects := [n]
-      else s.objects := concat(obs, n)
+    s.objects := concat(s.objects, n)
     s
 
   -- adds an arrow to this graph, its endpoints are specified by ar.
@@ -4359,9 +4342,7 @@ MultifunctionGraph(S) : Exports == Implementation where
   addObject!(s : %, n : S) : % ==
     obs : List MFOBJT := s.objects
     obj : MFOBJT := [n, 0::NNI, 0::NNI, [#obs], []]
-    if obs = []
-      then s.objects := [obj]
-      else s.objects := concat(obs, obj)
+    s.objects := concat(obs, obj)
     s
 
   -- this form of addObject! not supported in multifunctionGraph but
@@ -5095,11 +5076,8 @@ WeightedGraph(S, W) : Exports == Implementation where
   -- if you don't intend to create diagrams and therefore don't
   -- care about x, y coordinates.
   addObject!(s : %, n : S) : % ==
-    obs : List WOBJT := s.objects
     obj : WOBJT := [n, 0::NNI, 0::NNI, 0$W]
-    if obs = []
-      then s.objects := [obj]
-      else s.objects := concat(obs, obj)
+    s.objects := concat(s.objects, obj)
     s
 
   -- adds an object to this graph
@@ -5471,13 +5449,13 @@ WeightedGraph(S, W) : Exports == Implementation where
    for arr in getArrows(s) repeat
      if isDirectSuccessor?(s, a, arr.fromOb) then
        d := routeNodeRecursive(s, arr.fromOb, b, concat(visited, a)$List(NNI))
-       if shortest = []
+       if empty? shortest
          then
            shortest := d
-         else if (d ~= []) and_
+         else if not empty? d and_
            routeNodeWeight(s, concat(a, d)) < routeNodeWeight(s, concat(a, shortest)) then
              shortest := d
-   if shortest = [] then
+   if empty? shortest then
      return []
    concat(a, shortest)
 
