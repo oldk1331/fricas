@@ -264,18 +264,11 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
 (MAKEPROP '|Integer| '|Subsets|
   '((|PositiveInteger| . (|>| * 0))
     (|NonNegativeInteger| . (|>=| * 0))
-    (|NegativeInteger| . (|<| * 0))
-    (|NonPositiveInteger| . (|<=| * 0))
-    (|NonZeroInteger| . (~= * 0))
     (|SingleInteger| . (SINTP *))
     ))
 
 (MAKEPROP '|NonNegativeInteger| '|Subsets| '(
   (|PositiveInteger| . (|>| * 0))
-  ))
-
-(MAKEPROP '|NonPositiveInteger| '|Subsets| '(
-  (|NegativeInteger| . (|<| * 0))
   ))
 
 (DOLIST (X '(TENSOR * + AND OR PROGN)) (MAKEPROP X 'NARY T))
