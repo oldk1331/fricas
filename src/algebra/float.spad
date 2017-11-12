@@ -622,14 +622,16 @@ Float():
    x - y == normalize plus(x, negate y)
    sub(x, y) == plus(x, negate y)
    plus(x, y) ==
-      mx := x.mantissa; my := y.mantissa
+      mx := x.mantissa
       mx = 0 => y
+      my := y.mantissa
       my = 0 => x
       ex := x.exponent; ey := y.exponent
       ex = ey => [mx+my, ex]
       de := ex + LENGTH mx - ey - LENGTH my
-      de > bits()+1 => x
-      de < -(bits()+1) => y
+      t := bits() + 1
+      de > t => x
+      de < -t => y
       if ex < ey then (mx, my, ex, ey) := (my, mx, ey, ex)
       mw := my + shift2(mx, ex-ey)
       [mw, ey]
