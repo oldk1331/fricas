@@ -1,0 +1,14 @@
+src/algebra/*.NRLIB/
+src/algebra/[A-Z]*.spad
+src/input/*.output
+src/doc/*.help
+src/doc/*.text
+src/doc/*.input
+src/doc/*.pht
+src/doc/*.ht
+**/stamp
+**/Makefile
+*.daase
+*.clisp
+*.fasl
+*.o
