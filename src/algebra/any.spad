@@ -156,8 +156,6 @@ AnyFunctions1(S : Type) : with
           ++ Error: if no such retraction is possible.
 
     == add
-        import from NoneFunctions1(S)
-
         Sexpr : SExpression := devaluate(S)$Lisp
 
         retractable? a  == dom(a) = Sexpr
