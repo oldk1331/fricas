@@ -141,7 +141,7 @@ CombinatorialFunction(R, F) : Exports == Implementation where
     opdsum  := operator('%defsum)$CommonOperators
     opprod  := operator('product)$CommonOperators
     opdprod := operator('%defprod)$CommonOperators
-    oppow   := operator(POWER::Symbol)$CommonOperators
+    oppow   := operator(POWER)$CommonOperators
 
     opdiff  := operator(operator('%diff)$CommonOperators)$F
 
@@ -164,9 +164,10 @@ CombinatorialFunction(R, F) : Exports == Implementation where
       is?(x, POWER) =>
         args : List F := argument first kernels x
         not(#args = 2) => error "Too many arguments to ^"
-        number?(first args) and number?(y) =>
-          oppow [first(args)^y, second args]
-        oppow [first args, (second args)* y]
+        x1 := first args; x2 := second args -- x = x1^x2
+        number?(x1) and number?(y) =>
+          oppow [x1^y, x2]
+        oppow [x1, x2 * y]
       -- Generic case
       exp : Union(Record(val:F,exponent:Z),"failed") := isPower x
       exp case Record(val : F, exponent : Z) =>
