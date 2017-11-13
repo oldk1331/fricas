@@ -308,7 +308,7 @@ AlgebraicFunction(R, F) : Exports == Implementation where
 
   Implementation ==> add
 
-    ALGOP       := '%alg
+    ALGOP ==> '%alg
 
     ialg : List F -> F
     dvalg : (List F, SE) -> F

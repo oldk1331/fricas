@@ -228,7 +228,7 @@ FunctionSpaceReduce(R, F) : Exports == Implementation where
     import from PolynomialCategoryQuotientFunctions(IndexedExponents K,
                          K, R, SparseMultivariatePolynomial(R, K), F)
 
-    ALGOP  := '%alg
+    ALGOP ==> '%alg
 
     K2Z : K -> F
 
@@ -318,7 +318,7 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R) : Exports == Implementation where
     import from PointsOfFiniteOrderTools(UPQ, UPUPQ)
     import from UnivariatePolynomialCommonDenominator(Z, Q, UPQ)
 
-    ALGOP  := '%alg
+    ALGOP ==> '%alg
 
     selectIntegers : K   -> REC
     selIntegers :    ()  -> RC0

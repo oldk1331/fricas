@@ -41,7 +41,7 @@ FunctionSpaceComplexIntegration(R, F) : Exports == Implementation where
     import from ElementaryFunctionStructurePackage(G, FG)
     import from InnerTrigonometricManipulations(R, F, FG)
 
-    RTRIG := 'rtrig
+    RTRIG ==> 'rtrig
 
     K2KG : Kernel F -> Kernel FG
 
@@ -117,10 +117,10 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
     import from PolynomialCategoryQuotientFunctions(IndexedExponents K,
                       K, R, SparseMultivariatePolynomial(R, K), F)
 
-    RTRIG := 'rtrig
-    HTRIG := 'htrig
-    ELEM := 'elem
-    ALGOP := '%alg
+    RTRIG ==> 'rtrig
+    HTRIG ==> 'htrig
+    ELEM ==> 'elem
+    ALGOP ==> '%alg
 
     K2KG      : K -> Kernel FG
     postSubst : (F, List K, List F, List K, List K, List K, List F, SE) -> F

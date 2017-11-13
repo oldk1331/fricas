@@ -45,9 +45,9 @@ ModuleOperator(R : Ring, M : LeftModule(R)) : Exports == Implementation where
 
     Rep := FAB
 
-    OPADJ   := '%opAdjoint
-    OPEVAL  := '%opEval
-    INVEVAL := '%invEval
+    OPADJ   ==> '%opAdjoint
+    OPEVAL  ==> '%opEval
+    INVEVAL ==> '%invEval
 
 
     inv      : TERM -> %
