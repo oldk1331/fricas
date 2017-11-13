@@ -55,8 +55,8 @@ ElementaryIntegration(R, F) : Exports == Implementation where
                                                              K, R, P, F)
     import from ParametricIntegration(R, F)
 
-    PRIM := 'prim
-    ALGOP := '%alg
+    PRIM ==> 'prim
+    ALGOP ==> '%alg
 
     alglfint    : (F, K, List K, SE) -> IR
     algprimint  : (F, K, K, SE) -> IR

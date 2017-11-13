@@ -169,8 +169,8 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
     import from InnerCommonDenominator(Z, Q, Vector Z, Vector Q)
     P  ==> SparseMultivariatePolynomial(R, K)
 
-    HTRIG := 'htrig
-    TRIG := 'trig
+    HTRIG ==> 'htrig
+    TRIG ==> 'trig
 
     k2Elem             : (K, List SY) -> F
     realElem           : (F, List SY) -> F
@@ -281,7 +281,7 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
         (u := particularSolutionOverQ(mat, v)) case Vector(Q) => [u::Vector(Q)]
         [true]
 
-    ALGOP  := '%alg
+    ALGOP ==> '%alg
     transkers(x : List K) : List K ==
         [k for k in x | not(has?(operator k, ALGOP))]
 
@@ -1008,7 +1008,7 @@ TrigonometricManipulations(R, F) : Exports == Implementation where
     import from K
     import from BasicOperator
 
-    RTRIG := 'rtrig
+    RTRIG ==> 'rtrig
 
     s1  := sqrt(-1::F)
     ipi := pi()$F * s1
@@ -1153,7 +1153,7 @@ ComplexTrigonometricManipulations(R, F) : Exports == Implementation where
     import from SparseMultivariatePolynomial(Complex(R), K)
     import from BasicOperator
 
-    RTRIG := 'rtrig
+    RTRIG ==> 'rtrig
 
     rreal? : Complex R -> Boolean
     kreal? : Kernel F -> Boolean

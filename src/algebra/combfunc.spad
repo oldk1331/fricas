@@ -103,7 +103,7 @@ CombinatorialFunction(R, F) : Exports == Implementation where
 
   Implementation ==> add
 
-    COMB := 'comb
+    COMB ==> 'comb
 
     ifact     : F -> F
     iiipow    : List F -> F
@@ -670,7 +670,7 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
 
   Implementation ==> add
 
-    SPECIAL := 'special
+    SPECIAL ==> 'special
 
     INP ==> InputForm
 

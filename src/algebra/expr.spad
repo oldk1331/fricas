@@ -45,8 +45,8 @@ Expression(R : Comparable) : Exports == Implementation where
   Implementation ==> add
     import from KernelFunctions2(R, %)
 
-    SYMBOL := '%symbol
-    ALGOP  := '%alg
+    SYMBOL ==> '%symbol
+    ALGOP  ==> '%alg
 
 
     retNotUnit     : % -> R
@@ -928,7 +928,7 @@ FunctionSpaceAttachPredicates(R, F, D) : Exports == Implementation where
   Implementation ==> add
     import from AnyFunctions1(D -> Boolean)
 
-    PMPRED  := '%pmpredicate
+    PMPRED  ==> '%pmpredicate
 
     st   : (K, List Any) -> F
     preds : K -> List Any
@@ -1081,7 +1081,7 @@ Pi() : Exports == Implementation where
   Implementation ==> RF add
     Rep := RF
 
-    sympi := '%pi
+    sympi ==> '%pi
 
     p2sf : UP -> DoubleFloat
     p2f : UP -> Float

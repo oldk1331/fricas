@@ -163,7 +163,7 @@ ExpressionSpace() : Category == Defn where
     import from List(NonNegativeInteger)
     import from List(Symbol)
 
-    DUMMYVAR := '%dummyVar
+    DUMMYVAR ==> '%dummyVar
 -- the 7 functions not provided are:
 --        kernels   minPoly   definingPolynomial
 --        coerce: K -> %  eval: (%, List K, List %) -> %
@@ -539,9 +539,9 @@ FunctionSpace(R : Comparable) : Category == Definition where
     import from List(OutputForm)
     import from List(%)
 
-    ODD  := 'odd
-    EVEN := 'even
-    SPECIALDIFF  := '%specialDiff
+    ODD  ==> 'odd
+    EVEN ==> 'even
+    SPECIALDIFF ==> '%specialDiff
 
     -- these are needed in Ring only, but need to be declared here
     -- because of compiler bug: if they are declared inside the Ring

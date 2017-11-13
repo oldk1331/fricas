@@ -242,7 +242,7 @@ AlgebraicManipulations(R, F) : Exports == Implementation where
     import from List(F)
     import from List(Z)
 
-    ALGOP := '%alg
+    ALGOP ==> '%alg
 
     innerRF    : (F, List K) -> F
     rootExpand : K -> F
