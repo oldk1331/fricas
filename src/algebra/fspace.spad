@@ -566,7 +566,7 @@ FunctionSpace(R : Comparable) : Category == Definition where
     smprep    : (List SY, List N, List(List % -> %), MP) -> %
     diffdiff  : (List %, SY) -> %
     subs      : (% -> %, K) -> %
-    symsub    : (SY, Z) -> SY
+    dummyvar  : () -> %
     notfound  : (K -> %, List K) -> (K -> %)
 
     equaldiff : (K, K)->Boolean
@@ -629,12 +629,9 @@ FunctionSpace(R : Comparable) : Category == Definition where
       import from MP
       import from SparseUnivariatePolynomial(%)
 
--- cannot use new()$Symbol because of possible re-instantiation
-      gendiff := '%%0
-
       characteristic()    == characteristic()$R
       coerce(k : K) : %       == k::MP::%
-      symsub(sy, i) == new()$Symbol
+      dummyvar() == (new()$Symbol)::%
       numerator x         == numer(x)::%
       eval(x : %, s : SY, n : N, f : % -> %)     ==
           eval(x, [s], [n], [(y : List %) : % +-> f(first(y))])
@@ -784,7 +781,7 @@ FunctionSpace(R : Comparable) : Category == Definition where
         (ud := derivative op) case "failed" =>
              -- possible trouble
              -- make sure it is a dummy var
-             dumm : % := symsub(gendiff, 1)::%
+             dumm : % := dummyvar()
              ss := subst(l.1, l.2 = dumm)
              -- output(nl::OutputForm)$OutputPackage
              -- output("fixed"::OutputForm)$OutputPackage
@@ -798,12 +795,12 @@ FunctionSpace(R : Comparable) : Category == Definition where
       diffArg(l, op, i) ==
         n := i - 1 + minIndex l
         z := copy l
-        z.n := g := symsub(gendiff, n)::%
+        z.n := g := dummyvar()
         [kernel(op, z), g, l.n]
 
       opderiv(op, n) ==
         (n = 1) =>
-          g := symsub(gendiff, n)::%
+          g := dummyvar()
           [x +-> kernel(opdiff, [kernel(op, g), g, first x])]
         [x +-> kernel(opdiff, diffArg(x, op, i)) for i in 1..n]
 
