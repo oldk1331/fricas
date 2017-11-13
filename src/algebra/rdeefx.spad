@@ -113,7 +113,7 @@ ConstantLinearDependence(R, F) : Exports == Implementation where
 
     F_to_EF1 : (F, K1 -> EF) -> EF
 
-    DUMMYVAR := '%dummyVar
+    DUMMYVAR ==> '%dummyVar
 
     kmap(k : K1, ldmvar : List K1, ldmval : List EF, ld : LFF) : EF ==
         for dmvar in ldmvar for dmval in ldmval repeat
@@ -430,8 +430,8 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
     import from TranscendentalIntegration(F, UP)
     import from PolynomialCategoryQuotientFunctions(IndexedExponents K,
                                                              K, R, P, F)
-    ALGOP := '%alg
-    PRIM := 'prim
+    ALGOP ==> '%alg
+    PRIM ==> 'prim
 
     top_kernel(f : F, g : F, x : SE) : K ==
         lkf := varselect(kernels(f), x)

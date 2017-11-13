@@ -34,7 +34,7 @@ LaplaceTransform(R, F) : Exports == Implementation where
     import from FunctionSpaceIntegration(R, F)
     import from TrigonometricManipulations(R, F)
 
-    ALGOP       := '%alg
+    ALGOP ==> '%alg
 
     locallaplace : (F, SE, F, SE, F) -> F
     lapkernel    : (F, SE, F, F) -> Union(F, "failed")

@@ -57,7 +57,7 @@ LiouvillianFunction(R, F) : Exports == Implementation where
 
   Implementation ==> add
 
-    PRIM := 'prim
+    PRIM ==> 'prim
 
     iei        : F  -> F
     isi        : F  -> F

@@ -138,7 +138,7 @@ ElementaryFunction(R, F) : Exports == Implementation where
 
   Implementation ==> add
 
-    ELEM := 'elem
+    ELEM ==> 'elem
 
     ipi      : List F -> F
     iexp     : F -> F

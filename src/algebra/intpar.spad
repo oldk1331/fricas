@@ -1580,8 +1580,8 @@ ParametricIntegration(R, F) : Exports == Implementation where
     import from PolynomialCategoryQuotientFunctions(IndexedExponents K,
                                                              K, R, P, F)
 
-    PRIM := 'prim
-    ALGOP := '%alg
+    PRIM ==> 'prim
+    ALGOP ==> '%alg
 
     algextint : (SE, K, List K, List F) -> L_Param_F
     primextint : (SE, K, List K, List F) -> L_Param_F

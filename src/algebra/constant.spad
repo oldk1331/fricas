@@ -51,7 +51,7 @@ AlgebraicNumber() : Exports == Implementation where
 
     Rep := FE
 
-    ALGOP := '%alg
+    ALGOP ==> '%alg
 
     reducedSystem(m : Matrix(%)) : Matrix(Fraction(Z)) ==
         mz : Matrix(Z) := reducedSystem(m)$Rep

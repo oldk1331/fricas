@@ -97,11 +97,11 @@ BasicOperator() : Exports == Implementation where
     import from Set(Symbol)
 
     -- some internal properties
-    LESS?   := "%less?"::Symbol
-    EQUAL?  := "%equal?"::Symbol
-    WEIGHT  := '%weight
-    DISPLAY := '%display
-    SEXPR   := '%input
+    LESS?   ==> '%less?
+    EQUAL?  ==> '%equal?
+    WEIGHT  ==> '%weight
+    DISPLAY ==> '%display
+    SEXPR   ==> '%input
 
 
     oper : (Symbol, SingleInteger, P) -> %
@@ -227,9 +227,9 @@ BasicOperatorFunctions1(A : SetCategory) : Exports == Implementation where
 
   Implementation ==> add
 
-    EVAL    := '%eval
-    CONST   := '%constant
-    DIFF    := '%diff
+    EVAL  ==> '%eval
+    CONST ==> '%constant
+    DIFF  ==> '%diff
 
     evaluate(op : OP, func : A -> A) == evaluate(op, (l1 : List(A)) : A +-> func first l1)
 

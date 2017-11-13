@@ -269,7 +269,7 @@ IntegrationTools(R : Comparable, F : FunctionSpace R) : Exp == Impl where
 
   Impl ==> add
 
-    ALGOP := '%alg
+    ALGOP ==> '%alg
 
     better? : (K, K) -> Boolean
 

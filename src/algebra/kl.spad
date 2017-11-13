@@ -257,14 +257,14 @@ Kernel(S : Comparable) : Exports == Implementation where
     setPosition(k, n) == SET_-SPAD_-KERNEL_-POSIT(k, n)$Lisp
     mkKer(o : OP, a : List S, n : N) : % == makeSpadKernel(o, a, n)$Lisp
 
-    SYMBOL  := '%symbol
-    PMPRED  := '%pmpredicate
-    PMOPT   := '%pmoptional
-    PMMULT  := '%pmmultiple
-    PMCONST := '%pmconstant
-    SPECIALDISP  := '%specialDisp
-    SPECIALEQUAL := '%specialEqual
-    SPECIALINPUT := '%specialInput
+    SYMBOL  ==> '%symbol
+    PMPRED  ==> '%pmpredicate
+    PMOPT   ==> '%pmoptional
+    PMMULT  ==> '%pmmultiple
+    PMCONST ==> '%pmconstant
+    SPECIALDISP  ==> '%specialDisp
+    SPECIALEQUAL ==> '%specialEqual
+    SPECIALINPUT ==> '%specialInput
 
 
     clearCache()
