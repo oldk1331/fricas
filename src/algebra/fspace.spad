@@ -157,9 +157,7 @@ ExpressionSpace() : Category == Defn where
 
    add
 
-    import from Set(K)
     import from List(K)
-    import from List(Set(K))
     import from List(NonNegativeInteger)
     import from List(Symbol)
 
@@ -170,9 +168,6 @@ ExpressionSpace() : Category == Defn where
 --        subst: (%, List K, List %) -> %
 --        eval: (%, List Symbol, List(List % -> %)) -> %
 
-    allKernels : %      -> Set K
-    listk     : %      -> List K
-    allk      : List % -> Set K
     unwrap    : (List K, %) -> %
     okkernel  : (OP, List %) -> %
     mkKerLists : List Equation % -> Record(lstk : List K, lstv : List %)
@@ -180,20 +175,61 @@ ExpressionSpace() : Category == Defn where
     oppren := operator(PAREN)$CommonOperators()
     opbox  := operator(BOX)$CommonOperators()
 
+    mergesortedlist! : (List K, List K) -> List K
+    -- mergesortedlist! is like merge!, but discarding duplicated elements.
+    -- we use mergesortedlist! on results of 'tower', which is freshly
+    -- allocated and sorted.
+    mergesortedlist!(p, q) ==
+        empty? p => q
+        empty? q => p
+        p1 := first p; q1 := first q
+        if p1 = q1 then
+            (r := t := p; p := rest p; q := rest q)
+        else
+            if p1 < q1 then
+                (r := t := p; p := rest p)
+            else
+                (r := t := q; q := rest q)
+        while not empty? p and not empty? q repeat
+            p1 := first p; q1 := first q
+            p1 = q1 =>
+                (t := rest t; p := rest p; q := rest q)
+            p1 < q1 =>
+                (setrest!(t, p); t := p; p := rest p)
+            setrest!(t, q); t := q; q := rest q
+        setrest!(t, if empty? p then q else p)
+        r
+
+    removeonce! : (K, List K) -> List K
+    -- l is a sorted list with no duplicated elements
+    removeonce!(k, l) ==
+        empty? l => l
+        k = first l => rest l
+        o := l
+        pl := l -- pl points to the previous node of l
+        l := rest l
+        while not empty? l repeat
+            x := first l
+            k = x =>
+                setrest!(pl, rest l)
+                return o
+            k < x => return o
+            pl := l
+            l := rest l
+        o
+
     box(x : %)     == opbox [x]
     paren(x : %)   == oppren [x]
     belong? op   ==
         has?(op, 'any) and (is?(op, PAREN) or is?(op, BOX))
-    listk f      == parts allKernels f
-    tower(f : %) : List(K) == sort! listk f
-    allk l       == reduce("union", [allKernels f for f in l], set())
-    tower(lf : List(%)) : List(K) == sort! parts allk(lf)
+    tower(lf : List %) : List K ==
+        reduce(mergesortedlist!, [tower f for f in lf], [])$List(List(K))
     kernels(lf : List(%)) : List(K) ==
         reduce(setUnion$List(K), [kernels(f) for f in lf], [])$List(List(K))
-    operators f  == [operator k for k in listk f]
+    operators f  == [operator k for k in tower f]
     height f     == reduce("max", [height k for k in kernels f], 0)
-    freeOf?(x : %, s : SY)       == not member?(s, [name k for k in listk x])
-    distribute x == unwrap([k for k in listk x |
+    freeOf?(x : %, s : SY) == not member?(s, [name k for k in tower x])
+    distribute x == unwrap([k for k in tower x |
                               is?(k, oppren) or is?(k, opbox)], x)
 
     if % has Ring then
@@ -201,7 +237,7 @@ ExpressionSpace() : Category == Defn where
         derivative(opbox, (x : %) : % +-> 1)$BasicOperatorFunctions1(%)
         derivative(oppren, (x : %) : % +-> 1)$BasicOperatorFunctions1(%)
 
-    freeOf?(x : %, k : %)              == not member?(retract k, listk x)
+    freeOf?(x : %, k : %)              == not member?(retract k, tower x)
     kernel(op : OP, arg : %)           == kernel(op, [arg])
     elt(op : OP, x : %)                == op [x]
     elt(op : OP, x : %, y : %)           == op [x, y]
@@ -255,19 +291,20 @@ ExpressionSpace() : Category == Defn where
 -- takes all the kernels except for the dummy variables, which are second
 -- arguments of rootOf's, integrals, sums and products which appear only in
 -- their first arguments
-    allKernels f ==
-      s := set(l := kernels f)
+    tower(f : %) : List K ==
+      l := kernels f
+      s := sort l
       for k in l repeat
           t :=
               (u := property(operator k, DUMMYVAR)) case None =>
                   arg := argument k
-                  s0  := remove!(retract(second arg)@K, allKernels first arg)
+                  s0  := removeonce!(retract(second arg)@K, tower first arg)
                   arg := rest rest arg
                   n   := (u::None) pretend N
                   if n > 1 then arg := rest arg
-                  union(s0, allk arg)
-              allk argument k
-          s := union(s, t)
+                  mergesortedlist!(s0, tower arg)
+              tower argument k
+          s := mergesortedlist!(s, t)
       s
 
     kernel(op : OP, args : List %) ==
@@ -309,8 +346,8 @@ ExpressionSpace() : Category == Defn where
 
     distribute(x, y) ==
         ky := retract y
-        unwrap([k for k in listk x | (is?(k, oppren) or is?(k, opbox))
-                  and member?(ky, listk(k::%))], x)
+        unwrap([k for k in tower x | (is?(k, oppren) or is?(k, opbox))
+                  and member?(ky, tower(k::%))], x)
 
     -- in case of conflicting substitutions e.g. [x = a, x = b],
     -- the first one prevails.
