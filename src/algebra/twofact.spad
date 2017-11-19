@@ -112,7 +112,7 @@ TwoFactorize(F) : C == T
        monomial(monomial(leadingCoefficient c, e)$R, degree c)$P +
           exchangeVarTerm(reductum c, e)
 
-    pthRoot(poly : R, p : NonNegativeInteger, PthRootPow : NonNegativeInteger) : R ==
+    pthRoot(poly : R, p : NNI, PthRootPow : NNI) : R ==
        tmp := divideExponents(map((x : F) : F +-> (x::F)^PthRootPow, poly), p)
        tmp case "failed" => error "consistency error in TwoFactor"
        tmp
@@ -159,8 +159,7 @@ TwoFactorize(F) : C == T
        degree m = 0 =>
          l := factor(leadingCoefficient m)$DistinctDegreeFactorize(F, R)
          makeFR(unit(l)::P, [[u.flag, u.factor::P, u.exponent] for u in factorList l])
-       ll : List FF
-       ll := []
+       ll : List FF := []
        unitPart : P
        cont := content m
        if degree(cont)>0 then

@@ -626,7 +626,7 @@ FiniteSetAggregate(S : SetCategory) : Category ==
    s <= t          == s = intersect(s, t)
    s < t           == #s < #t and s <= t
    s = t           == #s = #t and empty? difference(s, t)
-   set   l         == construct l
+   set l           == construct l
    cardinality s   == #s
    construct l     == (s := set(); for x in l repeat s := insert!(x, s); s)
    count(x : S, s : %) == (member?(x, s) => 1; 0)
