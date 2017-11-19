@@ -31,12 +31,12 @@ IntegerMod(p : PositiveInteger):
     1                    == 1$Rep
     init                 == 0$Rep
     nextItem(n)          ==
-                              m := n+1
-                              m = 0 => "failed"
-                              m
+        m := n+1
+        m = 0 => "failed"
+        m
     x = y                == x =$Rep y
-    x : % * y : %            == mulmod(x, y, q)
-    n : Integer * x : %      == mulmod(bloodyCompiler n, x, q)
+    x : % * y : %        == mulmod(x, y, q)
+    n : Integer * x : %  == mulmod(bloodyCompiler n, x, q)
     x + y                == addmod(x, y, q)
     x - y                == submod(x, y, q)
     random()             == random(q)$Rep
@@ -64,12 +64,12 @@ IntegerMod(p : PositiveInteger):
     1                    == 1$Rep
     init                 == 0$Rep
     nextItem(n)          ==
-                              m := n+1
-                              m = 0 => "failed"
-                              m
+        m := n+1
+        m = 0 => "failed"
+        m
     x = y                == x =$Rep y
-    x : % * y : %            == mulmod(x, y, p)
-    n : Integer * x : %      == mulmod(positiveRemainder(n::Rep, p), x, p)
+    x : % * y : %        == mulmod(x, y, p)
+    n : Integer * x : %  == mulmod(positiveRemainder(n::Rep, p), x, p)
     x + y                == addmod(x, y, p)
     x - y                == submod(x, y, p)
     random()             == random(p)$Rep

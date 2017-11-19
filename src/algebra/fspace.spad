@@ -240,8 +240,8 @@ ExpressionSpace() : Category == Defn where
     freeOf?(x : %, k : %)              == not member?(retract k, tower x)
     kernel(op : OP, arg : %)           == kernel(op, [arg])
     elt(op : OP, x : %)                == op [x]
-    elt(op : OP, x : %, y : %)           == op [x, y]
-    elt(op : OP, x : %, y : %, z : %)      == op [x, y, z]
+    elt(op : OP, x : %, y : %)         == op [x, y]
+    elt(op : OP, x : %, y : %, z : %)  == op [x, y, z]
     elt(op : OP, x : %, y : %, z : %, t : %) == op [x, y, z, t]
     elt(op : OP, x : %, y : %, z : %, t : %, s : %) ==
         op [x, y, z, t, s]
