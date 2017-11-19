@@ -166,7 +166,7 @@ AlgFactor(UP) : Exports == Implementation where
 
     fact    : (UP,  List K) -> FR
     ifactor : (SUP, List K) -> Factored SUP
-    extend  : (UP, Z) -> FR
+    extend  : (UP, N) -> FR
     downpoly : UP  -> UPQ
     liftpoly : UPQ -> UP
     irred?  : UP  -> Boolean
@@ -187,7 +187,7 @@ AlgFactor(UP) : Exports == Implementation where
     extend(p, n) ==
       (degree p = 1) => primeFactor(p, n)
       q := monomial(1, 1)$UP - zeroOf(p pretend SUP)::UP
-      primeFactor(q, n) * split((p exquo q)::UP) ^ (n::N)
+      primeFactor(q, n) * split((p exquo q)::UP) ^ n
 
     doublyTransitive? p ==
       irred? p and irred?((p exquo

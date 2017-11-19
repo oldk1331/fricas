@@ -291,8 +291,8 @@ IntegerNumberTheoryFunctions() : Exports == Implementation where
   carmichaelLambda(n : Integer) : Integer ==
       n <= 0 => error "carmichaelLambda defined only for positive integers"
       lcm [(if pk.factor >= 3 or pk.exponent <= 2 then
-              (pk.factor)^((pk.exponent-1) pretend NNI)*(pk.factor-1)
-            else 2^((pk.exponent-2) pretend NNI)) _
+              (pk.factor)^((pk.exponent-1)::NNI)*(pk.factor-1)
+            else 2^((pk.exponent-2)::NNI)) _
            for pk in factors factor n]
 
   euler n ==
@@ -429,13 +429,13 @@ all possible positive powers of [[f]].
 
   sumOfDivisors n ==
     n = 0 => 0
-    r : RN := */[(entry.factor^(entry.exponent::NNI + 1)-1)/
+    r : RN := */[(entry.factor^(entry.exponent + 1)-1)/
       (entry.factor-1) for entry in factors factor n]
     numer r
 
   sumOfKthPowerDivisors(n, k) ==
     n = 0 => 0
-    r : RN := */[(entry.factor^(k*entry.exponent::NNI+k)-1)/
+    r : RN := */[(entry.factor^(k*entry.exponent+k)-1)/
       (entry.factor^k-1) for entry in factors factor n]
     numer r
 
