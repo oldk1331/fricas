@@ -119,9 +119,11 @@ Factored(R : IntegralDomain) : Exports == Implementation where
         ++ rationalIfCan(u) returns a rational number if u
         ++ really is one, and "failed" otherwise.
 
-    if R has Eltable(%, %) then Eltable(%, %)
-    if R has Evalable(%) then Evalable(%)
-    if R has InnerEvalable(Symbol, %) then InnerEvalable(Symbol, %)
+    -- the following exports don't show up in ')show FR SUP INT'
+    -- and don't work in compiler but work in interpreter for now
+    if R has Eltable(R, R) then Eltable(%, %)
+    if R has Evalable(R) then Evalable(%)
+    if R has InnerEvalable(Symbol, R) then InnerEvalable(Symbol, %)
 
   Implementation ==> add
 
