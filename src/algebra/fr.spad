@@ -157,7 +157,6 @@ Factored(R : IntegralDomain) : Exports == Implementation where
     comparableR? := R has Comparable
 
   -- Private function signatures:
-    reciprocal              : % -> %
     qexpand                 : % -> R
     negexp?                 : % -> Boolean
     SimplifyFactorization   : List FF -> List FF
@@ -342,10 +341,6 @@ Factored(R : IntegralDomain) : Exports == Implementation where
       (r := recip unit u) case "failed" => "failed"
       mkFF(r::R, empty())
 
-    reciprocal u ==
-      mkFF((recip unit u)::R,
-                    [[y.flag, y.factor, - y.exponent]$FF for y in factorList u])
-
     flagFactor(r, i, fl) ==
       zero? i => 1
       zero? r => 0
@@ -409,8 +404,8 @@ Factored(R : IntegralDomain) : Exports == Implementation where
       u + v ==
         zero? u => v
         zero? v => u
-        v1 := reciprocal(u1 := gcd(u, v))
-        (expand(u * v1) + expand(v * v1)) * u1
+        u1 := gcd(u, v)
+        (expand((u exquo u1)::%) + expand((v exquo u1)::%)) * u1
 
       gcd(u, v) ==
         (u = 1) or (v = 1) => 1
