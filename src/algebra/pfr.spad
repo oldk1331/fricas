@@ -178,7 +178,7 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
         while (sp ~= 0$SUPR) repeat
           l := cons([leadingCoefficient sp, nilFactor(f, (e-d)::NNI)]$fTerm, l)
           d := degree(sp := reductum sp)
-      [b.whole, sort(LessThan, l)]$Rep
+      [b.whole, sort!(LessThan, l)]$Rep
 
     compactFraction(a : %) ==
       -- only one power for each distinct denom will remain
@@ -280,7 +280,7 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
     a + b ==
       compactFraction
         [a.whole + b.whole,
-          sort(LessThan, append(a.fract, copy b.fract))]$Rep
+          sort!(LessThan, append(a.fract, copy b.fract))]$Rep
 
     a : % * b : % ==
       empty?(a.fract) => a.whole * b
