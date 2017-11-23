@@ -1277,7 +1277,8 @@ DoublyLinkedAggregate(S : Type) : Category == RecursiveAggregate S with
 ++ list, and the child designating the tail, or \spadfun{rest}, of the list.
 ++ A node with no child then designates the empty list.
 ++ Since these aggregates are recursive aggregates, they may be cyclic.
-UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
+UnaryRecursiveAggregate(S : Type) : Category == Join(RecursiveAggregate S,
+    Collection S) with
    concat : (%, %) -> %
       ++ concat(u, v) returns an aggregate w consisting of the elements of u
       ++ followed by the elements of v.
@@ -1400,6 +1401,8 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
           l := rest l
       res
 
+  construct l == constructRev reverse l
+
   nodes x ==
       l := empty()$List(%)
       while not empty? x repeat
@@ -1499,6 +1502,37 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
           n > (m := #x) => error "index out of range"
           copy rest(x, (m - n)::NonNegativeInteger)
 
+      find(f, x) ==
+          while not empty? x and not f first x repeat x := rest x
+          empty? x => "failed"
+          first x
+
+      reduce(f, x) ==
+          empty? x =>
+              error "reducing over an empty aggregate needs the 3 argument form"
+          reduce(f, rest x, first x)
+
+      reduce(f, x, i) ==
+          r := i
+          while not empty? x repeat (r := f(r, first x); x := rest x)
+          r
+
+      remove(f : S -> Boolean, x : %) ==
+          res : List S := []
+          while not empty? x repeat
+              e := first x
+              if not f e then res := concat(e, res)
+              x := rest x
+          constructRev res
+
+      select(f, x) ==
+          res : List S := []
+          while not empty? x repeat
+              e := first x
+              if f e then res := concat(e, res)
+              x := rest x
+          constructRev res
+
   if % has finiteAggregate and S has BasicType then
       x = y ==
           eq?(x, y) => true
@@ -1516,6 +1550,29 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
               k = cycleMax and cyclic? v => error "cyclic list"
               v := rest v
           u = v
+
+      reduce(f, x, i, a) ==
+          r := i
+          while not empty? x and r ~= a repeat
+              r := f(r, first x)
+              x := rest x
+          r
+
+      remove(s : S, x : %) ==
+          res : List S := []
+          while not empty? x repeat
+              e := first x
+              if s ~= e then res := concat(e, res)
+              x := rest x
+          constructRev res
+
+      removeDuplicates x ==
+          res : List S := []
+          while not empty? x repeat
+              e := first x
+              if not member?(e, res) then res := concat(e, res)
+              x := rest x
+          constructRev res
 
   if % has shallowlyMutable then
       setelt!(x, "first", a) == setfirst!(x, a)
@@ -2184,10 +2241,6 @@ ListAggregate(S : Type) : Category == Join(StreamAggregate S,
 
    sort!(f, l) == mergeSort(f, l, #l)
    list x == concat(x, empty())
-   reduce(f, x) ==
-       empty? x =>
-           error "reducing over an empty list needs the 3 argument form"
-       reduce(f, rest x, first x)
    merge(f, p, q) == merge!(f, copy p, copy q)
 
    select!(f, x) ==
@@ -2257,11 +2310,6 @@ ListAggregate(S : Type) : Category == Join(StreamAggregate S,
        setrest!(t, rest(t, (h - l + 2)::NonNegativeInteger))
        x
 
-   find(f, x) ==
-       while not empty? x and not f first x repeat x := rest x
-       empty? x => "failed"
-       first x
-
    position(f : S -> Boolean, x : %) ==
        for k in minIndex(x).. while not empty? x and not f first x repeat
            x := rest x
@@ -2284,19 +2332,6 @@ ListAggregate(S : Type) : Category == Join(StreamAggregate S,
            not f(first l, first p) => return false
            p := rest(l := p)
        true
-
-   reduce(f, x, i) ==
-       r := i
-       while not empty? x repeat (r := f(r, first x); x := rest x)
-       r
-
-   if S has BasicType then
-       reduce(f, x, i, a) ==
-           r := i
-           while not empty? x and r ~= a repeat
-               r := f(r, first x)
-               x := rest x
-           r
 
    new(n, s) ==
        l := empty()
