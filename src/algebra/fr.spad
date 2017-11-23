@@ -165,7 +165,6 @@ Factored(R : IntegralDomain) : Exports == Implementation where
     comparableR? := R has Comparable
 
   -- Private function signatures:
-    qexpand                 : % -> R
     SimplifyFactorization   : List FF -> List FF
     LispLessP               : (FF, FF) -> Boolean
     mkFF                    : (R, List FF) -> %
@@ -192,7 +191,7 @@ Factored(R : IntegralDomain) : Exports == Implementation where
     i : Integer * u : %      == (i :: %) * u
     r : R * u : %            == (r :: %) * u
     factors u            == [[fe.factor, fe.exponent] for fe in factorList u]
-    expand u             == retract u
+    expand u == unit u * _*/[y.factor ^ y.exponent for y in factorList u]
 
     makeFR(u, l) ==
 -- normalizing code to be installed when contents are handled better
@@ -306,15 +305,8 @@ Factored(R : IntegralDomain) : Exports == Implementation where
       1 = unit x => e
       (unit x)::OutputForm * e
 
-    retract(u : %) : R ==
-      qexpand u
-
-    qexpand u ==
-      unit u *
-         _*/[y.factor ^ y.exponent for y in factorList u]
-
-    retractIfCan(u:%):Union(R, "failed") ==
-      qexpand u
+    retract(u : %) : R == expand u
+    retractIfCan(u : %) : Union(R, "failed") == expand(u)
 
     LispLessP(y, y1) ==
       orderedR? => y.factor < y1.factor
