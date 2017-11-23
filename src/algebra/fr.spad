@@ -27,7 +27,6 @@
 Factored(R : IntegralDomain) : Exports == Implementation where
   fUnion ==> Union("nil", "sqfr", "irred", "prime")
   FF     ==> Record(flag : fUnion, factor : R, exponent : Integer)
-  SRFE   ==> Set(Record(factor : R, exponent : Integer))
 
   Exports ==> Join(IntegralDomain, DifferentialExtension R, Algebra R,
                    FullyEvalableOver R, FullyRetractableTo R) with
@@ -329,8 +328,14 @@ Factored(R : IntegralDomain) : Exports == Implementation where
               unitNormalize mkFF(1, [["nil", r, 1]$FF])
 
     u = v ==
-      (unit u = unit v) and # u.fct = # v.fct and
-        set(factors u)$SRFE =$SRFE set(factors v)$SRFE
+        unit u ~= unit v => false
+        lu := factorList u; lv := factorList v
+        while not empty? lu and not empty? lv repeat
+            u1 := first lu; v1 := first lv
+            u1.exponent ~= v1.exponent => return false
+            u1.factor ~= v1.factor => return false
+            lu := rest lu; lv := rest lv
+        empty? lu and empty? lv
 
     - u ==
       zero? u => u
