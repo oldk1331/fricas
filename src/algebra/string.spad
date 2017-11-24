@@ -209,7 +209,7 @@ CharacterClass : Join(SetCategory, ConvertibleTo String,
             (i := ord c) < N => (a(i) := true; a)
             error "character code too large"
 
-        remove!(c, a)  ==
+        remove!(c : Character, a : %) : % ==
             if(i := ord c) < N then a(i) := false
             a
 
