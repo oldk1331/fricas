@@ -1499,8 +1499,15 @@ UnaryRecursiveAggregate(S : Type) : Category == Join(RecursiveAggregate S,
           k
 
       last(x, n) ==
-          n > (m := #x) => error "index out of range"
-          copy rest(x, (m - n)::NonNegativeInteger)
+          xn := x
+          for i in 1..n repeat
+              empty? xn => error "index out of range"
+              xn := rest xn
+          -- xn is n nodes ahead of x
+          while not empty? xn repeat
+              xn := rest xn
+              x := rest x
+          copy x
 
       find(f, x) ==
           while not empty? x and not f first x repeat x := rest x
