@@ -136,7 +136,9 @@ ElementaryFunctionDefiniteIntegration(R, F) : Exports == Implementation where
           or is?(kk, 'sech) or is?(kk, 'atan) or is?(kk, 'acot)
             or is?(kk, 'asinh) or is?(kk, 'erf)  or is?(kk, 'erfi)
               or is?(kk, 'fresnelC)  or is?(kk, 'fresnelS)
-                or is?(kk, 'Si) or is?(kk, 'Shi) => checkForPole(f, x, k, a, b)
+                or is?(kk, 'Si) or is?(kk, 'Shi)
+                  or is?(kk, '%paren) or is?(kk, '%box) =>
+                      checkForPole(f, x, k, a, b)
       -- functions which are defined on (-1, +1):
       is?(kk, 'asin) or is?(kk, 'acos) or is?(kk, 'atanh) =>
         ((w := checkForPole(f, x, k, a, b)) case "failed") or (w::B) => w
