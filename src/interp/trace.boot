@@ -108,6 +108,7 @@ trace1(l, options) ==
       throwKeyedMsg("S2IT0021",NIL)
     untrace l
     clearConstructorCaches()
+    clearClams()
   hasOption(options, 'stats) =>
     (1 < #options) =>
       throwKeyedMsg("S2IT0001",['")trace ... )stats"])
