@@ -161,7 +161,6 @@ Factored(R : IntegralDomain) : Exports == Implementation where
     SimplifyFactorization   : List FF -> List FF
     LispLessP               : (FF, FF) -> Boolean
     mkFF                    : (R, List FF) -> %
-    SimplifyFactorization1  : (FF, List FF) -> List FF
     stricterFlag            : (fUnion, fUnion) -> fUnion
 
     nilFactor(r, i)      == flagFactor(r, i, "nil")
@@ -248,24 +247,29 @@ Factored(R : IntegralDomain) : Exports == Implementation where
       mkFF(unit(u)^n, [[x.flag, x.factor, n * x.exponent] for x in factorList u])
 
     SimplifyFactorization x ==
-      empty? x => empty()
-      x := sort!(LispLessP, x)
-      x := SimplifyFactorization1(first x, rest x)
-      if comparableR? then x := sort!(LispLessP, x)
-      x
-
-    SimplifyFactorization1(f, x) ==
-      empty? x =>
-        zero?(f.exponent) => empty()
-        list f
-      f1 := first x
-      f.factor = f1.factor =>
-        SimplifyFactorization1([stricterFlag(f.flag, f1.flag),
-                                      f.factor, f.exponent + f1.exponent], rest x)
-      l := SimplifyFactorization1(first x, rest x)
-      zero?(f.exponent) => l
-      concat(f, l)
-
+        empty? x => empty()
+        x := sort!(LispLessP, x)
+        while not empty? x and x.first.exponent = 0 repeat x := rest x
+        empty? x => empty()
+        o := x -- o is the constant pointer that returns from this function
+        p := x -- p is the pointer that points to the previous node of x
+        f := first p -- f is the node that p is pointing
+        x := rest x  -- x is the pointer that iterates through the list
+        while not empty? x repeat
+            f1 := first x
+            f1.exponent = 0 =>
+                setrest!(p, rest x)
+                x := rest x
+            f.factor = f1.factor =>
+                f := [stricterFlag(f.flag, f1.flag), _
+                      f.factor, f.exponent + f1.exponent]
+                setfirst!(p, f)
+                setrest!(p, rest x)
+                x := rest x
+            p := x
+            f := f1
+            x := rest x
+        o
 
     coerce(x : %) : OutputForm ==
       empty?(lf := reverse factorList x) => (unit x)::OutputForm
