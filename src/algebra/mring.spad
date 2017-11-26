@@ -313,11 +313,11 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
                   +/[construct [[ta.Mn*tb.Mn, ta.Cf*tb.Cf]$Term
                     for tb in b ] for ta in a]
 
-        else -- M hasn't OrderedSet
+        else -- M hasn't Comparable
             -- Terms are stored in random order.
           a = b ==
             #a ~= #b => false
-            set(a pretend List(Term)) =$Set(Term) set(b pretend List(Term))
+            empty? setDifference(a, b)
 
           coefficient(a, m) ==
             for t in a repeat
