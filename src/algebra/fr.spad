@@ -235,11 +235,24 @@ Factored(R : IntegralDomain) : Exports == Implementation where
           _*/[convert(f.factor)@DoubleFloat ^ f.exponent for f in factorList x]
 
     u : % * v : % ==
-      zero? u or zero? v => 0
-      (u = 1) => v
-      (v = 1) => u
-      mkFF(unit u * unit v,
-          SimplifyFactorization concat(factorList u, copy factorList v))
+        zero? u or zero? v => u
+        one? u => v
+        one? v => u
+        lu := factorList u; lv := factorList v
+        res : List FF := []
+        while not empty? lu and not empty? lv repeat
+            u1 := first lu; v1 := first lv
+            u1.factor = v1.factor =>
+                res := concat([stricterFlag(u1.flag, v1.flag), _
+                               u1.factor, u1.exponent + v1.exponent], res)
+                lu := rest lu; lv := rest lv
+            LispLessP(u1, v1) =>
+                res := concat(u1, res)
+                lu := rest lu
+            res := concat(v1, res)
+            lv := rest lv
+        res := concat!(reverse! res, if empty? lu then lv else lu)
+        mkFF(unit u * unit v, res)
 
     u : % ^ n : NonNegativeInteger ==
       n = 0 => 1
