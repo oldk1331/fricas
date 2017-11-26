@@ -174,7 +174,7 @@ Integer : Join(IntegerNumberSystem, LinearlyExplicitOver Integer,
          mergeFactors(factor(pp)$GaloisGroupFactorizer(ZP),
                         map((x1 : %) : ZP+->x1::ZP,
                             factor((lp exquo lpp)::%))$FactoredFunctions2(%, ZP)
-                                     )$FactoredFunctionUtilities(ZP)
+                                     )
       factorSquareFreePolynomial(p : ZP) : Factored ZP ==
            factorSquareFree(p)$GaloisGroupFactorizer(ZP)
       gcdPolynomial(p : ZP, q : ZP) : ZP ==
