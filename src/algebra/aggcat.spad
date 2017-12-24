@@ -1142,7 +1142,7 @@ BinaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
    nodes x ==
        l := empty()$List(%)
        empty? x => l
-       concat(nodes left x, concat([x], nodes right x))
+       concat(nodes left x, concat(x, nodes right x))
 
    children x ==
        l := empty()$List(%)
