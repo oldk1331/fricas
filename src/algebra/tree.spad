@@ -63,9 +63,6 @@ Tree(S : SetCategory) : T==C where
     value t ==
       t case empty => error "cannot take the value of an empty tree"
       t.node.value
-    child?(t1, t2) ==
-      empty? t2 => false
-      member?(t1, children t2)
     distance1(t1 : %, t2 : %) : Integer ==
       t1 = t2 => 0
       t2 case empty => -1
@@ -76,10 +73,6 @@ Tree(S : SetCategory) : T==C where
       n := distance1(t1, t2)
       n >= 0 => n
       distance1(t2, t1)
-    node?(t1, t2) ==
-      t1 = t2 => true
-      t2 case empty => false
-      any?((t : %) : Boolean +-> node?(t1, t), children t2)
     any?(fn, t) ==  ---bug fixed
       t case empty => false
       fn value t => true

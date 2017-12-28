@@ -319,10 +319,9 @@ LazyStreamAggregate(S : Type) : Category == StreamAggregate(S) with
     cycleElt(x) case "failed" => false
     true
 
-  if S has SetCategory then
-    child?(x, y) ==
-      empty? y => error "child: no children"
-      x = rst y
+  child?(x, y) ==
+      empty? x or empty? y => false
+      eq?(x, rst y)
 
   children x ==
     empty? x => error "children: argument is empty"
@@ -340,15 +339,15 @@ LazyStreamAggregate(S : Type) : Category == StreamAggregate(S) with
       eq?(x, y) =>
         error "distance: 2nd arg not a descendent of the 1st"
 
-  if S has SetCategory then
-    node?(z, x) ==
+  node?(z, x) ==
       -- error message only when x is a stream with lazy
       -- evaluation and 'y' is not a node of 'x'
       -- which has been computed when the function is called
+      explicitlyEmpty? z => return false
       y := x
       for i in 0.. repeat
-        z = y => return true
         explicitlyEmpty? y => return false
+        eq?(z, y) => return true
         lazy? y => error "node?: infinite stream"
         y := rst y
         if odd? i then x := rst x
