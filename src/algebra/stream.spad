@@ -305,8 +305,8 @@ LazyStreamAggregate(S : Type) : Category == StreamAggregate(S) with
 
   if S has SetCategory then
     child?(x, y) ==
-      empty? y => error "child: no children"
-      x = rst y
+      empty? y => error "child?: no children"
+      eq?(x, rst y)
 
   children x ==
     empty? x => error "children: no children"
