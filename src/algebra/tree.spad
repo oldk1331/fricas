@@ -86,10 +86,6 @@ Tree(S : SetCategory) : T==C where
       n := distance1(t1, t2)
       n >= 0 => n
       distance1(t2, t1)
-    node?(t1, t2) ==
-      t1 = t2 => true
-      t2 case empty => false
-      any?((t : %) : Boolean +-> node?(t1, t), children t2)
     leaf? t ==
       t case empty => false
       empty? children t

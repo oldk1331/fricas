@@ -1097,6 +1097,11 @@ RecursiveAggregate(S : Type) : Category == HomogeneousAggregate(S) with
                empty? u or empty? v => false
                any?(c +-> eq?(u, c), children v)
 
+           node?(u, v) ==
+               empty? u or empty? v => false
+               eq?(u, v) => true
+               any?(c +-> node?(u, c), children v)
+
 )abbrev category BRAGG BinaryRecursiveAggregate
 ++ Author: Michael Monagan; revised by Manuel Bronstein and Richard Jenks
 ++ Date Created: August 87 through August 88
@@ -1178,10 +1183,9 @@ BinaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
                eq?(u, left v) or eq?(u, right v)
 
            node?(u, v) ==
-               empty? v => false
-               u = v => true
-               node?(u, left v) or node?(u, right v) => return true
-               false
+               empty? u or empty? v => false
+               eq?(u, v) => true
+               node?(u, left v) or node?(u, right v)
 
            x = y ==
                empty?(x) => empty?(y)
@@ -1564,12 +1568,12 @@ UnaryRecursiveAggregate(S : Type) : Category == Join(RecursiveAggregate S,
           empty? x and empty? y
 
       node?(u, v) ==
-          empty? v => false
+          empty? u or empty? v => false
           for k in 0.. while not empty? v repeat
-              u = v => return true
+              eq?(u, v) => return true
               k = cycleMax and cyclic? v => error "cyclic list"
               v := rest v
-          u = v
+          false
 
       reduce(f, x, i, a) ==
           r := i

@@ -330,8 +330,8 @@ LazyStreamAggregate(S : Type) : Category == StreamAggregate(S) with
       -- which has been computed when the function is called
       y := x
       for i in 0.. repeat
-        z = y => return true
         explicitlyEmpty? y => return false
+        eq?(z, y) => return true
         lazy? y => error "node?: infinite stream"
         y := rst y
         if odd? i then x := rst x
