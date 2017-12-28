@@ -1167,7 +1167,16 @@ BinaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
            for y in children x repeat k := aggCount(y, k)
            k
 
+       parts x ==
+           -- infix order
+           empty? x => empty()
+           concat(parts left x, concat(value x, parts right x))
+
        if S has BasicType then
+           child?(u, v) ==
+               empty? u or empty? v => false
+               eq?(u, left v) or eq?(u, right v)
+
            node?(u, v) ==
                empty? v => false
                u = v => true
