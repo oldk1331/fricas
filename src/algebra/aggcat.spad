@@ -1088,7 +1088,10 @@ RecursiveAggregate(S : Type) : Category == HomogeneousAggregate(S) with
        setelt!(x, "value", y) == setvalue!(x,y)
 
    if % has finiteAggregate then
-       parts(x) == [value(i) for i in nodes(x)]
+       parts(x) ==
+           empty? x => empty()
+           concat(value x, concat [parts i for i in children x])
+
        if S has BasicType then
            child?(u, v) ==
                empty? u or empty? v => false
