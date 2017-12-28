@@ -1208,6 +1208,11 @@ BinaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
            eq?(u, v) => true
            node?(u, left v) or node?(u, right v)
 
+       parts x ==
+           -- infix order
+           empty? x => empty()
+           concat(parts left x, concat(value x, parts right x))
+
        if S has BasicType then
            x = y ==
                empty?(x) => empty?(y)
