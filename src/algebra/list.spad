@@ -562,6 +562,551 @@ AssociationList(Key : SetCategory, Entry : Type):
           setrest!(prev, rest curr)
           first(curr).entry
 
+)abbrev domain DLLIST DoublyLinkedList
+DoublyLinkedList(S : Type) : Exports == Implementation where
+  Exports == Join(DoublyLinkedAggregate S, Collection S, shallowlyMutable,
+                  finiteAggregate) with
+    dllist : List S -> %
+    dllist : S -> %
+    concat! : (S, %) -> %
+    concat : (%, %) -> %
+    first : % -> S
+    first : (%, Integer) -> List S
+    reverse : % -> %
+    reverse! : % -> %
+    new : (NonNegativeInteger, S) -> %
+    split! : (%, Integer) -> %
+    next : (%, Integer) -> %
+    previous : (%, Integer) -> %
+    merge! : ((S, S) -> Boolean, %, %) -> %
+    sort : % -> %
+    sort! : ((S, S) -> Boolean, %) -> %
+  Implementation == add
+    Rep := Record(prev : %, val : S, next : %)
+
+    empty() == NIL$Lisp
+
+    empty? x == NULL(x)$Lisp
+
+    emptyErrMsg ==> "DoublyLinkedList : argument is empty"
+
+    eq?(u, v) == EQ(u, v)$Lisp
+
+    dllist(s : S) ==
+        l : % := [empty(), s, empty()]
+        l.prev := l
+        l.next := l
+        l
+
+    first x ==
+        empty? x => error emptyErrMsg
+        x.val
+
+    first(x, n) ==
+        n = 0 => []
+        empty? x => error emptyErrMsg
+        res : List S := []
+        n > 0 =>
+            while n ~= 0 repeat
+                res := concat(x.val, res)
+                x := x.next
+                n := n - 1
+            reverse! res
+        -- n < 0
+        while n ~= 0 repeat
+            res := concat(x.val, res)
+            x := x.prev
+            n := n + 1
+        reverse! res
+
+    value x == first x
+
+    next x ==
+        empty? x => error emptyErrMsg
+        x.next
+
+    next(x : %, n : Integer) : % ==
+        n = 0 => x
+        empty? x => error emptyErrMsg
+        n > 0 =>
+            for i in 1..n repeat
+                x := x.next
+            x
+        for i in n..-1 repeat
+            x := x.prev
+        x
+
+    previous x ==
+        empty? x => error emptyErrMsg
+        x.prev
+
+    previous(x : %, n : Integer) : % ==
+        n = 0 => x
+        empty? x => error emptyErrMsg
+        n < 0 =>
+            for i in n..-1 repeat
+                x := x.next
+            x
+        for i in 1..n repeat
+            x := x.prev
+        x
+
+    setnext!(x, n) ==
+        empty? x => error emptyErrMsg
+        x.next := n
+
+    setprevious!(x, p) ==
+        empty? x => error emptyErrMsg
+        x.prev := p
+
+    setvalue!(x, v) ==
+        empty? x => error emptyErrMsg
+        x.val := v
+
+    setchildren!(x, l) ==
+        error "setchildren! is not well defined in DoublyLinkedList"
+
+    _connect(tail : %, head : %) : Void ==
+        -- connect the node 'tail' and 'head'
+        tail.next := head
+        head.prev := tail
+
+    copy x ==
+        empty? x => empty()
+        x0 := x
+        res : % := [empty(), x0.val, empty()]
+        tail := res
+        x := x.next
+        while not eq?(x0, x) repeat
+            new : % := [tail, x.val, empty()]
+            tail.next := new
+            tail := new
+            x := x.next
+        _connect(tail, res)
+        res
+
+    map(f, x) ==
+        empty? x => empty()
+        x0 := x
+        res : % := [empty(), f x0.val, empty()]
+        tail := res
+        x := x.next
+        while not eq?(x0, x) repeat
+            new : % := [tail, f x.val, empty()]
+            tail.next := new
+            tail := new
+            x := x.next
+        _connect(tail, res)
+        res
+
+    map!(f, x) ==
+        empty? x => empty()
+        x0 := x
+        repeat
+            x.val := f x.val
+            x := x.next
+            eq?(x0, x) => return x
+
+    # x == -- should we encode length in the Rep, just like C++?
+        empty? x => 0
+        x0 := x
+        len := 0
+        repeat
+            x := x.next
+            len := len + 1
+            eq?(x0, x) => return len
+
+    less?(x, n) ==
+         empty? x => 0 < n
+         x0 := x
+         i : Integer := n
+         while i > 0 repeat
+             x := x.next
+             i := i - 1
+             eq?(x0, x) => return i > 0
+         i > 0
+
+    more?(x, n) ==
+        empty? x => false
+        x0 := x
+        i : Integer := n
+        while i > 0 repeat
+            x := x.next
+            i := i - 1
+            eq?(x0, x) => return false
+        true
+
+    size?(x, n) ==
+        empty? x => n = 0
+        x0 := x
+        i : Integer := n
+        while i > 0 repeat
+            x := x.next
+            i := i - 1
+            eq?(x0, x) => return i = 0
+        eq?(x0, x)
+
+    concat!(s : S, x : %) : % ==
+        empty? x => dllist s
+        tail := x.prev
+        new : % := [tail, s, x]
+        tail.next := new
+        x.prev := new
+        new
+
+    dllist(l : List S) : % ==
+        empty? l => empty()
+        res : % := [empty(), first l, empty()]
+        tail := res
+        l := rest l
+        while not empty? l repeat
+            new : % := [tail, first l, empty()]
+            tail.next := new
+            tail := new
+            l := rest l
+        _connect(tail, res)
+        res
+
+    new(n : NonNegativeInteger, s : S) : % ==
+        n = 0 => empty()
+        res : % := [empty(), s, empty()]
+        tail := res
+        for i in 1.. while i < n repeat
+            new : % := [tail, s, empty()]
+            tail.next := new
+            tail := new
+        _connect(tail, res)
+        res
+
+    -- 'parts' preserves order
+    parts x ==
+        empty? x => empty()
+        x0 := x
+        res : List S := []
+        repeat
+            x := x.prev
+            res := concat(x.val, res)
+            eq?(x0, x) => return res
+
+    reverse x ==
+        empty? x => empty()
+        x0 := x.prev
+        x := x0.prev
+        res : % := [empty(), x0.val, empty()]
+        tail := res
+        while not eq?(x0, x) repeat
+            new : % := [tail, x.val, empty()]
+            tail.next := new
+            tail := new
+            x := x.prev
+        _connect(tail, res)
+        res
+
+    reverse! x ==
+        empty? x => empty()
+        x0 := x.prev
+        eq?(x0, x) => x
+        p := x0
+        repeat
+            n := x.next
+            x.next := p
+            x.prev := n
+            eq?(x, x0) => return x0
+            p := x
+            x := n
+
+    concat(u : %, v : %) ==
+        empty? v => u
+        empty? u => v
+        concat!(copy u, copy v)
+
+    concat!(u : %, v : %) : % ==
+        empty? v => u
+        empty? u => v
+        uend := u.prev
+        vend := v.prev
+        _connect(uend, v)
+        _connect(vend, u)
+        u
+
+    split!(x : %, n : Integer) : % ==
+        n = 0 =>
+            empty? x => empty()
+            error "split!: can not set argument to empty()"
+        empty? x => error "split!: argument is empty()"
+        xn := next(x, n)
+        eq?(x, xn) => empty()
+        xend := xn.prev
+        xnend := x.prev
+        _connect(xend, x)
+        _connect(xnend, xn)
+        xn
+
+    children x ==
+        empty? x => []
+        [x.prev, x.next]
+
+    nodes x ==
+        empty? x => []
+        res : List % := []
+        x0 := x
+        x := x.prev
+        repeat
+            res := concat(x, res)
+            eq?(x0, x) => return res
+            x := x.prev
+
+    leaf? x == false
+
+    leaves x == []
+
+    child?(u, v) ==
+        empty? u or empty? v => false
+        eq?(u, v.next) or eq?(u, v.prev)
+
+    node?(u, v) ==
+        empty? u or empty? v => false
+        v0 := v
+        repeat
+            eq?(u, v) => return true
+            v := v.next
+            eq?(v0, v) => return false
+
+    distance(u, v) ==
+        empty? u or empty? v => -1
+        u0 := u
+        res := 0
+        repeat
+            eq?(u, v) => return res
+            u := u.next
+            res := res + 1
+            eq?(u0, u) => return -1
+
+    last(x : %) : S ==
+        empty? x => error emptyErrMsg
+        x.prev.val
+
+    any?(f : S -> Boolean, x : %) : Boolean ==
+        empty? x => false
+        x0 := x
+        repeat
+            f x.val => return true
+            x := x.next
+            eq?(x0, x) => return false
+
+    every?(f : S -> Boolean, x : %) : Boolean ==
+        empty? x => true
+        x0 := x
+        repeat
+            not f x.val => return false
+            x := x.next
+            eq?(x0, x) => return true
+
+    merge1!(f : (S, S) -> Boolean, p : %, q : %) : % ==
+        -- merge1! is a local function used inside function 'merge!'.
+        -- The argument p has exactly 1 element,
+        -- and q is guaranteed to be non-empty.
+        qend := q.prev
+        -- Insert p at beginning of q is a little different:
+        -- it returns p instead of q0.
+        f(p.val, q.val) =>
+            _connect(p, q)
+            _connect(qend, p)
+            p
+        q0 := q
+        q := q.next
+        while not eq?(q0, q) and not f(p.val, q.val) repeat
+            q := q.next
+        _connect(p, q)
+        _connect(qend, p)
+        q0
+
+    merge!(f, p, q) ==
+        empty? p => q
+        empty? q => p
+        eq?(p, q) => error "can not merge a list into itself"
+        -- we have to handle lists with 1 element specially
+        size?(p, 1) => merge1!(f, p, q)
+        size?(q, 1) => merge1!(f, q, p)
+        p0 := p; pend := p0.prev
+        q0 := q; qend := q0.prev
+        if f(p.val, q.val)
+            then (r := t := p; p := p.next)
+            else (r := t := q; q := q.next)
+        repeat
+            if f(p.val, q.val)
+            then
+                if not eq?(t.next, p) then
+                    _connect(t, p)
+                t := p
+                p := p.next
+            else
+                if not eq?(t.next, q) then
+                    _connect(t, q)
+                t := q
+                q := q.next
+            eq?(p0, p) or eq?(q0, q) => break
+        eq?(p0, p) =>
+            if not eq?(t.next, q) then
+                _connect(t, q)
+            _connect(qend, r)
+            r
+        eq?(q0, q) =>
+            if not eq?(t.next, p) then
+                _connect(t, p)
+            _connect(pend, r)
+            r
+
+    ----------------------------
+    -- SORT
+    ----------------------------
+    -- __unlink, __link, __sort, __merge are local functions
+    -- used in function 'sort!'.
+
+    __unlink(f : %, l : %) : Void ==
+        -- Cut off from 'f' to 'l' (both nodes are included).
+        f.prev.next := l.next
+        l.next.prev := f.prev
+
+    __link(p : %, f : %, l : %) : Void ==
+        -- Link in nodes from 'f' to 'l' just prior to 'p'.
+        p.prev.next := f
+        f.prev := p.prev
+        p.prev := l
+        l.next := p
+
+    __merge : ((S, S) -> Boolean, %, %, %) -> %
+    -- __merge(comp, f1, e1, e2)
+    -- merge from f1 to e1 (not included) and e1 to e2 (not included).
+    -- distance(f1, e1) and distance(e1, e2) is at least 1.
+
+    __sort : ((S, S) -> Boolean, %, %, Integer) -> %
+    -- __sort(comp, f1, e2, n)
+    -- sort from node f1 to node e2 (not included).
+
+    sort!(f : (S, S) -> Boolean, x : %) : % ==
+    -- https://github.com/llvm-mirror/libcxx/blob/88626bf496e9a1276652790438b389e65950629f/include/list#L2233
+    -- The following code does some initialization: computes the length of 'x',
+    -- and gets the pointer 'xhalf' that points to the middle of 'x'.
+    -- The actual sorting is done by '__sort' and '__merge'.
+        empty? x => empty()
+        x0 := x
+        x := x.next
+        eq?(x0, x) => x0
+        eq?(x0, x.next) =>
+            -- length is 2
+            f(x0.val, x.val) => x0
+            x
+        len := 2
+        xhalf := x
+        x := x.next
+        repeat
+            len := len + 1
+            x := x.next
+            if even? len then xhalf := xhalf.next
+            eq?(x0, x) => break
+        lhalf := len quo 2
+        x0 := __sort(f, x0, xhalf, lhalf)
+        xhalf := __sort(f, xhalf, x0, len - lhalf)
+        __merge(f, x0, xhalf, x0)
+
+    __sort(comp, f1, e2, n) ==
+        -- __sort(comp, f1, e2, n) sorts through node 'f1' to
+        -- node 'e2' (not included). There are 'n' nodes between them.
+        -- This function returns 'f1'.
+        n = 1 => f1
+        n = 2 =>
+            e2 := f1.next
+            comp(f1.val, e2.val) => f1
+            (f1.val, e2.val) := (e2.val, f1.val)
+            f1
+        n2 := n quo 2
+        e1 := next(f1, n2)
+        f1 := __sort(comp, f1, e1, n2)
+        e1 := __sort(comp, e1, e2, n - n2)
+        __merge(comp, f1, e1, e2)
+
+    __merge(comp : (S, S) -> Boolean, f1 : %, e1 : %, e2 : %) : % ==
+        -- r is the pointer that will be returned.
+        r := f1
+        -- f2 is the beginning of second segment,
+        -- which is also the end of first segment.
+        f2 := e1
+        -- The following if expression determines the beginning of
+        -- sorted segment.
+        if comp(f2.val, f1.val) then
+            m2 := f2.next
+            while not eq?(m2, e2) and comp(m2.val, f1.val) repeat
+                m2 := m2.next
+            f := f2
+            l := m2.prev
+            r := f2
+            e1 := f2 := m2
+            __unlink(f, l)
+            m2 := f1.next
+            __link(f1, f, l)
+            f1 := m2
+        else
+            f1 := f1.next
+        while not eq?(f1, e1) and not eq?(f2, e2) repeat
+            if comp(f2.val, f1.val) then
+                m2 := f2.next
+                while not eq?(m2, e2) and comp(m2.val, f1.val) repeat
+                    m2 := m2.next
+                f := f2
+                l := m2.prev
+                if eq?(e1, f2) then e1 := m2
+                f2 := m2
+                __unlink(f, l)
+                m2 := f1.next
+                __link(f1, f, l)
+                f1 := m2
+            else
+                f1 := f1.next
+        r
+
+    if S has BasicType then
+        u = v ==
+            empty? v => empty? u
+            empty? u => false
+            v0 := v; u0 := u
+            repeat
+                u.val ~= v.val => return false
+                u := u.next; v := v.next
+                eq?(u0, u) => return eq?(v0, v)
+                eq?(v0, v) => return eq?(u0, u)
+
+        member?(s : S, x : %) : Boolean ==
+            empty? x => false
+            x0 := x
+            repeat
+                s = x.val => return true
+                x := x.next
+                eq?(x0, x) => return false
+
+        count(s : S, x : %) : NonNegativeInteger ==
+            empty? x => 0
+            x0 := x
+            res := 0
+            repeat
+                if s = x.val then res := res + 1
+                x := x.next
+                eq?(x0, x) => return res
+
+    if S has CoercibleTo OutputForm then
+        coerce(x : %) : OutputForm ==
+            parts(x)::OutputForm
+
+    if S has SetCategory then
+        hashUpdate!(s : HashState, x : %) : HashState ==
+            empty? x => s
+            x0 := x
+            repeat
+                s := hashUpdate!(s, x.val)
+                x := x.next
+                eq?(x0, x) => return s
+
+
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.
 --
