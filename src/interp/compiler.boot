@@ -367,6 +367,7 @@ DEFPARAMETER($compForModeIfTrue, false)
 
 compSymbol(s,m,e) ==
   s="$NoValue" => ["$NoValue",$NoValueMode,e]
+  s = 'noBranch => [voidValue(), $Void, e]
   isFluid s => [s,getmode(s,e) or return nil,e]
   s="true" => ['(QUOTE T),$Boolean,e]
   s="false" => [false,$Boolean,e]
