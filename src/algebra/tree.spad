@@ -34,86 +34,102 @@ Tree(S : SetCategory) : T==C where
  C== add
     cycleTreeMax ==> 5
 
-    Rep := Union(node:Record(value: S, args: List %),empty:"empty")
+    Rep := Record(val : S, args : List %)
 
-    import from Record(value: S, args: List %)
-
-    empty? t == t case empty
-    empty()  == ["empty"]
+    empty() == NIL$Lisp
+    empty? t == NULL(t)$Lisp
 
     children t ==
-      t case empty => error "cannot take the children of an empty tree"
-      (t.node.args)@List(%)
+      empty? t => error "cannot take the children of an empty tree"
+      t.args
+
     setchildren!(t, lt) ==
-      t case empty => error "cannot set children of an empty tree"
-      (t.node.args := lt;t pretend %)
+      empty? t => error "cannot set children of an empty tree"
+      t.args := lt
+      t
+
     setvalue!(t, s) ==
-      t case empty => error "cannot set value of an empty tree"
-      (t.node.value := s;s)
+      empty? t => error "cannot set value of an empty tree"
+      t.val := s
+
     count(n : S, t : %) ==
-      t case empty => 0
+      empty? t => 0
       i := +/[count(n, c) for c in children t]
-      value t = n => i + 1
+      t.val = n => i + 1
       i
+
     count(fn : S -> Boolean, t : %) : NonNegativeInteger ==
-      t case empty => 0
+      empty? t => 0
       i := +/[count(fn, c) for c in children t]
-      fn value t => i + 1
+      fn t.val => i + 1
       i
+
     map(fn, t) ==
-      t case empty => t
-      tree(fn value t, [map(fn, c) for c in children t])
+      empty? t => t
+      tree(fn t.val, [map(fn, c) for c in children t])
+
     map!(fn, t) ==
-      t case empty => t
-      setvalue!(t, fn value t)
+      empty? t => t
+      setvalue!(t, fn t.val)
       for c in children t repeat map!(fn, c)
       t
-    tree(s : S, lt : List %) == [[s, lt]]
-    tree(s : S) == [[s, []]]
+
+    tree(s : S, lt : List %) == [s, lt]
+    tree(s : S) == [s, []]
     tree(ls : List S) ==
       empty? ls => empty()
       tree(first ls, [tree s for s in rest ls])
+
     value t ==
-      t case empty => error "cannot take the value of an empty tree"
-      t.node.value
+      empty? t => error "cannot take the value of an empty tree"
+      t.val
+
     distance1(t1 : %, t2 : %) : Integer ==
       t1 = t2 => 0
-      t2 case empty => -1
+      empty? t2 => -1
       u := [n for t in children t2 | (n := distance1(t1, t)) >= 0]
       #u > 0 => 1 + "min"/u
       -1
+
     distance(t1, t2) ==
       n := distance1(t1, t2)
       n >= 0 => n
       distance1(t2, t1)
+
     leaf? t ==
-      t case empty => false
+      empty? t => false
       empty? children t
+
     leaves t ==
-      t case empty => empty()
-      leaf? t => [value t]
+      empty? t => empty()
+      leaf? t => [t.val]
       concat [leaves c for c in children t]
+
     nodes t ==       ---buggy
-      t case empty => empty()
+      empty? t => empty()
       nl := [nodes c for c in children t]
       empty? nl => [t]
       concat(t, concat nl)
+
     any?(fn, t) ==  ---bug fixed
-      t case empty => false
-      fn value t => true
+      empty? t => false
+      fn t.val => true
       for c in children t | any?(fn, c) repeat return true
       false
+
     every?(fn, t) ==
-      t case empty => true
-      not fn value t => false
+      empty? t => true
+      not fn t.val => false
       for c in children t | not every?(fn, c) repeat return false
       true
+
     member?(n, t) ==
-      t case empty => false
-      n = value t or any?((c : %) : Boolean +-> member?(n, c), children t)
+      empty? t => false
+      n = t.val or any?((c : %) : Boolean +-> member?(n, c), children t)
+
     hashUpdate!(s : HashState, t : %) : HashState ==
-      t case empty => s
-      s := hashUpdate!(s, value t)
+      empty? t => s
+      s := hashUpdate!(s, t.val)
       for subt in children t repeat
           s := hashUpdate!(s, subt)
       s
@@ -128,9 +144,9 @@ Tree(S : SetCategory) : T==C where
     equal?(t1, t2, ot1, ot2, k) ==
       k = cycleTreeMax and (cyclic? ot1 or cyclic? ot2) =>
         error "use cyclicEqual? to test equality on cyclic trees"
-      t1 case empty => t2 case empty
-      t2 case empty => false
-      not (value t1 = value t2 and (c1 := children t1) = (c2 := children t2))
+      empty? t1 => empty? t2
+      empty? t2 => false
+      not (t1.value = t2.value and (c1 := children t1) = (c2 := children t2))
           => false
       for x in c1 for y in c2 | not equal?(x, y, ot1, ot2, k + 1) repeat
           return false
@@ -142,7 +158,7 @@ Tree(S : SetCategory) : T==C where
     treeCount(t, origTree, k) ==
       k = cycleTreeMax and cyclic? origTree =>
         error "# is not defined on cyclic trees"
-      t case empty => 0
+      empty? t => 0
       1 + +/[treeCount(c, origTree, k + 1) for c in children t]
 
     -----> copy
@@ -151,7 +167,7 @@ Tree(S : SetCategory) : T==C where
     copy1(t, origTree, k) ==
       k = cycleTreeMax and cyclic? origTree =>
         error "use cyclicCopy to copy a cyclic tree"
-      t case empty  => t
+      empty? t => t
       empty? children t => tree value t
       tree(value t, [copy1(x, origTree, k + 1) for x in children t])
 
@@ -170,7 +186,7 @@ Tree(S : SetCategory) : T==C where
     coerce(t : %) : OutputForm == coerce1(t, empty()$(List %), cyclicParents t)
 
     coerce1(t, parents, pl) ==
-        t case empty => empty()@List(S)::OutputForm
+        empty? t => empty()@List(S)::OutputForm
         eqMember?(t, parents) =>
             multipleOverbar((message(".")), eqMemberIndex(t, pl,0),pl)
         empty? children t => value t::OutputForm
@@ -246,8 +262,8 @@ Tree(S : SetCategory) : T==C where
       cyclicEqual4?(t1, t2, cp1, cp2)
 
     cyclicEqual4?(t1, t2, cp1, cp2) ==
-      t1 case empty => t2 case empty
-      t2 case empty => false
+      empty? t1 => empty? t2
+      empty? t2 => false
       0 ~= (k := eqMemberIndex(t1, cp1, 0)) => eq?(t2, cp2 . k)
       value t1 ~= value t2 => false
       for x in children t1 for y in children t2 _
