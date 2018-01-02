@@ -2400,6 +2400,16 @@ ListAggregate(S : Type) : Category == Join(StreamAggregate S,
            z := rest z
        y
 
+   reverseconcat(x : %, y : %) : % ==
+       -- reverse x and concat y to the end of it.
+       -- we only traverse x once.
+       empty? x => y
+       res := y
+       while not empty? x repeat
+           res := concat(first x, res)
+           x := rest x
+       res
+
    concat(ll : List %) : % ==
        while not empty? ll and empty? first ll repeat ll := rest ll
        empty? ll => empty()
