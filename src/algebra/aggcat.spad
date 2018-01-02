@@ -2400,6 +2400,24 @@ ListAggregate(S : Type) : Category == Join(StreamAggregate S,
            z := rest z
        y
 
+   concat(ll : List %) : % ==
+       while not empty? ll and empty? first ll repeat ll := rest ll
+       empty? ll => empty()
+       empty? rest ll => first ll
+       -- this first element is not returned,
+       -- it is used to create a non-empty cons cell.
+       res : % := list first first ll
+       tail := res
+       while not empty? rest ll repeat
+           l := first ll
+           while not empty? l repeat
+               setrest!(tail, list first l)
+               tail := rest tail
+               l := rest l
+           ll := rest ll
+       setrest!(tail, first ll)
+       rest res
+
    if S has BasicType then
 
        position(w, x, s) ==
