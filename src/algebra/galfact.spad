@@ -766,7 +766,7 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
         b : P := (2*leadingCoefficient(f)*beauzamyBound(f)) :: P
         completeHensel(f, m.factors, cprime, b)
       lrf := cf::LR
-      "append"/[ henselfact(g(lrf.right),false) for g in
+      concat [ henselfact(g(lrf.right),false) for g in
        henselfact(lrf.left, true) ]
 
     -- local function, returns the complete factorization of its arguments,
