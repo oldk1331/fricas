@@ -316,8 +316,7 @@ InnerNumericFloatSolvePackage(K, F, Par) : Cat == Cap where
            if listGen ~= [] then
              listG : L L P K :=
                [[dmpToP(pf)$PolToPol(lv, K) for pf in pr] for pr in listGen]
-             result :=
-               "append"/[findGenZeros(res,rlv,eps) for res in listG]
+             result := concat [findGenZeros(res,rlv,eps) for res in listG]
              for gres in listGen repeat
                 partRes := delete(partRes, position(gres, partRes))
            -- adjust the non-generic components

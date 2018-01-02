@@ -775,7 +775,7 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
       lrf := cf::LR
       dh := degree(lrf.right)
       d1 := divideSet(d, dh)
-      "append"/[ henselfact(g(lrf.right), false,
+      concat [ henselfact(g(lrf.right), false,
                            sel_set(d, degree(g), dh)) for g in
          henselfact(lrf.left, true, d1) ]
 

@@ -522,7 +522,7 @@ SparseMultivariatePolynomial(R : Join(SemiRng, AbelianMonoid),
 
       coefficients p ==
         p case R => list(p :: R)$List(R)
-        "append"/[coefficients(p1)$% for p1 in coefficients(p.ts)]
+        concat [coefficients(p1)$% for p1 in coefficients(p.ts)]
 
       retract(p : %) : R ==
         p case R => p :: R
