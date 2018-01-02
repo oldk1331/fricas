@@ -155,7 +155,8 @@ SimpleCell(TheField, ThePols) : PUB == PRIV where
          lp1 := gcdBasis(lp)$PACK
          empty?(lp1) => [pointToCell(0, true, var)]
          b := ("max" / [ boundOfCauchy(p)$VARS for p in lp1])::TheField
-         l := "append" / [allRootsOf(makeSUP(unitCanonical(p))) for p in lp1]
+         l : List TheField :=
+             concat [allRootsOf(makeSUP(unitCanonical(p))) for p in lp1]
          l := sort(l)
          l1 := separate(l, -b, b)
          res : List(%) := [pointToCell(first(l1), true, var)]

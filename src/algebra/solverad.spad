@@ -230,12 +230,12 @@ RadicalSolvePackage(R) : Cat == Capsule where
           listGen := [res for res in rpRes|isGeneric?(res, rlv)]
           result : L L RE := []
           if listGen ~= [] then
-            result := "append"/[findGenZeros(res,rlv) for res in listGen]
+            result := concat [findGenZeros(res,rlv) for res in listGen]
             for res in listGen repeat
                 rpRes := delete(rpRes, position(res, rpRes))
            --  non-generic components
           rpRes = [] => result
-          append("append"/[findZeros(res,rlv) for res in rpRes],
+          append(concat [findZeros(res,rlv) for res in rpRes],
                          result)
 
         radicalSolve(lp : L RF, lv : L SY) ==

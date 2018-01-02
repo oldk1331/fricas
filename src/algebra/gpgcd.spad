@@ -245,7 +245,7 @@ GeneralPolynomialGcdPackage(E, OV, R, P) : C == T where
            lr := [ randomR() for vv in lv]
          ans
       variables(p1 : SUPP) ==
-        removeDuplicates ("concat"/[variables u for u in coefficients p1])
+        removeDuplicates concat [variables u for u in coefficients p1]
       gcdTrivial(p1 : SUPP, p2 : SUPP) ==
         -- p1 is non-zero, but has degree zero
         -- p2 is non-zero

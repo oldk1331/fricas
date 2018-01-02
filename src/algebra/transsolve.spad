@@ -150,7 +150,7 @@ TransSolvePackage(R) : Exports == Implementation where
               -- Type  :  Fraction SparseUnivariatePolynomial Expression R
           lfatt := factorList factorPolynomial(numer f
                                            )$ExpressionFactorPolynomial(R, RE)
-          lr:L RE := "append" /[zerosOf(fatt.factor,x) for fatt in lfatt]
+          lr : L RE := concat [zerosOf(fatt.factor,x) for fatt in lfatt]
               -- Type  :  List Expression R
           r1 := []::L RE
           for i in 1..#lr repeat
@@ -160,7 +160,7 @@ TransSolvePackage(R) : Exports == Implementation where
           if not testkernel(bigX_back, x) then
             if bigX = bigX_back then return []::L EQ RE
             return
-              "append"/[solve(bigX_back-ri, x) for ri in r1]
+              concat [solve(bigX_back-ri, x) for ri in r1]
           newlist := []::L EQ RE
 
           for i in 1..#r1 repeat
@@ -168,7 +168,7 @@ TransSolvePackage(R) : Exports == Implementation where
              f := univariate(elR, kernel(x))
               -- Type  :  Fraction SparseUnivariatePolynomial Expression R
              lfatt := factorList factorPolynomial numer f
-             secondsol := "append" /[zerosOf(ff.factor,x) for ff in lfatt]
+             secondsol : L RE := concat [zerosOf(ff.factor,x) for ff in lfatt]
              for j in 1..#secondsol repeat
                 newlist := cons((x::RE)=rootSimp( secondsol(j) ), newlist)
           newlist
@@ -517,7 +517,7 @@ TransSolvePackage(R) : Exports == Implementation where
         rlvar := reverse lvar
         sols : L L EQ RE := list(empty())
         for p in rplist for v in rlvar repeat
-           sols := "append"/[solve1Pol(p,v,sol) for sol in sols]
+           sols := concat [solve1Pol(p,v,sol) for sol in sols]
         sols
 
      frac_to_expr(q : Fraction(SparseMultivariatePolynomial(R, K))) : RE ==
@@ -567,9 +567,8 @@ TransSolvePackage(R) : Exports == Implementation where
         lfrac : L Fraction Polynomial RE :=
            [makeFracPoly(expr, lvar) for expr in lexpr]
         trianglist := triangularSystems(lfrac, lvar)
---        "append"/[solve1Sys(plist, lvar) for plist in trianglist]
         l : L L L EQ RE := [solve1Sys(plist, lvar) for plist in trianglist]
-        reduce(append, l, [])
+        concat l
 
      solve(leqs : L EQ RE, lvar : L S) : L L EQ RE ==
         lexpr : L RE := [lhs(eq)-rhs(eq) for eq in leqs]
