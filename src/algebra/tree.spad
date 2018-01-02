@@ -21,74 +21,87 @@ Tree(S : SetCategory) : T==C where
      tree : S -> %
        ++ tree(nd) creates a tree with value nd, and no children.
  C== add
-    Rep := Union(node:Record(value: S, args: List %),empty:"empty")
+    Rep := Record(val : S, args : List %)
 
-    import from Record(value: S, args: List %)
-
-    empty? t == t case empty
-    empty()  == ["empty"]
+    empty() == NIL$Lisp
+    empty? t == NULL(t)$Lisp
 
     children t ==
-      t case empty => error "cannot take the children of an empty tree"
-      (t.node.args)@List(%)
+      empty? t => error "cannot take the children of an empty tree"
+      t.args
+
     setchildren!(t, lt) ==
-      t case empty => error "cannot set children of an empty tree"
-      (t.node.args := lt;t pretend %)
+      empty? t => error "cannot set children of an empty tree"
+      t.args := lt
+      t
+
     setvalue!(t, s) ==
-      t case empty => error "cannot set value of an empty tree"
-      (t.node.value := s;s)
+      empty? t => error "cannot set value of an empty tree"
+      t.val := s
+
     count(n : S, t : %) ==
-      t case empty => 0
+      empty? t => 0
       i := +/[count(n, c) for c in children t]
-      value t = n => i + 1
+      t.val = n => i + 1
       i
+
     count(fn : S -> Boolean, t : %) : NonNegativeInteger ==
-      t case empty => 0
+      empty? t => 0
       i := +/[count(fn, c) for c in children t]
-      fn value t => i + 1
+      fn t.val => i + 1
       i
+
     map(fn, t) ==
-      t case empty => t
-      tree(fn value t, [map(fn, c) for c in children t])
+      empty? t => t
+      tree(fn t.val, [map(fn, c) for c in children t])
+
     map!(fn, t) ==
-      t case empty => t
-      setvalue!(t, fn value t)
+      empty? t => t
+      setvalue!(t, fn t.val)
       for c in children t repeat map!(fn, c)
       t
-    tree(s : S, lt : List %) == [[s, lt]]
-    tree(s : S) == [[s, []]]
+
+    tree(s : S, lt : List %) == [s, lt]
+    tree(s : S) == [s, []]
     tree(ls : List S) ==
       empty? ls => empty()
       tree(first ls, [tree s for s in rest ls])
+
     value t ==
-      t case empty => error "cannot take the value of an empty tree"
-      t.node.value
+      empty? t => error "cannot take the value of an empty tree"
+      t.val
+
     distance1(t1 : %, t2 : %) : Integer ==
       t1 = t2 => 0
-      t2 case empty => -1
+      empty? t2 => -1
       u := [n for t in children t2 | (n := distance1(t1, t)) >= 0]
       #u > 0 => 1 + "min"/u
       -1
+
     distance(t1, t2) ==
       n := distance1(t1, t2)
       n >= 0 => n
       distance1(t2, t1)
+
     any?(fn, t) ==  ---bug fixed
-      t case empty => false
-      fn value t => true
+      empty? t => false
+      fn t.val => true
       for c in children t | any?(fn, c) repeat return true
       false
+
     every?(fn, t) ==
-      t case empty => true
-      not fn value t => false
+      empty? t => true
+      not fn t.val => false
       for c in children t | not every?(fn, c) repeat return false
       true
+
     member?(n, t) ==
-      t case empty => false
-      n = value t or any?((c : %) : Boolean +-> member?(n, c), children t)
+      empty? t => false
+      n = t.val or any?((c : %) : Boolean +-> member?(n, c), children t)
+
     hashUpdate!(s : HashState, t : %) : HashState ==
-      t case empty => s
-      s := hashUpdate!(s, value t)
+      empty? t => s
+      s := hashUpdate!(s, t.val)
       for subt in children t repeat
           s := hashUpdate!(s, subt)
       s
