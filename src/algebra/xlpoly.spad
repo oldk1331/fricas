@@ -293,7 +293,7 @@ LyndonWord(VarSet : OrderedSet) : Public == Private where
 
        LyndonWordsList (vl, n) ==
            v : ARRAY1 List % := LyndonWordsList1(vl, n)
-           "append"/ [v.i for i in 1..n]
+           concat [v.i for i in 1..n]
 
 
 )abbrev category LIECAT LieAlgebra

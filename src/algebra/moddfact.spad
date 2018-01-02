@@ -114,7 +114,7 @@ ModularDistinctDegreeFactorizer(U) : C == T where
       [[(dd.factor)::U, dd.degree]$UDDRecord for dd in ans]$UDDList
 
     sepfact(factList) ==
-      "append"/[sepFact1(f) for f in factList]
+      concat [sepFact1(f) for f in factList]
 
     separateFactors(uddList, q) ==
       ans := sepfact [[reduce(udd.factor, q), udd.degree]$DDRecord for
