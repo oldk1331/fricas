@@ -1058,12 +1058,11 @@ RecursiveAggregate(S : Type) : Category == HomogeneousAggregate(S) with
      ++ leaves(u) returns the list of leaves in aggregate \spad{u}.
    distance : (%, %) -> Integer
      ++ distance(u, v) returns the path length (an integer) from node u to v.
-   if S has BasicType then
-      child? : (%, %) -> Boolean
-        ++ child?(u, v) tests if node u is a child of node v.
-      node? : (%, %) -> Boolean
-        ++ node?(u, v) tests if node u is contained in node v
-        ++ (either as a child, a child of a child, etc.).
+   child? : (%, %) -> Boolean
+     ++ child?(u, v) tests if node u is a child of node v.
+   node? : (%, %) -> Boolean
+     ++ node?(u, v) tests if node u is contained in node v
+     ++ (either as a child, a child of a child, etc.).
    if % has shallowlyMutable then
       setchildren! : (%, List %) -> %
         ++ setchildren!(u, v) replaces the current children of node u
@@ -1092,15 +1091,14 @@ RecursiveAggregate(S : Type) : Category == HomogeneousAggregate(S) with
            empty? x => empty()
            concat(value x, concat [parts i for i in children x])
 
-       if S has BasicType then
-           child?(u, v) ==
-               empty? u or empty? v => false
-               any?(c +-> eq?(u, c), children v)
+       child?(u, v) ==
+           empty? u or empty? v => false
+           any?(c +-> eq?(u, c), children v)
 
-           node?(u, v) ==
-               empty? u or empty? v => false
-               eq?(u, v) => true
-               any?(c +-> node?(u, c), children v)
+       node?(u, v) ==
+           empty? u or empty? v => false
+           eq?(u, v) => true
+           any?(c +-> node?(u, c), children v)
 
 )abbrev category BRAGG BinaryRecursiveAggregate
 ++ Author: Michael Monagan; revised by Manuel Bronstein and Richard Jenks
@@ -1177,16 +1175,16 @@ BinaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
            empty? x => empty()
            concat(parts left x, concat(value x, parts right x))
 
+       child?(u, v) ==
+           empty? u or empty? v => false
+           eq?(u, left v) or eq?(u, right v)
+
+       node?(u, v) ==
+           empty? u or empty? v => false
+           eq?(u, v) => true
+           node?(u, left v) or node?(u, right v)
+
        if S has BasicType then
-           child?(u, v) ==
-               empty? u or empty? v => false
-               eq?(u, left v) or eq?(u, right v)
-
-           node?(u, v) ==
-               empty? u or empty? v => false
-               eq?(u, v) => true
-               node?(u, left v) or node?(u, right v)
-
            x = y ==
                empty?(x) => empty?(y)
                empty?(y) => false
@@ -1557,6 +1555,14 @@ UnaryRecursiveAggregate(S : Type) : Category == Join(RecursiveAggregate S,
               x := rest x
           constructRev res
 
+      node?(u, v) ==
+          empty? u or empty? v => false
+          for k in 0.. while not empty? v repeat
+              eq?(u, v) => return true
+              k = cycleMax and cyclic? v => error "cyclic list"
+              v := rest v
+          false
+
   if % has finiteAggregate and S has BasicType then
       x = y ==
           eq?(x, y) => true
@@ -1566,14 +1572,6 @@ UnaryRecursiveAggregate(S : Type) : Category == Join(RecursiveAggregate S,
               x := rest x
               y := rest y
           empty? x and empty? y
-
-      node?(u, v) ==
-          empty? u or empty? v => false
-          for k in 0.. while not empty? v repeat
-              eq?(u, v) => return true
-              k = cycleMax and cyclic? v => error "cyclic list"
-              v := rest v
-          false
 
       reduce(f, x, i, a) ==
           r := i
