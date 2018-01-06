@@ -1555,6 +1555,10 @@ UnaryRecursiveAggregate(S : Type) : Category == Join(RecursiveAggregate S,
               x := rest x
           constructRev res
 
+      child?(u, v) ==
+          empty? u or empty? v => false
+          eq?(u, rest v)
+
       node?(u, v) ==
           empty? u or empty? v => false
           for k in 0.. while not empty? v repeat
