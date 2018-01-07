@@ -1058,6 +1058,7 @@ RecursiveAggregate(S : Type) : Category == HomogeneousAggregate(S) with
      ++ leaves(u) returns the list of leaves in aggregate \spad{u}.
    distance : (%, %) -> Integer
      ++ distance(u, v) returns the path length (an integer) from node u to v.
+     ++ Returns -1 if node v is not contained in node u.
    child? : (%, %) -> Boolean
      ++ child?(u, v) tests if node u is a child of node v.
    node? : (%, %) -> Boolean
@@ -2428,6 +2429,13 @@ ListAggregate(S : Type) : Category == Join(StreamAggregate S,
            ll := rest ll
        setrest!(tail, first ll)
        rest res
+
+   distance(u : %, v : %) ==
+       empty? u or empty? v => -1
+       for i in 0.. repeat
+           eq?(u, v) => return i
+           u := rest u
+           empty? u => return -1
 
    if S has BasicType then
 

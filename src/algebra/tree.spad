@@ -84,17 +84,12 @@ Tree(S : SetCategory) : T==C where
       empty? t => error "cannot take the value of an empty tree"
       t.val
 
-    distance1(t1 : %, t2 : %) : Integer ==
-      t1 = t2 => 0
-      empty? t2 => -1
-      u := [n for t in children t2 | (n := distance1(t1, t)) >= 0]
-      #u > 0 => 1 + "min"/u
-      -1
-
-    distance(t1, t2) ==
-      n := distance1(t1, t2)
-      n >= 0 => n
-      distance1(t2, t1)
+    distance(t1 : %, t2 : %) : Integer ==
+        empty? t1 or empty? t2 => -1
+        eq?(t1, t2) => 0
+        u := [n for t in children t1 | (n := distance(t, t2)) >= 0]
+        empty? u => -1
+        1 + "min"/u
 
     leaf? t ==
       empty? t => false
@@ -264,7 +259,7 @@ Tree(S : SetCategory) : T==C where
     cyclicEqual4?(t1, t2, cp1, cp2) ==
       empty? t1 => empty? t2
       empty? t2 => false
-      0 ~= (k := eqMemberIndex(t1, cp1, 0)) => eq?(t2, cp2 . k)
+      (k := eqMemberIndex(t1, cp1, 0)) ~= 0 => eq?(t2, cp2.k)
       value t1 ~= value t2 => false
       for x in children t1 for y in children t2 _
           | not cyclicEqual4?(x, y, cp1, cp2) repeat
@@ -354,16 +349,14 @@ BinaryTreeCategory(S : SetCategory) : Category ==
          k = cycleTreeMax and cyclic? t => error "cyclic binary tree"
          k := treeCount(left t, k)
          treeCount(right t, k)
-     distance1(t1 : %, t2 : %) : Integer ==
-       t1 = t2 => 0
-       empty? t2 => -1
-       u := [n for t in children t2 | (n := distance1(t1, t)) >= 0]
-       #u > 0 => 1 + "min"/u
-       -1
-     distance(t1, t2) ==
-       n := distance1(t1, t2)
-       n >= 0 => n
-       distance1(t2, t1)
+
+     distance(t1 : %, t2 : %) : Integer ==
+         empty? t1 or empty? t2 => -1
+         eq?(t1, t2) => 0
+         u := [n for t in children t1 | (n := distance(t, t2)) >= 0]
+         empty? u => -1
+         1 + "min"/u
+
      hashUpdate!(s : HashState, t : %) : HashState ==
        empty? t => s
        s := hashUpdate!(s, value t)
