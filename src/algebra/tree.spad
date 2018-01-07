@@ -71,17 +71,12 @@ Tree(S : SetCategory) : T==C where
       empty? t => error "cannot take the value of an empty tree"
       t.val
 
-    distance1(t1 : %, t2 : %) : Integer ==
-      t1 = t2 => 0
-      empty? t2 => -1
-      u := [n for t in children t2 | (n := distance1(t1, t)) >= 0]
-      #u > 0 => 1 + "min"/u
-      -1
-
-    distance(t1, t2) ==
-      n := distance1(t1, t2)
-      n >= 0 => n
-      distance1(t2, t1)
+    distance(t1 : %, t2 : %) : Integer ==
+        empty? t1 or empty? t2 => -1
+        eq?(t1, t2) => 0
+        u := [n for t in children t1 | (n := distance(t, t2)) >= 0]
+        empty? u => -1
+        1 + "min"/u
 
     any?(fn, t) ==  ---bug fixed
       empty? t => false
@@ -160,16 +155,13 @@ BinaryTreeCategory(S : SetCategory) : Category ==
          empty? t => 0
          1 + # left t + # right t
 
-     distance1(t1 : %, t2 : %) : Integer ==
-       t1 = t2 => 0
-       empty? t2 => -1
-       u := [n for t in children t2 | (n := distance1(t1, t)) >= 0]
-       #u > 0 => 1 + "min"/u
-       -1
-     distance(t1, t2) ==
-       n := distance1(t1, t2)
-       n >= 0 => n
-       distance1(t2, t1)
+     distance(t1 : %, t2 : %) : Integer ==
+         empty? t1 or empty? t2 => -1
+         eq?(t1, t2) => 0
+         u := [n for t in children t1 | (n := distance(t, t2)) >= 0]
+         empty? u => -1
+         1 + "min"/u
+
      hashUpdate!(s : HashState, t : %) : HashState ==
        empty? t => s
        s := hashUpdate!(s, value t)
