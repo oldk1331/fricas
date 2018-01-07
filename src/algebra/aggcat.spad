@@ -1079,6 +1079,10 @@ RecursiveAggregate(S : Type) : Category == HomogeneousAggregate(S) with
 
    elt(x,"value") == value x
 
+   leaf? x ==
+       empty? x => false
+       empty? children x
+
    leaves x ==
        empty? x => empty()$List(S)
        leaf? x => [value x]
@@ -1141,7 +1145,9 @@ BinaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
 
    elt(x,"left")  == left x
    elt(x,"right") == right x
-   leaf? x == empty? x or empty? left x and empty? right x
+   leaf? x ==
+       empty? x => false
+       empty? left x and empty? right x
 
    leaves t ==
        empty? t => empty()$List(S)
@@ -1429,7 +1435,9 @@ UnaryRecursiveAggregate(S : Type) : Category == Join(RecursiveAggregate S,
       empty? x => empty()
       [rest x]
 
-  leaf? x == empty? x or empty? rest x
+  leaf? x ==
+      empty? x => false
+      empty? rest x
 
   value x ==
       empty? x => error "value of empty object"
