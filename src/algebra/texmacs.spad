@@ -34,10 +34,10 @@ TexmacsFormat() : public == private where
   public == SetCategory with
     sayExpr : S -> Void
     coerce :    E -> S
-      ++ coerce(o) changes o in the standard output format to Texmacs
+      ++ coerce(o) changes o in the standard output format to TeXmacs
       ++ format.
     coerceL :   E -> S
-      ++ coerceL(o) changes o in the standard output format to Texmacs
+      ++ coerceL(o) changes o in the standard output format to TeXmacs
       ++ format and displays result as one long string.
     display :   S -> Void
       ++ prints the string returned by coerce, adding <math ...> tags.
