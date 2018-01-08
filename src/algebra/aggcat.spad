@@ -1062,7 +1062,7 @@ RecursiveAggregate(S : Type) : Category == HomogeneousAggregate(S) with
    child? : (%, %) -> Boolean
      ++ child?(u, v) tests if node u is a child of node v.
    node? : (%, %) -> Boolean
-     ++ node?(u, v) tests if node u is contained in node v
+     ++ node?(u, v) tests if node u is the same as or contained in node v
      ++ (either as a child, a child of a child, etc.).
    if % has shallowlyMutable then
       setchildren! : (%, List %) -> %
