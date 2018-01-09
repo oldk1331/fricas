@@ -1626,8 +1626,12 @@ UnaryRecursiveAggregate(S : Type) : Category == Join(RecursiveAggregate S,
       setvalue!(u, s) == setfirst!(u, s)
 
       split!(p, n) ==
-          n = 0 => error "index out of range"
+          n = 0 =>
+              empty? p => empty()
+              error "split!: can not set argument to empty()"
+          empty? p => error "split!: argument is empty()"
           p := rest(p, (n - 1)::NonNegativeInteger)
+          empty? p => error "split!: index out of range"
           q := rest p
           setrest!(p, empty())
           q
