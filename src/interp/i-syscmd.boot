@@ -2757,7 +2757,7 @@ satisfiesRegularExpressions(name,patterns) ==
 
 --% Synonym File Reader
 
---------------------> NEW DEFINITION (override in util.lisp.pamphlet)
+--------------------> NEW DEFINITION (override in util.lisp)
 processSynonyms() ==
   p := STRPOS('")",LINE,0,NIL)
   fill := '""
@@ -2985,7 +2985,7 @@ getFirstWord string ==
 
 ltrace l == trace l
 
---------------------> NEW DEFINITION (see intint.lisp.pamphlet)
+--------------------> NEW DEFINITION (see intint.lisp)
 stripSpaces str ==
   STRING_-TRIM([char '" "], str)
 

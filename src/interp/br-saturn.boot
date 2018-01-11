@@ -61,7 +61,7 @@ page() ==
 --            Functions that affect $saturnPage
 --=======================================================================
 
---------------------> OLD DEFINITION (override in br-util.boot.pamphlet)
+--------------------> OLD DEFINITION (override in br-util.boot)
 htSay(x,:options) ==  --say for possibly both $saturn and standard code
   htSayBind(x, options)
 
@@ -82,7 +82,7 @@ htSayBind(x, options) ==
   bcHt x
   for y in options repeat bcHt y
 
---------------------> NEW DEFINITION (override in ht-util.boot.pamphlet)
+--------------------> NEW DEFINITION (override in ht-util.boot)
 bcHt line ==
   $newPage =>  --this path affects both saturn and old lines
     text :=
@@ -99,13 +99,13 @@ bcHt line ==
 --                        New issueHT
 --=======================================================================
 
---------------------> NEW DEFINITION (see ht-util.boot.pamphlet)
+--------------------> NEW DEFINITION (see ht-util.boot)
 htShowPage() ==
 -- show the page which has been computed
   htSayStandard '"\endscroll"
   htShowPageNoScroll()
 
-------------------> NEW DEFINITION (see ht-util.boot.pamphlet)
+------------------> NEW DEFINITION (see ht-util.boot)
 htShowPageNoScroll() ==
 -- show the page which has been computed
   htSayStandard '"\autobuttons"
@@ -157,7 +157,7 @@ issueHTStandard line == --called by htMakePageNoScroll and htMakeErrorPage
     sockSendInt($MenuServer, $SendLine)
     sockSendString($MenuServer, line)
 
---------------------> NEW DEFINITION (override in ht-util.boot.pamphlet)
+--------------------> NEW DEFINITION (override in ht-util.boot)
 htMakeErrorPage htPage ==
   $newPage := false
   $htLineList := nil
@@ -306,14 +306,14 @@ htMakePageSaturn itemList ==
   $standard => nil
   htMakePage itemList
 
---------------------> NEW DEFINITION (override in ht-util.boot.pamphlet)
+--------------------> NEW DEFINITION (override in ht-util.boot)
 htMakePage itemList ==
   if $newPage then
     if $saturn then htpAddToPageDescription($saturnPage, saturnTran itemList)
     if $standard then htpAddToPageDescription($curPage, itemList)
   htMakePage1 itemList
 
---------------------> NEW DEFINITION (override in ht-util.boot.pamphlet)
+--------------------> NEW DEFINITION (override in ht-util.boot)
 htMakePage1 itemList ==
 -- make a page given the description in itemList
   for u in itemList repeat
@@ -371,7 +371,7 @@ mkMenuButton() == [menuButton()]
 menuButton() == '"\menuitemstyle{}"
 -- Saturn must translate \menuitemstyle ==> {\menuButton}
 
---------------------> NEW DEFINITION (override in ht-util.boot.pamphlet)
+--------------------> NEW DEFINITION (override in ht-util.boot)
 --replaces htMakeButton
 getCallBackFn form ==
   func := mkCurryFun(first form, rest form)
@@ -403,7 +403,7 @@ getCallBack callTail ==
 --=======================================================================
 --              Redefinitions from hypertex.boot
 --=======================================================================
---------------------> NEW DEFINITION (override in ht-util.boot.pamphlet)
+--------------------> NEW DEFINITION (override in ht-util.boot)
 endHTPage() ==
   $standard => sockSendInt($MenuServer, $EndOfPage)
   nil
@@ -415,12 +415,12 @@ htSayHrule() == bcHt
   $saturn => '"\hrule{}\newline{}"
   '"\horizontalline{}\newline{}"
 
---------------------> NEW DEFINITION (override in ht-util.boot.pamphlet)
+--------------------> NEW DEFINITION (override in ht-util.boot)
 htpAddInputAreaProp(htPage, label, prop) ==
 ------------> Add STRINGIMAGE
   SETELT(htPage, 5, [[label, nil, nil, nil, :prop], :ELT(htPage, 5)])
 
---------------------> NEW DEFINITION (override in ht-util.boot.pamphlet)
+--------------------> NEW DEFINITION (override in ht-util.boot)
 htpSetLabelInputString(htPage, label, val) ==
 ------------> Add STRINGIMAGE
 -- value user typed as input string on page
@@ -428,7 +428,7 @@ htpSetLabelInputString(htPage, label, val) ==
   props => SETELT(props, 0, STRINGIMAGE val)
   nil
 
---------------------> NEW DEFINITION (override in ht-util.boot.pamphlet)
+--------------------> NEW DEFINITION (override in ht-util.boot)
 htDoneButton(func, htPage, :optionalArgs) ==
 ------> Handle argument values passed from page if present
   if optionalArgs then
@@ -439,7 +439,7 @@ htDoneButton(func, htPage, :optionalArgs) ==
     systemError ['"unknown function", func]
   FUNCALL(SYMBOL_-FUNCTION func, htPage)
 
---------------------> NEW DEFINITION (override in ht-util.boot.pamphlet)
+--------------------> NEW DEFINITION (override in ht-util.boot)
 htBcLinks(links,:options) ==
   skipStateInfo? := IFCAR options
   [links,options] := beforeAfter('options,links)
@@ -451,7 +451,7 @@ htBcLinks(links,:options) ==
                    mkCurryFun(func, value),skipStateInfo?)
     bcIssueHt info
 
---------------------> NEW DEFINITION (override in ht-util.boot.pamphlet)
+--------------------> NEW DEFINITION (override in ht-util.boot)
 htBcLispLinks links ==
   [links,options] := beforeAfter('options,links)
   for [message, info, func, :value] in links repeat
@@ -507,7 +507,7 @@ htpAddToPageDescription(htPage, pageDescrip) ==
   SETELT(htPage, 7, newDescript)
 
 
---------------------> NEW DEFINITION (override in ht-util.boot.pamphlet)
+--------------------> NEW DEFINITION (override in ht-util.boot)
 htProcessBcStrings strings ==
   for [numChars, default, stringName, spadType, :filter] in strings repeat
     mess2 := '""
@@ -520,11 +520,11 @@ htProcessBcStrings strings ==
     iht ['"\inputstring{", stringName, '"}{",
          numChars, '"}{", htpLabelDefault(page(),stringName), '"} ", mess2]
 
---------------------> NEW DEFINITION (override in ht-util.boot.pamphlet)
+--------------------> NEW DEFINITION (override in ht-util.boot)
 setUpDefault(name, props) ==
   htpAddInputAreaProp(page(), name, props)
 
---------------------> NEW DEFINITION (override in ht-util.boot.pamphlet)
+--------------------> NEW DEFINITION (override in ht-util.boot)
 htInitPage(title, propList) ==
 -- start defining a hyperTeX page
   htInitPageNoScroll(propList, title)
@@ -712,7 +712,7 @@ getSaturnExampleList() ==
   SHUT fp
   lst
 
---------------------> NEW DEFINITION (see br-con.boot.pamphlet)
+--------------------> NEW DEFINITION (see br-con.boot)
 dbPresentCons(htPage,kind,:exclusions) ==
   $saturn => dbPresentConsSaturn(htPage,kind,exclusions)
   htpSetProperty(htPage,'exclusion,first exclusions)
@@ -905,7 +905,7 @@ addParameterTemplates(page, conform) ==
     htSaySaturn '"}}"
   htEndTabular()
 
---------------------> NEW DEFINITION (see br-con.boot.pamphlet)
+--------------------> NEW DEFINITION (see br-con.boot)
 kPageArgs([op,:args],[.,.,:source]) ==
   htSaySaturn '"\begin{tabular}{p{.25in}lp{0in}}"
   firstTime := true
@@ -932,17 +932,17 @@ kPageArgs([op,:args],[.,.,:source]) ==
 --=======================================================================
 --              Redefinitions from br-op1.boot
 --=======================================================================
---------------------> NEW DEFINITION (see br-op1.boot.pamphlet)
+--------------------> NEW DEFINITION (see br-op1.boot)
 dbConform form ==
 --one button for the main constructor page of a type
   $saturn => ["\lispLink[d]{\verb!(|conPage| '",:form2Fence dbOuttran form,'")!}{",
            :form2StringList opOf form,"}"]
   ["\conf{",:form2StringList opOf form,'"}{",:form2Fence dbOuttran form,'"}"]
 
---------------------> NEW DEFINITION (see br-op1.boot.pamphlet)
+--------------------> NEW DEFINITION (see br-op1.boot)
 htTab s == if $standard then htSayStandard ('"\tab{",s,'"}")
 
---------------------> NEW DEFINITION (see br-op1.boot.pamphlet)
+--------------------> NEW DEFINITION (see br-op1.boot)
 dbGatherThenShow(htPage,opAlist,which,data,constructorIfTrue,word,fn) ==
   single? := null rest data
   htBeginMenu 'description
@@ -979,7 +979,7 @@ dbGatherThenShow(htPage,opAlist,which,data,constructorIfTrue,word,fn) ==
     bincount := bincount + 1
   htEndMenu 'description
 
---------------------> NEW DEFINITION (see br-op1.boot.pamphlet)
+--------------------> NEW DEFINITION (see br-op1.boot)
 dbPresentOps(htPage,which,:exclusions) ==
   $saturn => dbPresentOpsSaturn(htPage,which,exclusions)
   asharp? := htpProperty(htPage,'isAsharpConstructor)
@@ -1111,7 +1111,7 @@ dbPresentOpsSaturn(htPage,which,exclusions) ==
 --=======================================================================
 --              Redefinitions from br-search.boot
 --=======================================================================
----------------------> OLD DEFINITION (override in br-search.boot.pamphlet)
+---------------------> OLD DEFINITION (override in br-search.boot)
 htShowPageStar() ==
   $saturn => htShowPageStarSaturn()
   htSayStandard '"\endscroll "
@@ -1135,7 +1135,7 @@ htShowPageStarSaturn() ==
 --              Redefinitions from br-op2.boot
 --=======================================================================
 
---------------> NEW DEFINITION (see br-op2.boot.pamphlet)
+--------------> NEW DEFINITION (see br-op2.boot)
 displayDomainOp(htPage,which,origin,op,sig,predicate,
                 doc,index,chooseFn,unexposed?,$generalSearch?) ==
   $chooseDownCaseOfType : local := true   --see dbGetContrivedForm
@@ -1352,7 +1352,7 @@ htSaySourceFile conname ==
   htMakePage [['text,'"\unixcommand{",filename,'"}{_\$AXIOM/lib/SPADEDIT ",
               sourceFileName, '" ", conname, '"}"]]
 
---------------------> NEW DEFINITION (see br-op2.boot.pamphlet)
+--------------------> NEW DEFINITION (see br-op2.boot)
 htSayIndentRel(n,:options) ==
   flag := IFCAR options
   m := ABS n
@@ -1412,7 +1412,7 @@ htSayConstructorName(nameShown, name) ==
   if $standard then
     htSayStandard ["\lispdownlink{",nameShown,'"}{(|conPage| '|",name,'"|)}"]
 
---------------------> NEW DEFINITION (see ht-util.boot.pamphlet)
+--------------------> NEW DEFINITION (see ht-util.boot)
 htAddHeading(title) ==
   htNewPage title
   page()
@@ -1504,7 +1504,7 @@ screenLocalLine(line, conlist) ==
     dbName line
   MEMQ(con, conlist)
 
---------------> NEW DEFINITION (see br-data.boot.pamphlet)
+--------------> NEW DEFINITION (see br-data.boot)
 purgeLocalLibdb() ==   --called by the user through a clear command?
   $newConstructorList := nil
   deleteFile '"libdb.text"
