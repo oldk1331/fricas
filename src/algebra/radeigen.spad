@@ -152,7 +152,7 @@ RadicalEigenPackage() : C == T
               ----  The matrix of eigenvectors  ----
 
      eigenMatrix(A:M) : Union(MRE,"failed") ==
-       lef : List(MRE) := [: eiv.radvect  for eiv in radicalEigenvectors(A)]
+       lef : List(MRE) := concat [eiv.radvect  for eiv in radicalEigenvectors(A)]
        n := nrows A
        #lef <n => "failed"
        d : MRE := copy(lef.first)
@@ -171,7 +171,7 @@ RadicalEigenPackage() : C == T
          if (lvec := alterm.radvect)=[] then error "sorry "
          if #(lvec)>1  then
            lvec := gramschmidt(lvec)
-           basis := [:lvec, :basis]
+           basis := concat(lvec, basis)
          else basis := cons(normalise(lvec.first), basis)
        basis
 

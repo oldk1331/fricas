@@ -536,7 +536,7 @@ EuclideanDomain() : Category == PrincipalIdealDomain with
               [[u.coef1, u.coef2], u.generator]
           v := principalIdeal rest l
           u := extendedEuclidean(first l, v.generator)
-          [[u.coef1, :[u.coef2*vv for vv in v.coef]], u.generator]
+          [concat(u.coef1, [u.coef2*vv for vv in v.coef]), u.generator]
 
       expressIdealMember(l, z) ==
           z = 0 => [0 for v in l]

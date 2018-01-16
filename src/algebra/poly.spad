@@ -1052,7 +1052,7 @@ UnivariatePolynomialSquareFree(RC : IntegralDomain, P) : C == T
               i := i+1
               degree(pi) > 0 =>
                  lcp := (lcp exquo (leadingCoefficient(pi)^i))::RC
-                 lffe := [["sqfr",pi,i],:lffe]
+                 lffe := concat(["sqfr", pi, i], lffe)
            makeFR(lcp::P, lffe)
 
       else
@@ -1076,7 +1076,7 @@ UnivariatePolynomialSquareFree(RC : IntegralDomain, P) : C == T
                  lc := (leadingCoefficient(diprev) exquo leadingCoefficient(di))::RC
                  dunit := lc^i * dunit
               pi := (diprev exquo di)::P
-              lffe := [["sqfr",pi,i],:lffe]
+              lffe := concat(["sqfr", pi, i], lffe)
            dunit := dunit * di ^ (i+1)
            degree(ci)=0 => makeFR(dunit*ci, lffe)
            redSqfr := squareFree(divideExponents(ci, characteristic$P)::P)

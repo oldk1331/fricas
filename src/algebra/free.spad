@@ -331,7 +331,7 @@ FreeMonoid(S : SetCategory) : FMcategory == FMdefinition where
             fx : REC := first x
             fx.gen ~= l  => "failed"
             fx.exp = 1   => makeMulti rest(x)
-            makeMulti [[fx.gen, (fx.exp - 1)::NNI ]$REC, : rest x]
+            makeMulti concat([fx.gen, (fx.exp - 1)::NNI]$REC, rest x)
 
         rquo(w : %, l : S) ==
             u : % := reverse w
@@ -364,7 +364,7 @@ FreeMonoid(S : SetCategory) : FMcategory == FMdefinition where
             empty?(x) => error "empty word !!!"
             fx : REC := first x
             fx.exp = 1 => makeMulti rest x
-            makeMulti [[fx.gen, (fx.exp - 1)::NNI ]$REC, : rest x]
+            makeMulti concat([fx.gen, (fx.exp - 1)::NNI]$REC, rest x)
 
         mirror x == reverse(x)$Rep
 

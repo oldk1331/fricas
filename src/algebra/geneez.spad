@@ -121,7 +121,7 @@ GenExEuclid(R, BP) : C == T
       #listPol = 2 => reverse listPol
       f := first listPol
       ll := rest listPol
-      [*/ll, :[f*g for g in makeProducts ll]]
+      concat(*/ll, [f*g for g in makeProducts ll])
 
     testModulus(pmod, listPol) ==
          redListPol := reduceList(listPol, pmod)

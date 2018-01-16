@@ -113,7 +113,7 @@ GroebnerSolve(lv, F, R) : C == T
         ---- select  the univariate factors
      select(lup : L L HDPoly) : L L HDPoly ==
        lup=[] => list []
-       [:[cons(f, lsel) for lsel in select lup.rest] for f in lup.first]
+       concat [[cons(f, lsel) for lsel in select lup.rest] for f in lup.first]
 
         ---- in the non generic case, we compute the prime ideals ----
            ---- associated to leq, basis is the algebra basis  ----
