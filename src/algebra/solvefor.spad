@@ -1,7 +1,4 @@
 )abbrev package SOLVEFOR PolynomialSolveByFormulas
--- Examples of fields with "^": (%, Fraction Integer) -> % are
---     Complex Float, RealClosure(K) and AlgebraicNumber
--- RealClosure(K) is unlikly to work here...
 ++ Author: Stephen M. Watt, Barry Trager
 ++ Description:
 ++ This package factors the formulas out of the general solve code,
@@ -9,51 +6,77 @@
 ++ Care is taken to introduce few radicals so that radical extension
 ++ domains can more easily simplify the results.
 
-PolynomialSolveByFormulas(UP, F) : PSFcat == PSFdef where
-
+PolynomialSolveByFormulas(R, UP) : PSFcat == PSFdef where
+    R : Join(PolynomialFactorizationExplicit, Comparable, CharacteristicZero)
+    F ==> Polynomial R
+    RF ==> Fraction F
     UP : UnivariatePolynomialCategory F
-    F :  Field with "^": (%, Fraction Integer) -> %
+    EXPR ==> Expression R
 
     L  ==> List
 
     PSFcat == with
-        solve :      UP -> L F
+        solve : UP -> L EXPR
                 ++ solve(u) \undocumented
-        particularSolution :  UP -> F
+        particularSolution : UP -> EXPR
                 ++ particularSolution(u) \undocumented
-        linear :     UP -> L F
+        linear : UP -> L EXPR
                 ++ linear(u) \undocumented
-        quadratic :  UP -> L F
+        quadratic : UP -> L EXPR
                 ++ quadratic(u) \undocumented
-        cubic :      UP -> L F
+        cubic : UP -> L EXPR
                 ++ cubic(u) \undocumented
-        quartic :    UP -> L F
+        quartic : UP -> L EXPR
                 ++ quartic(u) \undocumented
 
-        -- Arguments give coefs from high to low degree.
-        linear :     (F, F)          -> L F
+        -- Arguments give coeffs from high to low degree.
+        linear : (F, F) -> L EXPR
                 ++ linear(f, g) \undocumented
-        quadratic :  (F, F, F)       -> L F
+        quadratic : (F, F, F) -> L EXPR
                 ++ quadratic(f, g, h) \undocumented
-        cubic :      (F, F, F, F)    -> L F
+        linear2 : (EXPR, EXPR) -> L EXPR
+                ++ linear(f, g) \undocumented
+        quadratic2 : (EXPR, EXPR, EXPR) -> L EXPR
+                ++ quadratic(f, g, h) \undocumented
+        cubic : (F, F, F, F) -> L EXPR
                 ++ cubic(f, g, h, i) \undocumented
-        quartic :    (F, F, F, F, F) -> L F
+        quartic : (F, F, F, F, F) -> L EXPR
                 ++ quartic(f, g, h, i, j) \undocumented
 
-        aLinear :    (F, F)          -> F
+        aLinear : (F, F) -> EXPR
                 ++ aLinear(f, g) \undocumented
-        aQuadratic : (F, F, F)       -> F
+        aQuadratic : (F, F, F) -> EXPR
+        aQuadratic2 : (EXPR, EXPR, EXPR) -> EXPR
                 ++ aQuadratic(f, g, h) \undocumented
-        aCubic :     (F, F, F, F)    -> F
+        aCubic : (RF, RF, RF, RF) -> EXPR
                 ++ aCubic(f, g, h, j) \undocumented
-        aQuartic :   (F, F, F, F, F) -> F
+        aQuartic : (F, F, F, F, F) -> EXPR
                 ++ aQuartic(f, g, h, i, k) \undocumented
-
     PSFdef == add
 
+        (f : RF ^ n : Fraction Integer) : EXPR == (f::EXPR)^n
 
-        part(s : F) : F ==
-            s
+        (f : RF / n : Integer) : RF == f/n::RF
+
+        part(s : RF) : EXPR ==
+            s::EXPR
+
+        part2(s : F) : EXPR ==
+            -- part2(s) returns a*b^(1/2), the simplification of s^(1/2).
+            -- Note that the sign of 'a' is not important, because both
+            -- roots will be used.
+            sqfr := squareFree s
+            -- coeff := unit sqfr -- this is only needed if F is polynomial,
+            -- where unit is not factored.
+            a := "*"/[f.factor^(f.exponent quo 2) for f in factorList sqfr]
+            b := "*"/[f.factor^(f.exponent rem 2) for f in factorList sqfr]
+            -- the coefficient should also be factored.
+            u : R := retract unit sqfr
+            sqfru := squareFree u
+            ua := "*"/[f.factor^(f.exponent quo 2) for f in factorList sqfru]
+            ub := "*"/[f.factor^(f.exponent rem 2) for f in factorList sqfru]
+            (ua*a)::EXPR*(unit(sqfru)*ub*b::EXPR)^(1/2)
+
 
         -----------------------------------------------------------------
         -- Entry points and error handling
@@ -61,8 +84,8 @@ PolynomialSolveByFormulas(UP, F) : PSFcat == PSFdef where
         cc ==> coefficient
 
         -- local intsolve
-        intsolve(u : UP) : L(F) ==
-            u := (factorList squareFree u).1.factor
+        intsolve(u : UP) : L EXPR ==
+            -- u has already been factored.
             n := degree u
             n = 1 => linear    (cc(u, 1), cc(u, 0))
             n = 2 => quadratic (cc(u, 2), cc(u, 1), cc(u, 0))
@@ -71,7 +94,7 @@ PolynomialSolveByFormulas(UP, F) : PSFcat == PSFdef where
             error "All sqfr factors of polynomial must be of degree < 5"
 
         solve u ==
-            ls := []$L(F)
+            ls := []$L(EXPR)
             for f in factorList squareFree u repeat
                lsf := intsolve f.factor
                for i in 1..(f.exponent) repeat ls := concat(lsf, ls)
@@ -82,7 +105,7 @@ PolynomialSolveByFormulas(UP, F) : PSFcat == PSFdef where
             n := degree u
             n = 1 => aLinear    (cc(u, 1), cc(u, 0))
             n = 2 => aQuadratic (cc(u, 2), cc(u, 1), cc(u, 0))
-            n = 3 => aCubic     (cc(u, 3), cc(u, 2), cc(u, 1), cc(u, 0))
+            n = 3 => aCubic     (cc(u, 3)::RF, cc(u, 2)::RF, cc(u, 1)::RF, cc(u, 0)::RF)
             n = 4 => aQuartic   (cc(u, 4), cc(u, 3), cc(u, 2), cc(u, 1), cc(u, 0))
             error "All sqfr factors of polynomial must be of degree < 5"
 
@@ -100,22 +123,19 @@ PolynomialSolveByFormulas(UP, F) : PSFcat == PSFdef where
 
         linear u ==
             needDegree(1, u)
-            linear (coefficient(u, 1), coefficient(u, 0))
+            linear(cc(u, 1), cc(u, 0))
 
         quadratic u ==
             needDegree(2, u)
-            quadratic (coefficient(u, 2), coefficient(u, 1),
-                       coefficient(u, 0))
+            quadratic(cc(u, 2), cc(u, 1), cc(u, 0))
 
         cubic u ==
             needDegree(3, u)
-            cubic (coefficient(u, 3), coefficient(u, 2),
-                   coefficient(u, 1), coefficient(u, 0))
+            cubic(cc(u, 3), cc(u, 2), cc(u, 1), cc(u, 0))
 
         quartic u ==
             needDegree(4, u)
-            quartic (coefficient(u, 4), coefficient(u, 3),
-                     coefficient(u, 2), coefficient(u, 1), coefficient(u, 0))
+            quartic(cc(u, 4), cc(u, 3), cc(u, 2), cc(u, 1), cc(u, 0))
 
         -----------------------------------------------------------------
         -- The formulas
@@ -124,92 +144,121 @@ PolynomialSolveByFormulas(UP, F) : PSFcat == PSFdef where
         -- local function for testing equality of radicals.
         --  This function is necessary to detect at least some of the
         --  situations like sqrt(9)-3 = 0 --> false.
-        equ(x : F, y : F) : Boolean ==
+        equ(x : RF, y : RF) : Boolean ==
             ( (recip(x-y)) case "failed" ) => true
             false
 
         linear(c1, c0) ==
             needLcoef c1
-            [- c0/c1 ]
+            [(-c0/c1)::EXPR]
+
+        linear2(c1, c0) ==
+            --needLcoef c1
+            [-c0/c1]
 
         aLinear(c1, c0) ==
             first linear(c1, c0)
 
         quadratic(c2, c1, c0) ==
             needLcoef c2; needChar0()
-            (c0 = 0) => cons(0$F, linear(c2, c1))
-            (c1 = 0) => [(-c0/c2)^(1/2), -(-c0/c2)^(1/2)]
-            D := part(c1^2 - 4*c2*c0)^(1/2)
-            [(-c1+D)/(2*c2), (-c1-D)/(2*c2)]
+            c0 = 0 => cons(0$EXPR, linear(c2, c1))
+            c1 = 0 => [(-c0/c2)^(1/2), -(-c0/c2)^(1/2)]
+            D := part2(c1^2 - 4*c2*c0)
+            cc1 : EXPR := coerce(c1)
+            cc2 : EXPR := coerce(c2)
+            [(- cc1 + D)/(2 * cc2), (- cc1 - D)/(2 * cc2)]
+
+        quadratic2(c2, c1, c0) ==
+            --needLcoef c2;
+            needChar0()
+            c0 = 0 => cons(0$EXPR, linear2(c2, c1))
+            c1 = 0 => [(-c0/c2)^(1/2), -(-c0/c2)^(1/2)]
+            D := (c1^2 - 4*c2*c0)^(1/2)
+            [(- c1 + D)/(2 * c2), (- c1 - D)/(2 * c2)]
 
         aQuadratic(c2, c1, c0) ==
             needLcoef c2; needChar0()
-            (c0 = 0) => 0$F
-            (c1 = 0) => (-c0/c2)^(1/2)
-            D := part(c1^2 - 4*c2*c0)^(1/2)
-            (-c1+D)/(2*c2)
+            c0 = 0 => 0$EXPR
+            c1 = 0 => (-c0/c2)^(1/2)
+            D := part2(c1^2 - 4*c2*c0)
+            (-c1::EXPR+D)/(2*c2::EXPR)
 
-        w3 : F := (-1 + (-3::F)^(1/2)) / 2::F
+        aQuadratic2(c2, c1, c0) ==
+            --needLcoef c2;
+            needChar0()
+            c0 = 0 => 0$EXPR
+            c1 = 0 => (-c0/c2)^(1/2)
+            D := (c1^2 - 4*c2*c0)^(1/2)
+            (- c1 + D)/(2 * c2)
+
 
         cubic(c3, c2, c1, c0) ==
             needLcoef c3; needChar0()
 
+            w3 : EXPR := (-1 + (-3::EXPR)^(1/2)) / 2::EXPR
+
             -- case one root = 0, not necessary but keeps result small
-            (c0 = 0) => cons(0$F, quadratic(c3, c2, c1))
-            a1 := c2/c3;  a2 := c1/c3;  a3 := c0/c3
+            (c0 = 0) => cons(0$EXPR, quadratic(c3, c2, c1))
+            a1 : RF := c2/c3;  a2 : RF := c1/c3;  a3 : RF := c0/c3
 
             -- case x^3-a3 = 0, not necessary but keeps result small
             (a1 = 0 and a2 = 0) =>
                 [ u*(-a3)^(1/3) for u in [1, w3, w3^2 ] ]
 
-            -- case x^3 + a1*x^2 + a1^2*x/3 + a3 = 0, the general for-
-            --   mula is not valid in this case, but solution is easy.
-            P := part(-a1/3::F)
+            -- case x^3 + a1*x^2 + a1^2*x/3 + a3 = 0, the general formula
+            -- is not valid in this case, but solution is easy.
+            p := part(-a1/3)
             equ(a1^2, 3*a2) =>
-              S := part((- a3 + (a1^3)/27::F)^(1/3))
-              [ P + S*u for u in [1, w3, w3^2] ]
+              s : EXPR := (- a3 + a1^3/27)^(1/3)
+              [ p + s*u for u in [1, w3, w3^2] ]
 
             -- general case
-            Q := part((3*a2 - a1^2)/9::F)
-            R := part((9*a1*a2 - 27*a3 - 2*a1^3)/54::F)
-            D := part(Q^3 + R^2)^(1/2)
-            S := part(R + D)^(1/3)
-            -- S = 0 is done in the previous case
-            [ P + S*u - Q/(S*u) for u in [1, w3, w3^2] ]
+            q : EXPR := coerce((3*a2 - a1^2)/9)
+            -- temporary variable to speed up complication
+            tmpr : RF := 9*a1*a2 - 27*a3 - 2*a1^3
+            r : EXPR := coerce(tmpr/54)
+            d : EXPR := (q^3 + r^2)^(1/2)
+            s : EXPR := (r + d)^(1/3)
+            -- s = 0 is done in the previous case
+            [ p + s*u - q/(s*u) for u in [1, w3, w3^2] ]
 
         aCubic(c3, c2, c1, c0) ==
-            needLcoef c3; needChar0()
-            (c0 = 0) => 0$F
-            a1 := c2/c3;  a2 := c1/c3;  a3 := c0/c3
+            --needLcoef c3;
+            needChar0()
+            (c0 = 0) => 0$EXPR
+            a1 : RF := c2/c3;  a2 : RF := c1/c3;  a3 : RF := c0/c3
             (a1 = 0 and a2 = 0) => (-a3)^(1/3)
-            P := part(-a1/3::F)
+            p := coerce(-a1/3)
             equ(a1^2, 3*a2) =>
-              S := part((- a3 + (a1^3)/27::F)^(1/3))
-              P + S
-            Q := part((3*a2 - a1^2)/9::F)
-            R := part((9*a1*a2 - 27*a3 - 2*a1^3)/54::F)
-            D := part(Q^3 + R^2)^(1/2)
-            S := part(R + D)^(1/3)
-            P + S - Q/S
+              s := (- a3 + a1^3/27)^(1/3)
+              p + s
+            q : EXPR := coerce((3*a2 - a1^2)/9)
+            -- temporary variable to speed up complication
+            tmpr : RF := 9*a1*a2 - 27*a3 - 2*a1^3
+            r : EXPR := coerce(tmpr/54)
+            d : EXPR := (q^3 + r^2)^(1/2)
+            s := (r + d)^(1/3)
+            p + s - q/s
 
         quartic(c4, c3, c2, c1, c0) ==
             needLcoef c4; needChar0()
 
             -- case one root = 0, not necessary but keeps result small
-            (c0 = 0) => cons(0$F, cubic(c4, c3, c2, c1))
+            c0 = 0 => cons(0$EXPR, cubic(c4, c3, c2, c1))
             -- Make monic:
-            a1 := c3/c4; a2 := c2/c4; a3 := c1/c4; a4 := c0/c4
+            a1 : RF := c3 / c4; a2 : RF := c2 / c4
+            a3 : RF := c1 / c4; a4 : RF := c0 / c4
 
             -- case x^4 + a4 = 0 <=> (x^2-sqrt(-a4))*(x^2+sqrt(-a4))
-            -- not necessary but keeps result small.
+            -- not necessary but keeps result small. -- PART2(-A4) -- NOTE MEEEEEEEEEEEEEEEE
             (a1 = 0 and a2 = 0 and a3 = 0) =>
-                append( quadratic(1, 0, (-a4)^(1/2)), _
-                        quadratic(1 , 0, -((-a4)^(1/2))) )
+                append( quadratic2(1, 0, (-a4)^(1/2)), _
+                        quadratic2(1, 0, -(-a4)^(1/2)) )
 
             -- Translate w = x+a1/4 to eliminate a1:  w^4+p*w^2+q*w+r
-            p := part(a2-3*a1*a1/8::F)
-            q := part(a3-a1*a2/2::F + a1^3/8::F)
-            r := part(a4-a1*a3/4::F + a1^2*a2/16::F - 3*a1^4/256::F)
+            p : RF := a2 - 3 * a1 * a1/8
+            q : RF := a3 - a1 * a2/2 + a1^3/8
+            r : RF := a4 - a1 * a3/4 + a1^2 * a2/16 - 3 * a1^4/256
             -- t0 := the cubic resolvent of x^3-p*x^2-4*r*x+4*p*r-q^2
             -- The roots of the translated polynomial are those of
             -- two quadratics. (What about rt=0 ?)
@@ -217,29 +266,30 @@ PolynomialSolveByFormulas(UP, F) : PSFcat == PSFdef where
             -- polynomial above. This is always possible provided that
             -- the input is squarefree. In this case the two other roots
             -- are +(-) 2*r^(1/2).
-            if equ(q, 0)            -- this means p is a root
-              then t0 := part(2*(r^(1/2)))
-              else t0 := aCubic(1, -p, -4*r, 4*p*r - q^2)
-            rt    := part(t0 - p)^(1/2)
-            slist := append( quadratic( 1,  rt, (-q/rt + t0)/2::F ),
-                             quadratic( 1, -rt, ( q/rt + t0)/2::F ))
+            t0 : EXPR :=            -- this means p is a root
+                equ(q, 0) => 2*r^(1/2)
+                aCubic(1, -p, -4*r, 4*p*r - q^2)
+            rt : EXPR := (t0 - p::EXPR)^(1/2)
+            slist := append( quadratic2( 1,  rt, (-q::EXPR/rt + t0)/2::EXPR ),
+                             quadratic2( 1, -rt, ( q::EXPR/rt + t0)/2::EXPR ))
             -- Translate back:
-            [s - a1/4::F for s in slist]
+            [s - coerce(a1/4) for s in slist]
 
         aQuartic(c4, c3, c2, c1, c0) ==
             needLcoef c4; needChar0()
-            (c0 = 0) => 0$F
-            a1 := c3/c4; a2 := c2/c4; a3 := c1/c4; a4 := c0/c4
+            c0 = 0 => 0$EXPR
+            a1 : RF := c3 / c4; a2 : RF := c2 / c4
+            a3 : RF := c1 / c4; a4 : RF := c0 / c4
             (a1 = 0 and a2 = 0 and a3 = 0) => (-a4)^(1/4)
-            p  := part(a2-3*a1*a1/8::F)
-            q  := part(a3-a1*a2/2::F + a1^2*a1/8::F)
-            r  := part(a4-a1*a3/4::F + a1^2*a2/16::F - 3*a1^4/256::F)
-            if equ(q, 0)
-              then t0 := part(2*(r^(1/2)))
-              else t0 := aCubic(1, -p, -4*r, 4*p*r - q^2)
-            rt := part(t0 - p)^(1/2)
-            s  := aQuadratic( 1,  rt, (-q/rt + t0)/2::F )
-            s - a1/4::F
+            p  := a2 - 3 * a1 * a1/8
+            q  := a3 - a1 * a2/2 + a1^2 * a1/8
+            r  := a4 - a1 * a3/4 + a1^2 * a2/16 - 3 * a1^4/256
+            t0 : EXPR :=
+                equ(q, 0) => 2*r^(1/2)
+                aCubic(1, -p, -4*r, 4*p*r - q^2)
+            rt : EXPR := (t0 - p::EXPR)^(1/2)
+            s  := aQuadratic2(1,  rt, (-coerce(q)/rt + t0)/2::EXPR)
+            s - coerce(a1/4)
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.
