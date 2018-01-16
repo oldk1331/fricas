@@ -97,7 +97,6 @@ postConstruct u ==
     a:= (b is [",",:.] => comma2Tuple b; b)
     a is ['SEGMENT,p,q] => ['construct,postTranSegment(p,q)]
     a is ["@Tuple", :l] =>
-      or/[x is [":",y] for x in l] => postMakeCons l
       or/[x is ['SEGMENT,:.] for x in l] => tuple2List l
       ['construct,:postTranList l]
     ['construct,postTran a]
@@ -109,13 +108,6 @@ postError msg ==
     msg
   $postStack:= [xmsg,:$postStack]
   nil
-
-postMakeCons l ==
-  null l => nil
-  l is [[":",a],:l'] =>
-    l' => ['append,postTran a,postMakeCons l']
-    postTran a
-  ['cons,postTran first l,postMakeCons rest l]
 
 postAtom x ==
   x=0 => '(Zero)
@@ -237,10 +229,8 @@ postCollect [constructOp,:m,x] ==
   y:= postTran x
   finish(constructOp,itl,y) where
     finish(op,itl,y) ==
-      y is [":",a] => ['REDUCE,'append,0,[op,:itl,a]]
       y is ["@Tuple", :l] =>
         newBody:=
-          or/[x is [":",y] for x in l] => postMakeCons l
           or/[x is ['SEGMENT,:.] for x in l] => tuple2List l
           ['construct,:postTranList l]
         ['REDUCE,'append,0,[op,:itl,newBody]]

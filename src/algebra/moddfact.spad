@@ -107,7 +107,7 @@ ModularDistinctDegreeFactorizer(U) : C == T where
         degree(u) = 0 => return cons([c::EMR, 0$I], ans)
         d := d+1
         d > (degree(u)::I quo 2) =>
-               return [[c::EMR, 0$I], [u, degree(u)], :ans]
+               return concat([[c::EMR, 0$I], [u, degree(u)]], ans)
 
     ddFact(u, q) ==
       ans := ddfact(reduce(u, q))

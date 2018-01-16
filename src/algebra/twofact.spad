@@ -175,7 +175,7 @@ TwoFactorize(F) : C == T
        for u in factorList sqfrm repeat
            expon := u.exponent
            fac := u.factor
-           degree fac = 1 => ll := [["irred",fac,expon],:ll]
+           degree fac = 1 => ll := concat(["irred", fac, expon], ll)
            differentiate fac = 0 =>
               -- the polynomial is  inseparable w.r.t. its main variable
               map(differentiate, fac) = 0 =>
@@ -186,18 +186,17 @@ TwoFactorize(F) : C == T
                 m1 case "failed" => error "consistency error in TwoFactor"
                 res := generalTwoFactor m1
                 unitPart := unitPart*unit(res)^((p*expon)::NNI)
-                ll := [:[[v.flag, v.factor, expon *p*v.exponent] for v in factorList res], :ll]
+                ll := concat([[v.flag, v.factor, expon *p*v.exponent] for v in factorList res], ll)
               m2 := generalTwoFactor swap fac
               unitPart := unitPart*unit(m2)^(expon::NNI)
-              ll := [:[[v.flag, swap v.factor, expon*v.exponent] for v in factorList m2], :ll]
+              ll := concat([[v.flag, swap v.factor, expon*v.exponent] for v in factorList m2], ll)
            ydeg := "max"/[degree w for w in coefficients fac]
            twoF := doFactor(fac, ydeg, do_ext)
            nfl := factorList(twoF)
            #nfl = 1 and nfl(1).flag case "nil" =>
                return twoF
            unitPart := unitPart*unit(twoF)^expon
-           ll := [:[[v.flag, v.factor, expon*v.exponent] for v in factorList twoF],
-                 :ll]
+           ll := concat([[v.flag, v.factor, expon*v.exponent] for v in factorList twoF], ll)
        makeFR(unitPart, ll)
 
     -- factorization of a primitive square-free bivariate polynomial --

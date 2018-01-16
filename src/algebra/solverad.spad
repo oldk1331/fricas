@@ -271,7 +271,7 @@ RadicalSolvePackage(R) : Cat == Capsule where
         ---- select  the univariate factors
         select(lp : L L RE) : L L RE ==
           lp=[] => list []
-          [:[cons(f, lsel) for lsel in select lp.rest] for f in lp.first]
+          concat [[cons(f, lsel) for lsel in select lp.rest] for f in lp.first]
 
         ---- Local Functions ----
        -- construct the equation

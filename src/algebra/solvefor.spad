@@ -74,7 +74,7 @@ PolynomialSolveByFormulas(UP, F) : PSFcat == PSFdef where
             ls := []$L(F)
             for f in factorList squareFree u repeat
                lsf := intsolve f.factor
-               for i in 1..(f.exponent) repeat ls := [: lsf, : ls]
+               for i in 1..(f.exponent) repeat ls := concat(lsf, ls)
             ls
 
         particularSolution u ==
