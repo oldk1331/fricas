@@ -269,7 +269,7 @@ PolynomialIdeal(F, Expon, VarSet, DPoly) : C == T
 
                 ----   product of two ideals  ----
      (I : Ideal * J : Ideal) : Ideal ==
-       [groebner([:[f*g for f in I.idl ] for g in J.idl ]), true]
+       [groebner(concat [[f*g for f in I.idl] for g in J.idl]), true]
 
                 ----  power of an ideal  ----
      (I : Ideal ^ n : NNI) : Ideal ==

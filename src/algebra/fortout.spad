@@ -91,10 +91,10 @@ FortranCodeTools : with
 
     exp2FortFn(op : String, args : List O, nargs : Integer) : LS ==
         s : LS := ["(", op]
-        nargs = 0 => [")", :s]
+        nargs = 0 => concat(")", s)
         for arg in args repeat
-            s := [",", :exp2Fort2(arg, 0, op), :s]
-        [")", :rest s]
+            s := concat [[","], exp2Fort2(arg, 0, op), s]
+        concat(")", rest s)
 
     exp2Fort2(e : O, prec : Integer, oldOp : String) : LS ==
         s : LS
@@ -105,21 +105,21 @@ FortranCodeTools : with
         nargs := #args
         op : String := object2String(op0)$Lisp
         nargs = 2 and op = "=" =>
-            ["%l", :exp2Fort2(args(2), prec, " "), "=",
-                   :exp2Fort2(args(1), prec, " ")]
+            concat [["%l"], exp2Fort2(args(2), prec, " "), ["="],
+                            exp2Fort2(args(1), prec, " ")]
         nargs = 0 => exp2FortFn(op, args, 0)
         nargs = 1 =>
             (p := position(op, unaryOps)) > 0 =>
                 nprec := unaryPrecs(p)
-                s := [:exp2Fort2(first args, nprec, op), op]
+                s := concat(exp2Fort2(first args, nprec, op), op)
                 op = "-" and atom?(first(args)) => s
-                nprec <= prec => [")", :s, "("]
+                nprec <= prec => concat [[")"], s, ["("]]
                 s
             exp2FortFn(op, args, nargs)
         op = "CMPLX" =>
             nargs ~= 2 => error "Bad number of arguments to CMPLX"
-            [")", :exp2Fort2(second(args), prec, op), ",",
-                  :exp2Fort2(first args, prec, op), "("]
+            concat [[")"], exp2Fort2(second args, prec, op), [","],
+                           exp2Fort2(first args, prec, op), ["("]]
         member?(op, nonUnaryOps) =>
             p := position(op, binaryOps)
             if p = 0 then
@@ -133,12 +133,12 @@ FortranCodeTools : with
                      (op1 := object2String(operator(arg))$Lisp _
                         pretend String) = "-" =>
                     if empty?(s) then s := ["junk"]
-                    s := [op, :exp2Fort2(first(args1), nprec, op), "-",
-                          :rest s]
-                s := [op, :exp2Fort2(arg, nprec, op), :s]
+                    s := concat [[op], exp2Fort2(first(args1), nprec, op), ["-"],
+                                 rest s]
+                s := concat [[op], exp2Fort2(arg, nprec, op), s]
             s := rest s
             op = oldOp and (op = "*" or op = "+") => s
-            nprec <= prec => [")", :s, "("]
+            nprec <= prec => concat [[")"], s, ["("]]
             s
         exp2FortFn(op, args, nargs)
 
@@ -206,22 +206,22 @@ FortranCodeTools : with
         for e in args repeat
             (subSize := fortExpSize e) > maxSize =>
                 subE := segment2(e, maxSize)
-                exprs := [:(rest subE), :exprs]
+                exprs := concat(rest subE, exprs)
                 if (subSize := fortExpSize first subE) <= topSize then
-                      newE := [:newE, first subE]
+                      newE := concat(newE, first subE)
                       topSize := topSize - subSize
                 else
                       new_var := newFortranTempVar()
                       new_var_f := outputForm(new_var)
-                      newE := [:newE, new_var_f]
-                      exprs := [mk_assign1(new_var, first subE), :exprs]
+                      newE := concat(newE, new_var_f)
+                      exprs := concat(mk_assign1(new_var, first subE), exprs)
                       topSize := topSize - fortExpSize new_var_f
-            newE := [:newE, e]
+            newE := concat(newE, e)
             topSize := topSize - subSize
         new_e1 := elt(op, newE)
-        topSize > 0 => [new_e1, :exprs]
+        topSize > 0 => concat(new_e1, exprs)
         newVar := newFortranTempVar()
-        [outputForm(newVar), mk_assign1(newVar, new_e1), :exprs]
+        concat([outputForm(newVar), mk_assign1(newVar, new_e1)], exprs)
 
     segment2(e : O, topSize : Integer) : List O ==
         atom?(e) => [e]
@@ -242,13 +242,13 @@ FortranCodeTools : with
             -- expression length)
             subSize <= safeSize =>
                 safeSize := safeSize - subSize
-                new_args := [:new_args, e]
+                new_args := concat(new_args, e)
             -- this ones too big.
             exprs := segment2(e, safeSize)
-            expressions := [:(rest exprs), :expressions]
-            new_args := [:new_args, first(exprs)]
+            expressions := concat(rest exprs, expressions)
+            new_args := concat(new_args, first(exprs))
             safeSize := safeSize - fortExpSize first(exprs)
-        [elt(op, new_args), :expressions]
+        concat(elt(op, new_args), expressions)
 
     segment1(e :  O, maxSize : Integer) : List O ==
         fortExpSize e < maxSize => [e]
@@ -259,9 +259,9 @@ FortranCodeTools : with
         not(_$fortranSegment$Lisp) => l
         s : List O := []
         for e in l repeat
-            atom?(e) => s := [e, :s]
+            atom?(e) => s := concat(e, s)
             e1f := operator(e)
-            not(symbol?(e1f)) => s := [e, :s]
+            not(symbol?(e1f)) => s := concat(e, s)
             e1s := symbol(e1f)
             args := arguments(e)
             if e1s = '= then
@@ -269,13 +269,13 @@ FortranCodeTools : with
                 exprs := segment1(args(2),
                         _$maximumFortranExpressionLength$Lisp - 1
                           - fortExpSize var)
-                s := [elt(e1f, [var, first exprs]), : rest exprs, :s]
+                s := concat [[elt(e1f, [var, first exprs])], rest exprs, s]
             else if e1s = 'RETURN then
                 exprs := segment1(args(1),
                         _$maximumFortranExpressionLength$Lisp - 2::Integer
                           - fortExpSize args(1))
-                s := [elt(e1f, [first exprs]), :rest exprs, :s]
-            else s := [e, :s]
+                s := concat [[elt(e1f, [first exprs])], rest exprs, s]
+            else s := concat(e, s)
         reverse!(s)
 
     fortError2(msg : String, e : O) : Exit ==
@@ -292,7 +292,7 @@ FortranCodeTools : with
     exprStack : List O := []
 
     push_expr_stack(e : O) : Void ==
-        exprStack := [e, :exprStack]
+        exprStack := concat(e, exprStack)
 
     pop_expr_stack() : O ==
         res := first(exprStack)
@@ -389,8 +389,8 @@ FortranCodeTools : with
         op = 'QUOTE =>
             atom?(arg := first args) => STRINGIMAGE(arg)$Lisp
             n_args := arguments(arg)
-            tailPart := [concat(",", string(x)) for x in n_args]
-            message(concat(["[", string(operator(arg)), :tailPart, "]"]))
+            tailPart := concat [concat(",", string(x)) for x in n_args]
+            message concat ["[", string(operator(arg)), tailPart, "]"]
         op = 'PAREN =>
             op1 := operator(args(1))
             not(symbol?(op1) and symbol(op1) = 'CONCATB) => fortPre1(args(1))

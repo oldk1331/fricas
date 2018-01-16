@@ -400,7 +400,7 @@ FortranCode() : public == private where
       labelValue
 
     commaSep(l : List String) : List(String) ==
-      [(l.1),:[:[",",u] for u in rest(l)]]
+        concat(first(l), concat [[",", u] for u in rest(l)])
 
     getReturn(rec : RETURN) : LS ==
       returnToken : O := "RETURN"::Symbol::O
