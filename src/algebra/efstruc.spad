@@ -694,7 +694,7 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
     rootDep(ker, k) ==
       empty?(ker := toR(ker, first argument k)) => irootDep(k)
       [new(1, lcm(retract(second argument k)@Z,
-       "lcm"/[retract(second argument r)@Z for r in ker])::Q)$Vector(Q)]
+        lcm [retract(second argument r)@Z for r in ker]$List(Z))::Q)$Vector(Q)]
 
     expeval(lf, lk, k, v) ==
       y   := first argument k

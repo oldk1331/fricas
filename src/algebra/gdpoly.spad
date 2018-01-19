@@ -218,7 +218,7 @@ GeneralDistributedMultivariatePolynomial(vl, R, E) : public == private where
       if R has GcdDomain then
         content(p : %) : R ==
           zero?(p) => 0
-          "gcd"/[t.c for t in p]
+          gcd [t.c for t in p]
 
 
 

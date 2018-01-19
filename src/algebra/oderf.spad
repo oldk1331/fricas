@@ -241,7 +241,7 @@ PrimitiveRatDE(F, UP, L, LQ) : Exports == Implementation where
     denomLODE(l : L, lg : List RF) ==
       empty? lg => denomLODE(l, 0)::UP
       d := leadingCoefficient l
-      h := separateZeros(d, e := "lcm"/[denom g for g in lg])
+      h := separateZeros(d, e := lcm [denom g for g in lg])
       denom0(degree l, l, d, e, h)
 
 )abbrev package UTSODETL UTSodetools

@@ -1,5 +1,9 @@
 2018-06-08  Qian Yun  <oldk1331@gmail.com>
 
+	* src/algebra/*.spad: Use 'gcd/lcm' instead of 'reduce'
+
+2018-06-08  Qian Yun  <oldk1331@gmail.com>
+
 	* src/algebra/*.spad: Replace '"append"/' with 'concat'
 
 2018-06-07  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
