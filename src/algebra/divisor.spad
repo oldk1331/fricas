@@ -65,7 +65,7 @@ FractionalIdeal(R, F, UP, A) : Exports == Implementation where
                            transpose regularRepresentation x)
     ret? v          == any?(s +-> retractIfCan(s)@Union(F,"failed") case F, v)
     x = y           == denom(x) = denom(y) and numer(x) = numer(y)
-    agcd l  == reduce("gcd", [vgcd coordinates a for a in l]$List(R), 0)
+    agcd l == gcd [vgcd coordinates a for a in l]
 
     oldnorm(i : %) : F ==
         gcd([retract(u)@R for u in coefficients determinant summat i]@List(R))
@@ -101,14 +101,14 @@ FractionalIdeal(R, F, UP, A) : Exports == Implementation where
       m  := inverse(map(s +-> s::QF, summat i))::Matrix(QF)
       cd  := splitDenominator(denom(i)::F::UP::QF * m)
       cd2 := splitDenominator coefficients(cd.den)
-      invd:= cd2.den / reduce("gcd", cd2.num)
+      invd:= cd2.den / gcd(cd2.num)
       d   := reduce("max", [degree p for p in parts(cd.num)])
       ideal
         [invd * invrep map(s +-> coefficient(s, j), cd.num) for j in 0..d]$VA
 
     ideal v ==
-      d := reduce("lcm", [commonDenominator coordinates qelt(v, i)
-                          for i in minIndex v .. maxIndex v]$List(R))
+      d := lcm [commonDenominator coordinates qelt(v, i)
+                          for i in minIndex v .. maxIndex v]
       intIdeal([d::F * qelt(v, i) for i in minIndex v .. maxIndex v], d)
 
     intIdeal(l, d) ==
