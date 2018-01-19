@@ -987,7 +987,7 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
 
        mainContent p ==
          zero? p => p
-         "gcd"/mainCoefficients(p)
+         gcd mainCoefficients p
 
        mainPrimitivePart p ==
          zero? p => p

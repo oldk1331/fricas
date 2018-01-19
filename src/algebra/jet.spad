@@ -6761,7 +6761,7 @@ DistributedJetBundlePolynomial(R, JB, LJV, E) : Cat == Def where
     if R has GcdDomain then
         content(p : %) : R ==
             zero?(p) => 0
-            "gcd"/[t.c  for t in p]
+            gcd [t.c for t in p]
 
         if R has EuclideanDomain and not R has Field then
             gcd(p1 : %, p2 : %) : % == gcd(p1, p2)$PGCD
