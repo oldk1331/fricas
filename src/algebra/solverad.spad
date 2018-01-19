@@ -27,7 +27,7 @@ DegreeReductionPackage(R1, R2) : Cat == Capsule where
               u := reductum u
             l
         reduce(u : UP R1) ==
-            g := "gcd"/[d for d in degrees u]
+            g := gcd [d for d in degrees u]
             u := divideExponents(u, g::PI)::(UP R1)
             [u, g::PI]
 

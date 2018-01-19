@@ -147,14 +147,14 @@ InnerNumericEigenPackage(K, F, Par) : C == T
 
      if K is RN then
          solve1(up : SUK, eps : Par) : List(F) ==
-           denom := "lcm"/[denom(c::RN) for c in coefficients up]
+           denom := lcm [denom(c::RN) for c in coefficients up]$List(I)
            up := denom*up
            upi := map(numer, up)$UnivariatePolynomialCategoryFunctions2(RN, SUP RN, I, SUP I)
            innerSolve1(upi, eps)$InnerNumericFloatSolvePackage(I, F, Par)
      else if K is GRN then
          solve1(up : SUK, eps : Par) : List(F) ==
-           denom := "lcm"/[lcm(denom real(c::GRN), denom imag(c::GRN))
-                                for c in coefficients up]
+           denom := lcm [lcm(denom real(c::GRN), denom imag(c::GRN))
+                                for c in coefficients up]$List(I)
            up := denom*up
            upgi := map((c1 : GRN) : GI +-> complex(numer(real c1), numer(imag c1)),
                       up)$UnivariatePolynomialCategoryFunctions2(GRN, SUP GRN, GI, SUP GI)
