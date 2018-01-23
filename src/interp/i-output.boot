@@ -1149,13 +1149,17 @@ fortranFormat expr ==
 
 texFormat expr ==
   ioHook("startTeXOutput")
-  tf := '(TexFormat)
-  formatFn :=
-    getFunctionFromDomain("convert",tf,[$OutputForm,$Integer])
-  displayFn := getFunctionFromDomain("display",tf,[tf])
-  SPADCALL(SPADCALL(expr,$IOindex,formatFn),displayFn)
-  TERPRI $texOutputStream
-  FORCE_-OUTPUT $texOutputStream
+  -- If $IOindex is NIL, then don't print 'leqno' (equation number).
+  if NULL $IOindex then
+      texFormat1 expr
+  else
+      tf := '(TexFormat)
+      formatFn :=
+          getFunctionFromDomain("convert",tf,[$OutputForm,$Integer])
+      displayFn := getFunctionFromDomain("display",tf,[tf])
+      SPADCALL(SPADCALL(expr,$IOindex,formatFn),displayFn)
+      TERPRI $texOutputStream
+      FORCE_-OUTPUT $texOutputStream
   ioHook("endOfTeXOutput")
   NIL
 
