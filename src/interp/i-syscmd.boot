@@ -2353,15 +2353,27 @@ displayOperationsFromLisplib form ==
 
 --% )spool
 
-spool(filename) ==
-    null(filename) =>
+spool(args) ==
+    null(args) =>
         DRIBBLE()
         TERPRI()
         reset_highlight()
-    filename := first(filename)
+    # args > 1 => SAY ")spool takes a single argument."
+    # $options > 1 => SAY ")spool takes a single option."
+    filename := first args
     if SYMBOLP(filename) then filename := SYMBOL_-NAME(filename)
-    PROBE_-FILE(filename) =>
-        ERROR(FORMAT(nil, '"file ~a already exists", filename))
+    if PROBE_-FILE(filename) then
+        null $options =>
+            ERROR(FORMAT(nil, '"file ~a already exists", filename))
+        option := first first $options
+        option = 'append =>
+            "TODO: append file properly"
+            -- DRIBBLE is implementation dependent.
+            -- Currently DRIBBLE appends to a file in SBCL.
+            -- We need a more portable solution.
+        option = 'replace =>
+            deleteFile filename
+        SAY ")spool: invalid option."
     DRIBBLE(filename)
     TERPRI()
     clear_highlight()
