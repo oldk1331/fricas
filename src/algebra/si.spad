@@ -21,9 +21,9 @@ IntegerNumberSystem() : Category ==
    base     : () -> %
       ++ base() returns the base for the operations of \spad{IntegerNumberSystem}.
    length   : % -> %
-      ++ length(a) length of \spad{a} in digits.
+      ++ length(a) returns length of \spad{a} in digits.
    shift    : (%, %) -> %
-      ++ shift(a, i) shift \spad{a} by i digits.
+      ++ shift(a, i) shifts \spad{a} by i digits.
    bit?     : (%, %) -> Boolean
       ++ bit?(n, i) returns true if and only if i-th bit of n is a 1.
    positiveRemainder     : (%, %) -> %
@@ -31,7 +31,7 @@ IntegerNumberSystem() : Category ==
       ++ where \spad{0 <= r < b} and \spad{r = a rem b}.
    symmetricRemainder     : (%, %) -> %
       ++ symmetricRemainder(a, b) (where \spad{b > 1}) yields r
-      ++ where \spad{ -b/2 <= r < b/2 }.
+      ++ where \spad{ -b/2 <= r < b/2 } and \spad{r = a rem b}.
    rational? : % -> Boolean
       ++ rational?(n) tests if n is a rational number
       ++ (see \spadtype{Fraction Integer}).
@@ -47,16 +47,18 @@ IntegerNumberSystem() : Category ==
       ++ dec(x) returns \spad{x - 1}.
    mask     : % -> %
       ++ mask(n) returns \spad{2^n-1} (an n bit mask).
+      ++ Returns -1 if n is negative.
    addmod   : (%, %, %) -> %
-      ++ addmod(a, b, p), \spad{0<=a, b<p>1}, means \spad{a+b mod p}.
+      ++ addmod(a, b, p), \spad{0<=a, b<p>1}, means \spad{(a+b) rem p}.
    submod   : (%, %, %) -> %
-      ++ submod(a, b, p), \spad{0<=a, b<p>1}, means \spad{a-b mod p}.
+      ++ submod(a, b, p), \spad{0<=a, b<p>1}, means \spad{(a-b) rem p}.
    mulmod   : (%, %, %) -> %
-      ++ mulmod(a, b, p), \spad{0<=a, b<p>1}, means \spad{a*b mod p}.
+      ++ mulmod(a, b, p), \spad{0<=a, b<p>1}, means \spad{(a*b) rem p}.
    powmod   : (%, %, %) -> %
-      ++ powmod(a, b, p), \spad{0<=a, b<p>1}, means \spad{a^b mod p}.
+      ++ powmod(a, b, p), \spad{0<=a, b<p>1}, means \spad{(a^b) rem p}.
    invmod   : (%, %) -> %
-      ++ invmod(a, b), \spad{0<=a<b>1}, \spad{(a, b)=1} means \spad{1/a mod b}.
+      ++ invmod(a, p), \spad{0<=a<p>1}, \spad{x = invmod(a, p)} means
+      ++ \spad{(a * x) rem p = 1}.
 
  add
    characteristic()         == 0
