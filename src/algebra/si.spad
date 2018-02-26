@@ -2,7 +2,7 @@
 ++ Author: Stephen M. Watt
 ++ Date Created: January 1988
 ++ Basic Operations:
-++   addmod, base, bit?, copy, dec, even?, hash, inc, invmod, length, mask,
+++   addmod, base, bit?, dec, even?, hash, inc, invmod, length, mask,
 ++   positiveRemainder, symmetricRemainder, multiplicativeValuation, mulmod,
 ++   odd?, powmod, random, rational, rational?, rationalIfCan, shift, submod
 ++ Description:  An \spad{IntegerNumberSystem} is a model for the integers.
@@ -41,8 +41,6 @@ IntegerNumberSystem() : Category ==
       ++ rationalIfCan(n) creates a rational number, or returns "failed" if this is not possible.
    random   : % -> %
       ++ random(n) creates a random element from 0 to \spad{n-1}.
-   copy     : % -> %
-      ++ copy(n) gives a copy of n.
    inc      : % -> %
       ++ inc(x) returns \spad{x + 1}.
    dec      : % -> %
@@ -65,7 +63,6 @@ IntegerNumberSystem() : Category ==
    differentiate x          == 0
    even? x                  == not odd? x
    positive? x              == x > 0
-   copy x                   == x
    bit?(x, i)               == odd? shift(x, -i)
    mask n                   == dec shift(1, n)
    rational? x              == true
