@@ -81,7 +81,6 @@ Integer : Join(IntegerNumberSystem, LinearlyExplicitOver Integer,
       0 == 0$Lisp
       1 == 1$Lisp
       base()  == 2$Lisp
-      copy x  == x
       inc  x  == x + 1
       dec  x  == x - 1
       hashUpdate!(hs, s) == update!(hs, SXHASH(s)$Lisp)$HashState
