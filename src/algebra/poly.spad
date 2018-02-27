@@ -710,12 +710,12 @@ SparseUnivariatePolynomial(R : Join(SemiRng, AbelianMonoid)
    ground?(p) : Boolean == empty? p or (empty? rest p and zero? first(p).k)
    multiplyExponents(p, n) == [ [u.k*n, u.c] for u in p]
    divideExponents(p, n) ==
-     empty?(p) => p
-     m := (p.first.k :: Integer exquo n::Integer)
+     empty?(p) or n = 1 => p
+     m := p.first.k exquo n
      m case "failed" => "failed"
      u := divideExponents(p.rest, n)
      u case "failed" => "failed"
-     cons([m::Integer::NonNegativeInteger, p.first.c], u)
+     cons([m, p.first.c], u)
    karatsubaDivide(p, n)  ==
      zero? n => [p, 0]
      lowp : Rep := p
