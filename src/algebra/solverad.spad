@@ -60,7 +60,11 @@ DegreeReductionPackage(R1, R2) : Cat == Capsule where
 RadicalSolvePackage(R) : Cat == Capsule where
     R   :  Join(PolynomialFactorizationExplicit, Comparable,
                 CharacteristicZero)
+    PI ==> PositiveInteger
+    NNI==> NonNegativeInteger
+    Z  ==> Integer
     B  ==> Boolean
+    ST ==> String
     PR ==> Polynomial R
     UP ==> SparseUnivariatePolynomial PR
     RF ==> Fraction PR
@@ -70,8 +74,9 @@ RadicalSolvePackage(R) : Cat == Capsule where
     SU ==> SuchThat(List RE, List Equation RE)
     SUP==> SparseUnivariatePolynomial
     L  ==> List
+    P  ==> Polynomial
 
-    SOLVEFOR ==> PolynomialSolveByFormulas(R, UP)
+    SOLVEFOR ==> PolynomialSolveByFormulas(SUP RE, RE)
     UPF2     ==> SparseUnivariatePolynomialFunctions2(PR, RE)
 
     Cat ==> with
@@ -141,6 +146,7 @@ RadicalSolvePackage(R) : Cat == Capsule where
         quadratic : UP -> List RE
         cubic :     UP -> List RE
         quartic :   UP -> List RE
+        rad :       PI -> RE
         wrap :      RE -> RE
         New :       RE -> RE
         makeEq : (List RE, L SY) -> L EQ RE
@@ -157,9 +163,10 @@ RadicalSolvePackage(R) : Cat == Capsule where
             S
 
         linear u    == [(-coefficient(u, 0))::RE /(coefficient(u, 1))::RE]
-        quadratic u == quadratic(u)$SOLVEFOR
-        cubic u     == cubic(u)$SOLVEFOR
-        quartic u   == quartic(u)$SOLVEFOR
+        quadratic u == quadratic(map(coerce, u)$UPF2)$SOLVEFOR
+        cubic u     == cubic(map(coerce, u)$UPF2)$SOLVEFOR
+        quartic u   == quartic(map(coerce, u)$UPF2)$SOLVEFOR
+        rad n       == n::Z::RE
         wrap s      == (ContractSoln => New s; s)
 
 
@@ -168,14 +175,15 @@ RadicalSolvePackage(R) : Cat == Capsule where
 
        -- find the zeros of components in "generic" position --
         findGenZeros(rlp : L PR, rlv : L SY) : L L RE ==
-         pp := first rlp
+         pp := rlp.first
          v := first rlv
          rlv := rest rlv
-         rlp := rest rlp
-         [reverse cons(r, [eval(
+         res : L L RE := []
+         res := append([reverse cons(r, [eval(
            (-coefficient(univariate(p, vv), 0)::RE)/(leadingCoefficient univariate(p, vv))::RE,
-              kernel(v)@Kernel(RE), r) for vv in rlv for p in rlp])
-                for r in radicalRoots(pp::RF, v)]
+              kernel(v)@Kernel(RE), r) for vv in rlv for p in rlp.rest])
+                for r in radicalRoots(pp::RF, v)], res)
+         res
 
 
         findZeros(rlp : L PR, rlv : L SY) : L L RE ==
@@ -184,15 +192,15 @@ RadicalSolvePackage(R) : Cat == Capsule where
          res : L L RE := []
          res1 : L RE
          for par in parRes repeat
-           res1 := [first par]
-           lv1 : L Kernel(RE) := [kernel first rlv]
-           rlv1 := rest rlv
-           p1 := rest par
-           while not empty? p1 repeat
-             res1 := cons(eval(first p1, lv1, res1), res1)
-             p1 := rest p1
-             lv1 := cons(kernel first rlv1, lv1)
-             rlv1 := rest rlv1
+           res1 := [par.first]
+           lv1 : L Kernel(RE) := [kernel rlv.first]
+           rlv1 := rlv.rest
+           p1 := par.rest
+           while p1 ~= [] repeat
+             res1 := cons(eval(p1.first, lv1, res1), res1)
+             p1 := p1.rest
+             lv1 := cons(kernel rlv1.first, lv1)
+             rlv1 := rlv1.rest
            res := cons(res1, res)
          res
 
@@ -216,17 +224,17 @@ RadicalSolvePackage(R) : Cat == Capsule where
 
         radicalRoots(lp : L RF, lv : L SY) ==
           parRes := triangularSystems(lp, lv)$SystemSolvePackage(R)
-          empty? parRes => []
            -- select the components in "generic" form
           rlv := reverse lv
           rpRes := [reverse res for res in parRes]
           listGen := [res for res in rpRes|isGeneric?(res, rlv)]
           result : L L RE := []
-          if not empty? listGen then
+          if listGen ~= [] then
             result := concat [findGenZeros(res,rlv) for res in listGen]
             for res in listGen repeat
-                rpRes := remove!(res, rpRes)
+                rpRes := delete(rpRes, position(res, rpRes))
            --  non-generic components
+          rpRes = [] => result
           append(concat [findZeros(res,rlv) for res in rpRes],
                          result)
 
