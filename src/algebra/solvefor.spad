@@ -64,6 +64,22 @@ PolynomialSolveByFormulas(R) : PSFcat == PSFdef where
 
         (e : F / f : PR) : F == e/f::F
 
+        sqrt2(s : PR) : F ==
+            -- sqrt2(s) returns a square root of 's', and simplifies it to
+            -- the form of 'a*b^(1/2)', where 'a' and 'b' are both polynomials.
+            -- Note that the sign of 'a' is not important, because both roots
+            -- ('a*b^(1/2)' and '-a*b^(1/2)') will be used later.
+
+            sqfr := squareFree s
+            a := "*"/[f.factor^(f.exponent quo 2) for f in factorList sqfr]
+            b := "*"/[f.factor^(f.exponent rem 2) for f in factorList sqfr]
+
+            -- the coefficient should also be factored.
+            u : R := retract unit sqfr
+            sqfru := squareFree u
+            ua := "*"/[f.factor^(f.exponent quo 2) for f in factorList sqfru]
+            ub := "*"/[f.factor^(f.exponent rem 2) for f in factorList sqfru]
+            (ua * a)::F * (unit(sqfru) * ub * b::F)^(1/2)
 
         -----------------------------------------------------------------
         -- Entry points and error handling
@@ -147,7 +163,7 @@ PolynomialSolveByFormulas(R) : PSFcat == PSFdef where
             needLcoef c2; needChar0()
             (c0 = 0) => cons(0$F, linear(c2, c1))
             (c1 = 0) => [(-c0/c2)^(1/2), -(-c0/c2)^(1/2)]
-            D := (c1^2 - 4*c2*c0)::F^(1/2)
+            D := sqrt2(c1^2 - 4*c2*c0)
             [(-c1+D)/(2*c2), (-c1-D)/(2*c2)]
 
         aQuadratic(c2, c1, c0) ==
