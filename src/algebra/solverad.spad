@@ -76,8 +76,7 @@ RadicalSolvePackage(R) : Cat == Capsule where
     L  ==> List
     P  ==> Polynomial
 
-    SOLVEFOR ==> PolynomialSolveByFormulas(SUP RE, RE)
-    UPF2     ==> SparseUnivariatePolynomialFunctions2(PR, RE)
+    SOLVEFOR ==> PolynomialSolveByFormulas(R)
 
     Cat ==> with
 
@@ -142,10 +141,6 @@ RadicalSolvePackage(R) : Cat == Capsule where
 
         ---- Local Function Declarations ----
         solveInner : (PR, SY, B) -> SU
-        linear :    UP -> List RE
-        quadratic : UP -> List RE
-        cubic :     UP -> List RE
-        quartic :   UP -> List RE
         rad :       PI -> RE
         wrap :      RE -> RE
         New :       RE -> RE
@@ -162,10 +157,6 @@ RadicalSolvePackage(R) : Cat == Capsule where
             SideEquations := append([S = s], SideEquations)
             S
 
-        linear u    == [(-coefficient(u, 0))::RE /(coefficient(u, 1))::RE]
-        quadratic u == quadratic(map(coerce, u)$UPF2)$SOLVEFOR
-        cubic u     == cubic(map(coerce, u)$UPF2)$SOLVEFOR
-        quartic u   == quartic(map(coerce, u)$UPF2)$SOLVEFOR
         rad n       == n::Z::RE
         wrap s      == (ContractSoln => New s; s)
 
