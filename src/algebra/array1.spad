@@ -361,6 +361,7 @@ IndexedOneDimensionalArray(S : Type, mn : Integer):
    Qnew ==> MAKE_-ARRAY$Lisp
    Qnew1 ==> MAKEARR1$Lisp
    Qparts ==> VEC2LIST$Lisp
+   Qcopy ==> COPY_-SEQ$Lisp
    I ==> Integer
 
    #x               == Qsize x
@@ -369,6 +370,7 @@ IndexedOneDimensionalArray(S : Type, mn : Integer):
 
    empty()          == Qnew(0$Lisp)
    new(n, s)        == Qnew1(n, s)
+   copy(x) == Qcopy(x)
 
    parts s == Qparts s
    members s == Qparts s

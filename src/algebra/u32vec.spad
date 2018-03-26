@@ -8,6 +8,7 @@ U32Vector() : OneDimensionalArrayAggregate Integer == add
    Qelt ==> ELT_U32$Lisp
    Qsetelt ==> SETELT_U32$Lisp
    Qnew ==> GETREFV_U32$Lisp
+   Qcopy ==> COPY_-SEQ$Lisp
 
    #x                          == Qsize x
    minIndex x                  == 0
@@ -19,6 +20,7 @@ U32Vector() : OneDimensionalArrayAggregate Integer == add
    qsetelt!(x, i, s)           == Qsetelt(x, i, s)
    setelt!(x : %, i : Integer, s : Integer) == Qsetelt(x, i, s)
    fill!(x, s) == (for i in minIndex(x)..maxIndex(x) repeat x.i := s; x)
+   copy(x) == Qcopy(x)
 
 
 )abbrev domain U32MAT U32Matrix
@@ -67,6 +69,7 @@ U16Vector() : OneDimensionalArrayAggregate Integer == add
    Qelt ==> ELT_U16$Lisp
    Qsetelt ==> SETELT_U16$Lisp
    Qnew ==> GETREFV_U16$Lisp
+   Qcopy ==> COPY_-SEQ$Lisp
 
    #x                          == Qsize x
    minIndex x                  == 0
@@ -78,6 +81,7 @@ U16Vector() : OneDimensionalArrayAggregate Integer == add
    qsetelt!(x, i, s)           == Qsetelt(x, i, s)
    setelt!(x : %, i : Integer, s : Integer) == Qsetelt(x, i, s)
    fill!(x, s) == (for i in minIndex(x)..maxIndex(x) repeat x.i := s; x)
+   copy(x) == Qcopy(x)
 
 
 )abbrev domain U16MAT U16Matrix
@@ -126,6 +130,7 @@ U8Vector() : OneDimensionalArrayAggregate Integer == add
    Qelt ==> ELT_U8$Lisp
    Qsetelt ==> SETELT_U8$Lisp
    Qnew ==> GETREFV_U8$Lisp
+   Qcopy ==> COPY_-SEQ$Lisp
 
    #x                          == Qsize x
    minIndex x                  == 0
@@ -137,6 +142,7 @@ U8Vector() : OneDimensionalArrayAggregate Integer == add
    qsetelt!(x, i, s)           == Qsetelt(x, i, s)
    setelt!(x : %, i : Integer, s : Integer) == Qsetelt(x, i, s)
    fill!(x, s) == (for i in minIndex(x)..maxIndex(x) repeat x.i := s; x)
+   copy(x) == Qcopy(x)
 
 
 )abbrev domain U8MAT U8Matrix
