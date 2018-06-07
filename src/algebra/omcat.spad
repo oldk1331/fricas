@@ -31,8 +31,6 @@ OpenMath() : Category == with
 
     OMwrite(dev : OpenMathDevice, x : %) : Void == OMwrite(dev, x, true)
 
-    import from OpenMathEncoding
-
     OMwrite(x : %, wholeObj : Boolean) : String ==
         s : String := ""
         sp : None := OM_-STRINGTOSTRINGPTR(s)$Lisp
