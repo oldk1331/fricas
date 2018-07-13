@@ -331,7 +331,7 @@ DEFPARAMETER($setOptions, '(
       LITERALS
       $highlightAllowed
       (on off)
-      off)
+      on)
      (instant
       "present instantiation summary"
       development
