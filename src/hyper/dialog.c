@@ -47,8 +47,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <X11/keysym.h>
 
-#define min(x,y)     ( (x<y)?(x):(y))
-
 #include "all_hyper_proto.H1"
 
 static void clear_cursor(InputItem * sym);

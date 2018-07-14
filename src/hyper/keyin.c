@@ -51,8 +51,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <X11/keysym.h>
 
 
-#define min(x,y)     ( (x<y)?(x):(y))
-
 int in_cursor_height;
 int in_cursor_width;
 int out_cursor_height;
