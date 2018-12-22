@@ -386,7 +386,7 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
               zero? a or zero? b => a
               one? a => b
               one? b => a
-              res : Rep := empty()
+              res : % := 0
               for ta in a repeat
                   for tb in b repeat
                       if not zero?(r := ta.Cf*tb.Cf) then
