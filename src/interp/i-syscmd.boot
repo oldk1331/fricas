@@ -2213,8 +2213,6 @@ do_read(ll, quiet, pile_mode) ==
     $nopiles : local := pile_mode
     $edit_file := ll
     read_or_compile(quiet, false)
-    terminateSystemCommand()
-    spadPrompt()
 
 basename(x) == NAMESTRING(PATHNAME_-NAME(x))
 
