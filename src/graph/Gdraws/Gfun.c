@@ -364,6 +364,41 @@ GDrawLine(
 }
 
 
+int
+GColorLine(
+          GC gc,                /* graphics context */
+          Window wid,           /* window id */
+          int x0, int y0, int x1, int y1, int dFlag)
+{
+  int s = 0;
+
+  switch (dFlag) {
+  case Xoption:
+    XDrawLine(dsply, wid, gc, x0, y0, x1, y1);
+    break;
+  case PSoption:
+    {
+      FILE *fp;
+
+      if ((fp = fopen(psData[scriptps].filename, "a")) == NULL) {
+        fprintf(stderr, "GDrawLine cannot open %s\n",
+                psData[scriptps].filename);
+        return (psError);
+      }
+
+      psData[drawlineps].flag = yes;      /* sets procedure flag */
+      fprintf(fp, "\t%s\t%d\t%d\t%d\t%d\tpsColorLine\n",
+              PSfindGC(gc), x1, y1, x0, y0);
+      s = fclose(fp);
+    }
+    break;
+  default:
+    fprintf(stderr, "Gdrawline request (%d) not implemented yet.\n",
+            dFlag);
+    return (psError);
+  }
+  return (s);
+}
 
 
 
@@ -425,6 +460,7 @@ int
 GDrawPoint(
            Window wid,          /* window id */
            GC gc,               /* graphics context */
+           float color,
            int x0, int y0, int dFlag)
 {
   int s = 0;
@@ -444,8 +480,15 @@ GDrawPoint(
       }
 
       psData[drawpointps].flag = yes;     /* sets procedure flag */
-      fprintf(fp, "\t%s\t%d\t%d\t%d\t%d\tpsDrawPoint\n",
-              PSfindGC(gc), x0, y0, x0 + 1, y0 + 1);
+
+      int rgb = (int) color;
+      float r = ((rgb & 0xFF0000) >> 16) / 255.0;
+      float g = ((rgb & 0x00FF00) >> 8) / 255.0;
+      float b = (rgb & 0x0000FF) / 255.0;
+      fprintf(fp, "\t%f\t%f\t%f\tsetrgbcolor\n", r, g, b);
+
+      fprintf(fp, "\t%d\t%d\t%d\t%d\tpsDrawPoint\n",
+              x0, y0, x0 + 1, y0 + 1);
       s = fclose(fp);
     }
     break;
@@ -923,7 +966,16 @@ GSetForeground(
                 psData[scriptps].filename);
         return (0);
       }
+      if (color > 1) {
+      int rgb = (int) color;
+      float r = ((rgb & 0xFF0000) >> 16) / 255.0;
+      float g = ((rgb & 0x00FF00) >> 8) / 255.0;
+      float b = (rgb & 0x0000FF) / 255.0;
+      fprintf(fp, "\t/FGcolor\t%f\t%f\t%f\tsetrgbcolor\n", r, g, b);
+      } else {
       fprintf(fp, "\t%s\t%f\tsetForeground\n", PSfindGC(gc), color);
+      }
+//      fprintf(0,"%f\n", color);
       s = fclose(fp);
       break;
     }

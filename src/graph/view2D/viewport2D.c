@@ -344,7 +344,7 @@ drawTheViewport(int dFlag) /* display flag: X, PS,... */
           clipped = ptX > vwInfo.x && ptX < vwInfo.width &&
             ptY > 0 && ptY < vwInfo.height;
           if (graphStateArray[i].pointsOn) {
-            if (dFlag==Xoption) {
+            if (dFlag==Xoption || dFlag == PSoption) {
               if (mono) {
                 GSetForeground(globalGC1,
                                (float)monoColor((int)(aPoint->hue)),
@@ -370,7 +370,7 @@ drawTheViewport(int dFlag) /* display flag: X, PS,... */
             clipped1 = ptX1 > vwInfo.x && ptX1 < vwInfo.width &&
               ptY1 > 0 && ptY1 < vwInfo.height;
             if (graphStateArray[i].connectOn) {
-              if (dFlag==Xoption) {
+              if (dFlag==Xoption || dFlag == PSoption) {
                 if (mono) {
                   GSetForeground(globalGC1,
                          (float)monoColor((int)(aList->lineColor-1)/5),
@@ -384,12 +384,12 @@ drawTheViewport(int dFlag) /* display flag: X, PS,... */
               } /* if X */
               if ((clipped || clipped1) && !eqNANQ(ptX) && !eqNANQ(ptY) &&
                   !eqNANQ(ptX1) && !eqNANQ(ptY1))
-                GDrawLine(globalGC1,vw,
+                GColorLine(globalGC1,vw,
                           ptX,ptY,ptX1,ptY1,
                           dFlag);
             } /* if lines on */
             if (graphStateArray[i].pointsOn) {
-              if (dFlag==Xoption) {
+              if (dFlag==Xoption || dFlag == PSoption) {
                 if (mono) {
                   GSetForeground(globalGC1,
                                  (float)monoColor((int)(aPoint->hue)),
