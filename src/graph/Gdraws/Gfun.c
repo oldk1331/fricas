@@ -71,7 +71,7 @@ float Gdraws_computeScale(Window vw, Window tw) {
   XWindowAttributes vwInfo;
   float pageWidth, pageHeight, scale;
 
-  XGetWindowAttributes(dsply, vw, &vwInfo);
+  XGetWindowAttributes(dsply, tw, &vwInfo);
   pageWidth = 575.0;
   pageHeight = 750.0;
 #if 0
@@ -112,7 +112,7 @@ PSCreateFile(
   fprintf(fp, "\n    grestore\t%% restore graphics state\n\n");
   fclose(fp);
 
-#if 0
+#if 1
   /* Make frame drawing optional. */
 
   Gdraws_drawFrame(bWidth, vw, tw, title);
@@ -129,7 +129,7 @@ PSCreateFile(
 
     /* Write a Bounding Box for psfig etc. */
     XWindowAttributes vwInfo;
-    XGetWindowAttributes(dsply, vw, &vwInfo);
+    XGetWindowAttributes(dsply, tw, &vwInfo);
     float scale = Gdraws_computeScale(vw, tw);
     fprintf(fp, "%%%%BoundingBox: 0 0 %d %d\n",
             (int) ceilf(scale * vwInfo.width),
