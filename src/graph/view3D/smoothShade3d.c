@@ -567,8 +567,9 @@ scanLines(int dFlag)
     XFillRectangle(dsply,viewport->viewWindow,trashGC,0,0,
                    vwInfo.width,vwInfo.height);
   } else {
-    GSetForeground(GC9991,
-                   1.0-(float)((int)(psShadeMax-0.3*psShadeMax)-1)*psShadeMul,dFlag);
+    //GSetForeground(GC9991,
+    //               1.0-(float)((int)(psShadeMax-0.3*psShadeMax)-1)*psShadeMul,dFlag);
+    GSetForeground(GC9991,1.0,dFlag);
     quadMesh[0].x = 0;  quadMesh[0].y = 0;
     quadMesh[1].x = graphWindowAttrib.width+2;
     quadMesh[1].y = 0;
