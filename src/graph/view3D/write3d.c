@@ -195,6 +195,7 @@ writeViewport (int thingsToWrite)
 
         case Postscript:
             /*** Create postscript output for viewport (in fricas3D.ps) ***/
+          redoSmooth = yes;
          fricas_sprintf_to_buf2(PSfilename, "%s%s", viewDirName,
                                 "/fricas.ps");
          if (PSInit(viewport->viewWindow,viewport->titleWindow) == psError)
