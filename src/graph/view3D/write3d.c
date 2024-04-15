@@ -196,7 +196,7 @@ writeViewport (int thingsToWrite)
         case Postscript:
             /*** Create postscript output for viewport (in fricas3D.ps) ***/
          fricas_sprintf_to_buf2(PSfilename, "%s%s", viewDirName,
-                                "/fricas3D.ps");
+                                "/fricas.ps");
          if (PSInit(viewport->viewWindow,viewport->titleWindow) == psError)
            return(-1);
          drawViewport(PSoption);  /* write new script file in /tmp */

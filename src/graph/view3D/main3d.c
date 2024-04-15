@@ -322,7 +322,7 @@ main(void)
     }
   }
 
-  strcpy(PSfilename, "fricas3D.ps");
+  strcpy(PSfilename, "fricas.ps"); // also change documentation
 
   XSync(dsply,0);
 

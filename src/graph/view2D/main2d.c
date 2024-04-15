@@ -217,7 +217,7 @@ main(void)
       backgroundColor = WhitePixel(dsply,scrn);
     }
 
-  strcpy(PSfilename, "fricas2D.ps");
+  strcpy(PSfilename, "fricas.ps");
 
   /**** Open global fonts ****/
   serverFont = XQueryFont(dsply,XGContextFromGC(DefaultGC(dsply,scrn)));
