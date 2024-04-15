@@ -18,7 +18,8 @@
     } else {
         print "no-pics: " $0
     }
-    print $0 ": " view n ".VIEW/image.xpm"
-    print "\tconvert $< $@"
+    print $0 ": " view n ".VIEW/fricas.ps"
+    print "\tcp $< $@"
+    print "\tepstopdf $@"
     spadgraph=0
 }

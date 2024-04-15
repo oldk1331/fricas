@@ -664,6 +664,7 @@ PS_FILES = \
 PS_FILES_PS = ${patsubst %, %.ps, ${PS_FILES}}
 ${PS_FILES_PS}: %.ps: ${pssrcdir}/%.ps
 	cp $< $@
+	epstopdf $@
 
 stamp-pics: pics.mk viewports ${PS_FILES_PS}
 	${MAKE} -f pics.mk pics
@@ -716,6 +717,11 @@ book.ps: book.dvi
 
 book.pdf: book.ps
 	ps2pdf $<
+
+pdf.book: stamp-pics tmp/ug09.tex tmp/info.tex ${HTEX_FILES_TEX}
+	sed -i -e 's/\.ps}$$/}/' tmp/*tex
+	TEXINPUTS=$$TEXINPUTS:${srcdir}:tmp:. pdflatex book.tex
+	makeindex book
 
 clean-book:
 	-rm -f info.tex pics.mk *.sfort ${PS_FILES_PS}

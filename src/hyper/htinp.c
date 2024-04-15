@@ -366,7 +366,7 @@ get_graph_output(char *command,char *pagename,int com_type)
     for (i = 0; i < n; i++) {
         get_string_buf(spad_socket, buf, 1024);
     }
-    sprintf(buf, "(|processInteractive| '(|write| |%s| \"%s%d\" \"image\") NIL)", "%",
+    sprintf(buf, "(|processInteractive| '(|write| |%s| \"%s%d\" \"postscript\") NIL)", "%",
             pagename, example_number);
     send_lisp_command(buf);
     send_lisp_command("(|setViewportProcess|)");

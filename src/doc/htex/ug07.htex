@@ -40,7 +40,8 @@
 \begin{figure}[htbp]
 {\epsfverbosetrue\epsfxsize=12.5pc%
 \def\epsfsize#1#2{\epsfxsize}
-\epsffile[10 0 300 300]{knot3.ps}}
+\epsffile[10 0 300 300]{knot3.ps}
+}
 \vskip -.5\baselineskip
 \caption{Torus knot of type (15,17).}
 \vskip .5\baselineskip
