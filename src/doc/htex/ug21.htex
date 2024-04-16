@@ -62,6 +62,16 @@ torusKnot(15,17, 0.1, 6, 700)                            -- {\bf A (15,17) torus
 \end{xmpLinesPlain}
 \index{torus knot}
 
+\psXtc{
+}{
+\spadcommand{)read tknot}
+\spadcommand{vp := torusKnot(15,17, 0.1, 6, 700)}
+\spadcommand{title(vp, ""); axes(vp, "off"); rotate(vp, 90, 0); zoom(vp, 1.9); drawStyle(vp, "smooth")}
+\spadcommand{write(vp, "knot3", "postscript")}
+}{
+\epsffile[0 0 400 400]{knot3.ps}
+}
+
 \newpage
 % *********************************************************************
 \head{section}{images2.input}{ugFimagesTwo}
@@ -90,6 +100,25 @@ drawComplex(f^3, -3..3, -3..3)                           -- The surface for $f^3
 drawComplex(f^4, -3..3, -3..3)                           -- The surface for $f^4$
 \end{xmpLinesNoResetPlain}
 
+\psXtc{
+}{
+\spadcommand{)read newton}
+\spadcommand{)read vectors}
+\spadcommand{f := newtonStep(x^3 - 2)}
+\spadcommand{clipValue := 4}
+\spadcommand{vp := drawComplexVectorField(f^3, -3..3, -3..3)}
+\spadcommand{write(vp, "complex1", "postscript")}
+\spadcommand{vp := drawComplex(f^3, -3..3, -3..3)}
+\spadcommand{axes(vp, "off"); drawStyle(vp, "smooth"); rotate(vp, 0, 0)"}
+\spadcommand{write(vp, "complex2", "postscript")}
+\spadcommand{vp := drawComplex(f^4, -3..3, -3..3)}
+\spadcommand{write(vp, "complex3", "postscript")}
+}{
+\includegraphics[height=0.24\textheight]{complex1}
+\includegraphics[height=0.24\textheight]{complex2}
+\includegraphics[height=0.24\textheight]{complex3}
+}
+
 % *********************************************************************
 \head{section}{images3.input}{ugFimagesThree}
 % *********************************************************************
@@ -98,6 +127,18 @@ drawComplex(f^4, -3..3, -3..3)                           -- The surface for $f^4
 )r tknot
 for i in 0..4 repeat torusKnot(2, 2 + i/4, 0.5, 25, 250)
 \end{xmpLinesPlain}
+
+\psXtc{
+}{
+\spadcommand{)r tknot}
+\spadcommand{for i in 0..4 repeat (vp := torusKnot(2, 2 + i/4, 0.5, 25, 250); rotate(vp, 0, 0); write(vp, "image3-" string(i), "postscript"))}
+}{
+\includegraphics[height=0.24\textheight]{image3-0}
+\includegraphics[height=0.24\textheight]{image3-1}
+\includegraphics[height=0.24\textheight]{image3-2}
+\includegraphics[height=0.24\textheight]{image3-3}
+\includegraphics[height=0.24\textheight]{image3-4}
+}
 
 % *********************************************************************
 \head{section}{images5.input}{ugFimagesFive}
@@ -179,6 +220,16 @@ ntubeDrawOpt(bcircle, twist2, 0..2*%pi, 0..2*%pi,        -- \textbf{Striped Toru
   var2Steps == 126)
 \end{xmpLinesNoResetPlain}
 
+\psXtc{
+}{
+\spadcommand{)r images5}
+}{
+\includegraphics[height=0.24\textheight]{venus}
+\includegraphics[height=0.24\textheight]{klein}
+\includegraphics[height=0.24\textheight]{torus1}
+\includegraphics[height=0.24\textheight]{torus2}
+}
+
 % *********************************************************************
 \head{section}{images6.input}{ugFimagesSix}
 % *********************************************************************
@@ -207,6 +258,14 @@ draw(atf, -3.0..%pi, -3.0..%pi)                          -- \textbf{The Arctange
 \index{function!Euler Beta}
 \index{Euler!Beta function}
 
+\psXtc{
+}{
+\spadcommand{)r images6}
+}{
+\includegraphics[height=0.24\textheight]{image6-1}
+\includegraphics[height=0.24\textheight]{image6-2}
+\includegraphics[height=0.24\textheight]{image6-3}
+}
 
 % *********************************************************************
 \head{section}{images7.input}{ugFimagesSeven}
@@ -245,6 +304,17 @@ riemannConformalDraw(f,0.1..0.99,0..2*%pi,7,11,"polar")  -- \textbf{Mapping 2: T
 riemannSphereDraw(-4..4, -4..4, 7, 7, "cartesian")       -- \textbf{Riemann Sphere Mapping}
 \end{xmpLinesNoResetPlain}
 
+\psXtc{
+}{
+\spadcommand{)r images7}
+}{
+\includegraphics[height=0.24\textheight]{image7-1}
+\includegraphics[height=0.24\textheight]{image7-2}
+\includegraphics[height=0.24\textheight]{image7-3}
+\includegraphics[height=0.24\textheight]{image7-4}
+\includegraphics[height=0.24\textheight]{image7-5}
+}
+
 % *********************************************************************
 \head{section}{images8.input}{ugFimagesEight}
 % *********************************************************************
@@ -266,6 +336,19 @@ drawScherk(3,3)                                          -- \textbf{Scherk's Min
 )read ribbonsNew
 drawRibbons([x^i for i in 1..5], x=-1..1, y=0..2)        -- \bf{Ribbon Plot}
 \end{xmpLinesPlain}
+
+\psXtc{
+}{
+\spadcommand{)r images8}
+}{
+\includegraphics[height=0.24\textheight]{image8-1}
+\includegraphics[height=0.24\textheight]{image8-2}
+\includegraphics[height=0.24\textheight]{image8-3}
+\includegraphics[height=0.24\textheight]{image8-4}
+}
+
+\newpage
+
 
 
 %\input{gallery/conformal.htex}

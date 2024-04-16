@@ -104,7 +104,7 @@ Re-draw the ribbon, but with option \spad{var2Steps == 1}
 so that only \spad{1} step is computed in the
 \smath{y} direction.
 }{
-\spadgraph{vp := draw(x^2,x=-1..1,y=0..1,var2Steps==1) \bound{d1}}
+\spadcommand{vp := draw(x^2,x=-1..1,y=0..1,var2Steps==1); write(vp, "ribbon2", "postscript") \bound{d1}}
 }{
 \epsffile[0 0 295 295]{ribbon2.ps}
 }
@@ -131,7 +131,7 @@ degrees.
 Here is a different rotation.
 This turns the graph so you can view it along the \smath{y}-axis.
 }{
-\spadcommand{rotate(vp, 0, -90)\bound{d3}\free{d1}}
+\spadcommand{rotate(vp, 0, -90); write(vp, "ribbon2r", "postscript") \bound{d3}\free{d1}}
 }{
 \epsffile[0 0 295 295]{ribbon2r.ps}
 }
@@ -176,7 +176,7 @@ Add the ribbon for
 \smath{x^3} alongside that for
 \smath{x^2}.
 }{
-\spadgraph{vp := draw(x^3,x=-1..1,y=1..2,var2Steps==1, space==sp)\bound{d6}\free{d5}}
+\spadcommand{vp := draw(x^3,x=-1..1,y=1..2,var2Steps==1, space==sp);write(vp, "ribbons", "postscript")\bound{d6}\free{d5}}
 }{
 \epsffile[0 0 295 295]{ribbons.ps}
 }
@@ -192,14 +192,14 @@ enclose the ribbons in a box.
 \psXtc{
 Show quadrilateral polygon outlines.
 }{
-\spadcommand{drawStyle(vp,"shade");outlineRender(vp,"on")\bound{d10}\free{d6}}
+\spadcommand{drawStyle(vp,"shade");outlineRender(vp,"on");write(vp, "ribbons2", "postscript")\bound{d10}\free{d6}}
 }{
 \epsffile[0 0 295 295]{ribbons2.ps}
 }
 \psXtc{
 Enclose the ribbons in a box.
 }{
-\spadcommand{rotate(vp,20,-60); showRegion(vp,"on")\bound{d11}\free{d10}}
+\spadcommand{rotate(vp,20,-60); showRegion(vp,"on");write(vp, "ribbons2b", "postscript")\bound{d11}\free{d10}}
 }{
 \epsffile[0 0 295 295]{ribbons2b.ps}
 }
@@ -479,14 +479,14 @@ Add each curve of the arrow to the space \spad{sp}.
 \psXtc{
 Create a \threedim{} viewport containing that space.
 }{
-\spadgraph{vp := makeViewport3D(sp,"Arrow")\bound{v4}\free{v3}}
+\spadcommand{vp := makeViewport3D(sp,"Arrow"); write(vp, "arrow", "postscript")\bound{v4}\free{v3}}
 }{
 \epsffile[0 0 295 295]{arrow.ps}
 }
 \psXtc{
 Here is a better viewing angle.
 }{
-\spadcommand{rotate(vp,200,-60)\bound{v5}\free{v4}}
+\spadcommand{rotate(vp,200,-60); write(vp, "arrowr", "postscript")\bound{v5}\free{v4}}
 }{
 \epsffile[0 0 295 295]{arrowr.ps}
 }

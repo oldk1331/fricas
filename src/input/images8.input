@@ -6,24 +6,32 @@
 
 )read tetra
 
-drawPyramid 4
+vp := drawPyramid 4
+axes(vp, "off"); drawStyle(vp, "smooth"); rotate(vp, 180, 0)
+write(vp, "image8-1", "postscript")
 
 -- Antoine's Rings
 
 )read antoine
 
-drawRings 2
+vp := drawRings 2
+axes(vp, "off"); drawStyle(vp, "smooth")
+write(vp, "image8-2", "postscript")
 
 -- Scherk's Minimal surface
 
 )read scherk
 
-drawScherk(3,3)
+vp := drawScherk(3,3)
+axes(vp, "off"); drawStyle(vp, "smooth"); zoom(vp, 2.1)
+write(vp, "image8-3", "postscript")
 
 -- Ribbon Plot of [x^i for i in 1..5]
 
 )read ribbons
 
 )set message test off
-drawRibbons([x^i for i in 1..5], x=-1..1, y=0..2)
+vp := drawRibbons([x^i for i in 1..5], x=-1..1, y=0..2)
+axes(vp, "off")
+write(vp, "image8-4", "postscript")
 )set message test on

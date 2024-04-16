@@ -19,7 +19,8 @@ venus(a,r,steps) ==
   draw(surf, 0..%pi, -%pi..%pi, var1Steps==steps,var2Steps==steps,
        title == "Etruscan Venus")
 
-venus(5/2, 13/10, 50)
+vp := venus(5/2, 13/10, 50)
+write(vp, "venus", "postscript")
 
 -- Figure Eight Klein Bottle
 -- Parameterization from:
@@ -39,8 +40,9 @@ klein(x,y) ==
          sx * (cx2 * (sq2 + cy) + (sx2 * sy * cy)), _
          -sx2 * (sq2 + cy) + cx2 * sy * cy]
 
-draw(klein, 0..4*%pi, 0..2*%pi, var1Steps==50, var2Steps==50, _
+vp := draw(klein, 0..4*%pi, 0..2*%pi, var1Steps==50, var2Steps==50, _
      title=="Figure Eight Klein Bottle")
+write(vp, "klein", "postscript")
 
 -- Twisted torus
 
@@ -62,8 +64,9 @@ twist(u, t) ==
   p := point [sin u, cos(u)/2]
   rotateBy(p, theta)
 
-ntubeDrawOpt(bcircle, twist, 0..2*%pi, 0..2*%pi, _
+vp := ntubeDrawOpt(bcircle, twist, 0..2*%pi, 0..2*%pi, _
              var1Steps == 70, var2Steps == 250)
+write(vp, "torus1", "postscript")
 
 -- Striped torus
 
@@ -76,5 +79,6 @@ twist2(u, t) ==
 -- color function producing 21 stripes
 cf(u,v) == sin(21*u)
 
-ntubeDrawOpt(bcircle, twist2, 0..2*%pi, 0..2*%pi, _
+vp := ntubeDrawOpt(bcircle, twist2, 0..2*%pi, 0..2*%pi, _
               colorFunction == cf, var1Steps == 168, var2Steps == 126)
+write(vp, "torus2", "postscript")

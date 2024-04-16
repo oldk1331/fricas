@@ -11,11 +11,15 @@
 
 f z == z
 
-conformalDraw(f, -2..2, -2..2, 9, 9, "cartesian")
+vp := conformalDraw(f, -2..2, -2..2, 9, 9, "cartesian")
+drawStyle(vp, "smooth"); axes(vp, "off")
+write(vp, "image7-1", "postscript")
 
 f z == z + 1/z
 
-conformalDraw(f, -2..2, -2..2, 9, 9, "cartesian")
+vp := conformalDraw(f, -2..2, -2..2, 9, 9, "cartesian")
+drawStyle(vp, "smooth"); axes(vp, "off")
+write(vp, "image7-2", "postscript")
 
 -- The map z +-> -(z+1)/(z-1)
 -- This function maps the unit disk to the right half-plane, as shown
@@ -23,11 +27,17 @@ conformalDraw(f, -2..2, -2..2, 9, 9, "cartesian")
 
 -- The unit disk
 f z == z
-riemannConformalDraw(f, 0.1..0.99, 0..2*%pi, 7, 11, "polar")
+vp := riemannConformalDraw(f, 0.1..0.99, 0..2*%pi, 7, 11, "polar")
+drawStyle(vp, "smooth"); axes(vp, "off")
+write(vp, "image7-3", "postscript")
 
 -- The right half-plane
 f z == -(z+1)/(z-1)
-riemannConformalDraw(f, 0.1..0.99, 0..2*%pi, 7, 11, "polar")
+vp := riemannConformalDraw(f, 0.1..0.99, 0..2*%pi, 7, 11, "polar")
+drawStyle(vp, "smooth"); axes(vp, "off")
+write(vp, "image7-4", "postscript")
 
 -- Visualization of the mapping from the complex plane to the Riemann Sphere.
-riemannSphereDraw(-4..4, -4..4, 7, 7, "cartesian")
+vp := riemannSphereDraw(-4..4, -4..4, 7, 7, "cartesian")
+drawStyle(vp, "smooth"); axes(vp, "off")
+write(vp, "image7-5", "postscript")
