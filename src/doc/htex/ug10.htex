@@ -164,10 +164,11 @@ Let's call it \spad{sp}.
 To add the second ribbon, you draw the second ribbon using the
 option \spad{space == sp}.
 
-\xtc{
+\psXtc{
 Extract the space component of \spad{vp}.
 }{
 \spadcommand{sp := subspace(vp)\bound{d5}\free{d1}}
+}{
 }
 
 \psXtc{
