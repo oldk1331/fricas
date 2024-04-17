@@ -360,6 +360,8 @@ Kernel(S : Comparable) : Exports == Implementation where
     -- for instance with formal derivatives.
     coerce(k : %) : OutputForm ==
       (v := symbolIfCan k) case Symbol => v@Symbol::OutputForm
+      (f0 := property(operator k, 'newdiffdisp)) case None =>
+        ((f0@None) pretend (% -> OutputForm)) (k)
       (f := property(o := operator k, SPECIALDISP)) case None =>
         ((f@None) pretend (List S -> OutputForm)) (argument k)
       l := [x::OutputForm for x in argument k]$List(OutputForm)

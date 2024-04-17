@@ -462,6 +462,7 @@ FunctionSpace(R : Comparable) : Category == Definition where
          Ring
          RetractableTo PR
          PartialDifferentialRing SY
+         newdiff : (%, SY) -> %
          FullyLinearlyExplicitOver R
          coerce    : MP -> %
            ++ coerce(p) returns p as an element of %.
@@ -551,9 +552,13 @@ FunctionSpace(R : Comparable) : Category == Definition where
     smpeval   : (MP, List K, List %) -> %
     smpsubst  : (MP, List K, List %) -> %
     smpderiv  : (MP, SY) -> %
+    smpnewderiv  : (MP, SY) -> %
     kerderiv  : (K, SY)  -> %
+    kernewderiv  : (K, SY)  -> %
     kgrad     : K -> List(List % -> %)
+    newkgrad     : K -> List(List % -> %)
     opderiv   : (OP, N) -> List(List % -> %)
+    opnewderiv   : (OP, N) -> List(List % -> %)
     smp2O     : MP -> O
     bestKernel : List K -> K
     worse?    : (K, K) -> Boolean
@@ -561,17 +566,21 @@ FunctionSpace(R : Comparable) : Category == Definition where
     dispdiff  : List % -> Record(name : O, sub : O, arg : List O,
                                  orig_op : OP, level : N)
     ddiff     : List % -> O
+    dnewdiff     : K -> O
     diffEval  : List % -> %
     dfeval    : (List %, K) -> %
     smprep    : (List SY, List N, List(List % -> %), MP) -> %
     diffdiff  : (List %, SY) -> %
+    diffnewdiff  : (List %, SY) -> %
     subs      : (% -> %, K) -> %
     symsub    : (SY, Z) -> SY
     notfound  : (K -> %, List K) -> (K -> %)
 
     equaldiff : (K, K)->Boolean
+    equalnewdiff : (K, K)->Boolean
     debugA : (List % , List %, Boolean) -> Boolean
     opdiff := operator('%diff)$CommonOperators()
+    opnewdiff := operator('%newdiff)$CommonOperators()
     opquote := operator('%quote)$CommonOperators
 
     ground? x                == retractIfCan(x)@Union(R,"failed") case R
@@ -584,11 +593,12 @@ FunctionSpace(R : Comparable) : Category == Definition where
     applyQuote(s, x, y, z, t)  == applyQuote(s, [x, y, z, t])
     applyQuote(s : SY, l : List %) == opquote concat(s::%, l)
     belong? op                 ==
-        has?(op, 'any) and (is?(op, '%diff) or is?(op, '%quote))
+        has?(op, 'any) and (is?(op, '%diff) or is?(op, '%quote) or is?(op, '%newdiff))
     subs(fn, k) == kernel(operator k, [fn x for x in argument k]$List(%))
 
     operator op ==
       is?(op, '%diff) => opdiff
+      is?(op, '%newdiff) => opnewdiff
       is?(op, '%quote) => opquote
       error concat("Unknown operator 4: ",string(name(op)))$String
 
@@ -830,6 +840,14 @@ FunctionSpace(R : Comparable) : Category == Definition where
           [x +-> kernel(opdiff, [kernel(op, g), g, first x])]
         [x +-> kernel(opdiff, diffArg(x, op, i)) for i in 1..n]
 
+      opnewderiv(op, n) ==
+        (n = 1) =>
+          dop := copy opnewdiff
+          setProperty(dop, 'anti, op pretend None)
+          setProperty(dop, 'diffpos, [1$N]::List N pretend None)
+          [x +-> kernel(dop, [first x])]
+        [x +-> kernel(setProperty(setProperty(copy opnewdiff, 'anti, op pretend None), 'diffpos, [i] pretend None), x) for i in 1..n]
+
       kgrad k ==
         zero?(n := #(args := argument k)) => empty()
         op := operator k
@@ -837,6 +855,19 @@ FunctionSpace(R : Comparable) : Category == Definition where
           (u := derivative op) case "failed" => opderiv(op, n)
           u@List(List % -> %)
         #grad ~= n => opderiv(op, n)
+        grad
+
+      newkgrad k ==
+        zero?(n := #(args := argument k)) => empty()
+        op := operator k
+        is?(op, '%newdiff) =>
+          anti := property(op, 'anti)::None
+          diffpos := property(op, 'diffpos)::None pretend List N
+          [x +-> kernel(setProperty(setProperty(copy opnewdiff, 'anti, anti), 'diffpos, cons(i, diffpos) pretend None), x) for i in 1..n]
+        grad :=
+          (u := derivative op) case "failed" => opnewderiv(op, n)
+          u@List(List % -> %)
+        #grad ~= n => opnewderiv(op, n)
         grad
 
     -- SPECIALDIFF contains a map (List %, Symbol) -> %
@@ -852,9 +883,23 @@ FunctionSpace(R : Comparable) : Category == Definition where
         +/[g(ak)*dyx for g in kgrad k for y in ak
             | (dyx := differentiate(y, x)) ~= 0]
 
+      kernewderiv(k, x) ==
+        (v := symbolIfCan(k)) case SY =>
+          v@SY = x => 1
+          0
+        ak := argument k
+        (fn := property(operator k, SPECIALDIFF)) case None =>
+           ((fn@None) pretend ((List %, SY) -> %)) (ak, x)
+        +/[g(ak)*dyx for g in newkgrad k for y in ak
+            | (dyx := differentiate(y, x)) ~= 0]
+
       smpderiv(p, x) ==
         map((s : R) : R +-> retract differentiate(s::PR, x), p)::% +
          +/[differentiate(p, k)::% * kerderiv(k, x) for k in variables p]
+
+      smpnewderiv(p, x) ==
+        map((s : R) : R +-> retract differentiate(s::PR, x), p)::% +
+         +/[differentiate(p, k)::% * kernewderiv(k, x) for k in variables p]
 
       coerce(p : PR) : % ==
         map(s +-> s::%, s+-> s::%, p)$PolynomialCategoryLifting(
@@ -983,12 +1028,39 @@ FunctionSpace(R : Comparable) : Category == Definition where
         sk1 : % := subst(ok1, od, r2.dummies)
         sk1 = (r2.orig_k)::%
 
+      opnewdiffeq : (BasicOperator, BasicOperator) -> Boolean
+      opnewdiffeq(op1, op2) ==
+          is?(op1, '%newdiff) and is?(op2, '%newdiff) =>
+            antiop1 := property(op1, 'anti)::None pretend BasicOperator
+            antiop2 := property(op2, 'anti)::None pretend BasicOperator
+            diffpos1 := property(op1, 'diffpos)::None pretend List N
+            diffpos2 := property(op2, 'diffpos)::None pretend List N
+            antiop1 = antiop2 and diffpos1 = diffpos2
+          false
+
+      equality(opnewdiff, opnewdiffeq)
+
+      equalnewdiff(k1, k2) ==
+        op1 := operator k1
+        op2 := operator k2
+        opnewdiffeq(op1, op2) and argument k1 = argument k2
+
+      dnewdiff k ==
+        antiop := property(operator k, 'anti)::None pretend BasicOperator
+        diffpos := property(operator k, 'diffpos)::None pretend List N
+        prefix("%newdiff"::OutputForm, [diffpos::OutputForm, antiop::OutputForm, argument(k)::OutputForm])
+
       setProperty(opdiff, SPECIALEQUAL,
                           equaldiff@((K, K) -> Boolean) pretend None)
       setProperty(opdiff, SPECIALDIFF,
                           diffdiff@((List %, SY) -> %) pretend None)
       setProperty(opdiff, SPECIALDISP,
                               ddiff@(List % -> OutputForm) pretend None)
+
+      setProperty(opnewdiff, SPECIALEQUAL,
+                          equalnewdiff@((K, K) -> Boolean) pretend None)
+      setProperty(opnewdiff, 'newdiffdisp,
+                              dnewdiff@(K -> OutputForm) pretend None)
 
       if not(R has IntegralDomain) then
         mainKernel x         == mainVariable numer x
@@ -1106,6 +1178,12 @@ FunctionSpace(R : Comparable) : Category == Definition where
         (smpderiv(numer f, x) * denom(f)::% -
           numer(f)::% * smpderiv(denom f, x))
             / (denom(f)::% ^ 2)
+
+      newdiff(f : %, x : SY) ==
+        (smpnewderiv(numer f, x) * denom(f)::% -
+          numer(f)::% * smpnewderiv(denom f, x))
+            / (denom(f)::% ^ 2)
+
 
       eval(x : %, lk : List K, lv : List %) ==
         smpeval(numer x, lk, lv) / smpeval(denom x, lk, lv)

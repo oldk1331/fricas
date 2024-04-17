@@ -366,6 +366,7 @@ CommonOperators() : Exports == Implementation where
     oppren  := operator('%paren, 1)$OP
     opquote := operator('%quote)$OP
     opdiff  := operator('%diff, 3)
+    opnewdiff  := operator('%newdiff)$OP
     opsi    := operator('Si, 1)
     opci    := operator('Ci, 1)
     opshi   := operator('Shi, 1)
@@ -531,7 +532,7 @@ CommonOperators() : Exports == Implementation where
     opWeierstrassPInverse _
     ]
 
-    anyop   := [oppren, opdiff, opbox, opquote]
+    anyop   := [oppren, opdiff, opbox, opquote, opnewdiff]
     allop   := concat(concat(concat(concat(concat(
                             algop, elemop), primop), combop), specop), anyop)
 
