@@ -62,11 +62,13 @@ END {
 
 /^} *$/ && xtc>1 {
     xtc=0
+    spadgraph=0
     print "-- \\end{" xtcname "}"
     next
 }
 
 xtc==2 && (/^\\spadcommand{/ || /^\\spadgraph{/) {
+    if (match($0, /^\\spadgraph{/)) spadgraph=1
     print "-- \\begin{spadsrc}"
     gsub(/^\\spadcommand{/, "")
     gsub(/^\\spadgraph{/, "")
@@ -79,12 +81,18 @@ xtc==2 && (/^\\spadcommand{/ || /^\\spadgraph{/) {
     gsub(/\\bound{.*/, "")
     print "-- " $0
     print "-- \\end{spadsrc}"
-    if (xtcname=="psXtc" || xtcname=="noOutputXtc") {
-        print "-- \\begin{xtcnooutput}"
+    if (xtcname=="psXtc") {
+        print "-- \\begin{psxtcnooutput}"
+        print $0
+        print "-- \\end{psxtcnooutput}"
     }
-    if (xtcname=="xtc" || xtcname=="noOutputXtc") {print $0}
-    if (xtcname=="psXtc" || xtcname=="noOutputXtc") {
+    if (xtcname=="noOutputXtc") {
+        print "-- \\begin{xtcnooutput}"
+        print $0
         print "-- \\end{xtcnooutput}"
+    }
+    if (xtcname=="xtc") {
+        print $0
     }
     next
 }
@@ -100,7 +108,10 @@ xtc==2 && /^\\begin{spadsrc}/ {
         getline
     }
     print "-- " $0
-    if (xtcname=="psXtc" || xtcname=="noOutputXtc") {
+    if (xtcname=="psXtc") {
+        print "-- \\begin{psxtcnooutput}"
+    }
+    if (xtcname=="noOutputXtc") {
         print "-- \\begin{xtcnooutput}"
     }
     if (xtcname=="xtc" || xtcname=="noOutputXtc") {
@@ -108,7 +119,10 @@ xtc==2 && /^\\begin{spadsrc}/ {
             for (i = 1; i < n; i++) {print arr[i]}
         }
     }
-    if (xtcname=="psXtc" || xtcname=="noOutputXtc") {
+    if (xtcname=="psXtc") {
+        print "-- \\end{psxtcnooutput}"
+    }
+    if (xtcname=="noOutputXtc") {
         print "-- \\end{xtcnooutput}"
     }
     next
@@ -130,7 +144,22 @@ xtc==2 && /^\\begin{spadsrc}/ {
     next
 }
 
-/^}{/ && xtc==2 {next}
+/^}{/ && xtc==2 {
+    xtc=3
+    next
+}
+
+xtc==3 && /^\\epsffile/ {
+    print "-- " $0
+    if (xtcname == "psXtc" && spadgraph == 1) {
+        gsub(/^\\epsffile.*{/, "")
+        gsub(/}$/, "")
+        print "-- \\begin{psxtcnooutput}"
+        print "write(%, \"tmp/" $0 "\", \"postscript\"); close(%)"
+        print "-- \\end{psxtcnooutput}"
+    }
+    next
+}
 
 {
     print "-- " $0

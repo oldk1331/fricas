@@ -1,0 +1,43 @@
+-- section 10.1
+vp := draw(x^2,x=-1..1,y=0..1,var2Steps==1)
+
+rotate(vp, 0, -90)
+write(vp, "tmp/ribbon2r", "postscript")
+
+sp := subspace(vp)
+close(vp)
+
+vp := draw(x^3,x=-1..1,y=1..2,var2Steps==1, space==sp)
+
+drawStyle(vp,"shade");outlineRender(vp,"on")
+write(vp, "tmp/ribbons2", "postscript")
+
+rotate(vp,20,-60); showRegion(vp,"on")
+write(vp, "tmp/ribbons2b", "postscript")
+close(vp)
+)clear all
+
+-- section 10.5
+zero := 0.0@DFLOAT
+one  := 1.0@DFLOAT
+origin := point [zero,zero,zero,zero]
+unit := point [one,one,one,zero]
+)read arrows
+arrow := makeArrow(origin,unit)
+sp := createThreeSpace()
+for a in arrow repeat sp := curve(sp,a)
+vp := makeViewport3D(sp,"Arrow")
+rotate(vp,200,-60)
+write(vp, "tmp/arrowr", "postscript")
+close(vp)
+)clear all
+
+-- chapter 7
+)read images1
+vp := %
+title(vp, ""); axes(vp, "off"); rotate(vp, 90, 0)
+zoom(vp, 1.9); outlineRender(vp, "off")
+write(vp, "tmp/knot3", "postscript")
+close(vp)
+
+)quit

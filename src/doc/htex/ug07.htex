@@ -38,9 +38,7 @@
 \begin{texonly}
 %
 \begin{figure}[htbp]
-{\epsfverbosetrue\epsfxsize=12.5pc%
-\def\epsfsize#1#2{\epsfxsize}
-\epsffile[10 0 300 300]{knot3.ps}}
+\epsffile[10 0 300 300]{knot3.ps}
 \vskip -.5\baselineskip
 \caption{Torus knot of type (15,17).}
 \vskip .5\baselineskip
@@ -615,9 +613,6 @@ current state of the graph.
 \begin{texonly}
 \typeout{2D control-panel.}
 \begin{figure}[htbp]
-%{\epsfverbosetrue\epsfxsize=2in%
-%\def\epsfsize#1#2{\epsfxsize}\hspace*{\baseLeftSkip}%
-%\epsffile[0 0 144 289]{2Dctrl.ps}}
 \begin{picture}(147,252)%(-143,0)
 \special{psfile=2Dctrl.ps}
 \end{picture}
@@ -1107,9 +1102,9 @@ list of options specified within the brackets.
 }{
 \spadgraph{makeViewport2D(g,[title("Lines")])\$VIEW2D \free{g}}
 }{
-%
+\epsffile[]{lines.ps}
 }
-%See Figure #.#.
+
 \xtc{
 This example demonstrates the use of the \spadtype{GraphImage} functions
 \spadfunFrom{component}{GraphImage} and \spadfunFrom{appendPoint}{GraphImage}
@@ -1166,10 +1161,10 @@ Here is the graph.
 }{
 \spadgraph{makeViewport2D(g,[title("Graph Points")])\$VIEW2D \free{Sg gp5}}
 }{
-%
+\epsffile[]{graphpoints.ps}
 }
 %
-%See Figure #.#.
+
 %
 \xtc{
 A list of points can also be made into a \spadtype{GraphImage} by using
@@ -1197,10 +1192,9 @@ Take a look.
 }{
 \spadgraph{makeViewport2D(v)\$VIEW2D \free{Svog2}}
 }{
-%
+\epsffile[]{justpoints.ps}
 }
 
-%See Figure #.#.
 
 % *********************************************************************
 \subsubsection{Creating a Two-Dimensional Viewport of a List of Points from a File}
@@ -1285,7 +1279,7 @@ Display the new \spadtype{TwoDimensionalViewport} containing both graphs.
 }{
 \spadgraph{makeViewport2D(v2) \free{v22}}
 }{
-%
+\epsffile[]{twographs1.ps}
 }
 Instead of using \spadfun{draw} to draw a graph and then extract
 graph data we can use \spadfun{makeObject}.
@@ -1310,21 +1304,14 @@ Display the new \spadtype{TwoDimensionalViewport} containing both graphs.
 }{
 \spadgraph{makeViewport2D(v3) \free{v33}}
 }{
-%
+\epsffile[]{twographs2.ps}
 }
-% XXX: Without close we have trouble during documentation build
-\nullXtc{
+\noOutputXtc{
 The viewports \spad{v1}, \spad{v2} and \spad{v3} are no longer needed so
 we close them.
 }{
 \spadcommand{close(v1); close(v2); close(v3) \free{v1 v2 v3}}
 }
-
-% XXX: We should wait for close to finish, but since there is
-% other content on the page this should happen automatically
-%
-%See Figure #.#.
-%
 
 % *********************************************************************
 \head{section}{Three-Dimensional Graphics}{ugGraphThreeD}
@@ -1765,17 +1752,17 @@ Add a second graph to \spad{s}.
 A three-space object can also be obtained from an existing \threedim{} viewport
 using the \spadfunFrom{subspace}{ThreeSpace} command.
 You can then use \spadfun{makeViewport3D} to create a viewport window.
-\noOutputXtc{
+\nullXtc{
 Assign to \spad{subsp} the three-space object in viewport \spad{v}.
 }{
 \spadcommand{subsp := subspace v \free{v} \bound{su}}
 }
-\noOutputXtc{
+\nullXtc{
 Reset the space component of \spad{v} to the value of \spad{subsp}.
 }{
 \spadcommand{subspace(v, subsp) \bound{sp} \free{su}}
 }
-\noOutputXtc{
+\nullXtc{
 Create a viewport window from a three-space object.
 }{
 \spadgraph{makeViewport3D(subsp,"Graphs") \free{sp}}
@@ -1811,7 +1798,7 @@ Add a second object to \spad{sph}.
 }{
 \spadcommand{makeObject(curve(1.5*sin(t), 1.5*cos(t), 0), t=0..2*\%pi, space == sph, tubeRadius == .25) \free{sph}\bound{v1}}
 }
-\noOutputXtc{
+\nullXtc{
 Create and display a viewport
 containing \spad{sph}.
 }{
@@ -2200,9 +2187,6 @@ that is closest to where you clicked.
 \begin{texonly}
 \typeout{3D control-panel.}
 \begin{figure}[htbp]
-%{\epsfverbosetrue\epsfxsize=2in%
-%\def\epsfsize#1#2{\epsfxsize}\hspace*{\baseLeftSkip}%
-%\epsffile[0 0 144 289]{3Dctrl.ps}}
 \begin{picture}(183,252)%(-125,0)
 \special{psfile=3Dctrl.ps}
 \end{picture}

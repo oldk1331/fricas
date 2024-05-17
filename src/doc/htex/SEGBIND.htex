@@ -58,7 +58,7 @@ This is an example of a two-dimensional parametrized plot;
 other \spadfun{draw} options use more than one
 \spadtype{SegmentBinding} argument.
 }{
-\spadcommand{draw(x^2, x = -2..2)}
+\spadgraph{draw(x^2, x = -2..2)}
 }{
 % window was 256 x 256
 \epsffile[72 72 300 300]{SEGBIND.ps}
