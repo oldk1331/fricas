@@ -149,10 +149,10 @@ xtc==2 && /^\\begin{spadsrc}/ {
     next
 }
 
-xtc==3 && /^\\epsffile/ {
+xtc==3 && /^\\includespadgraph/ {
     print "-- " $0
     if (xtcname == "psXtc" && spadgraph == 1) {
-        gsub(/^\\epsffile.*{/, "")
+        gsub(/^\\includespadgraph.*{/, "")
         gsub(/}$/, "")
         print "-- \\begin{psxtcnooutput}"
         print "write(%, \"tmp/" $0 "\", \"postscript\"); close(%)"

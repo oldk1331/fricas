@@ -60,8 +60,7 @@ other \spadfun{draw} options use more than one
 }{
 \spadgraph{draw(x^2, x = -2..2)}
 }{
-% window was 256 x 256
-\epsffile[72 72 300 300]{SEGBIND.ps}
+\includespadgraph{SEGBIND}
 }
 \end{texonly}
 

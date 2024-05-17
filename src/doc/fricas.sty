@@ -14,7 +14,9 @@
 % and Robert Sutor for the FriCAS system.
 
 \usepackage{graphicx}
-\def\epsffile[#1]#2{\begin{center}\includegraphics[height=.24\textheight]{#2}\end{center}}
+\def\includespadgraph#1{\begin{center}\includegraphics[height=.24\textheight]{#1}\end{center}}
+
+\def\includehyperdoc#1{\begin{center}\includegraphics[scale=0.5]{#1}\end{center}}
 
 \usepackage{fricasmath}
 \usepackage{verbatim} % Needed for the discard environment.
@@ -94,8 +96,7 @@
 \def\xmpref#1{`\texttt{#1}' on page \pageref{#1Xmp}}
 
 % Bitmaps
-\newcommand\bmbutton[1]{{\setlength{\unitlength}{0.01in}%
-    \begin{picture}(50,16)(0,0)\special{psfile=#1.ps}\end{picture}}}
+\newcommand\bmbutton[1]{\includegraphics[scale=0.5]{#1}}
 \newcommand\StdExitButton{\bmbutton{exit}}
 \newcommand\ReturnButton{\bmbutton{home}}
 \newcommand\StdHelpButton{\bmbutton{help}}

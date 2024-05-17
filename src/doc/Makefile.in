@@ -5,7 +5,7 @@
 #---
 #------------------------------------------------------------------
 # The main targets of this Makefile are "all" and "doc".
-# Other useful targets are "localdoc", "book.pdf", "stamp-html".
+# Other useful targets are "localdoc", "book", "stamp-html".
 
 # Whereas "all" is made during normal FriCAS build, "doc" must be
 # invoked separately.
@@ -44,9 +44,9 @@
 # - The .ht files are copied to the target directory.
 # - The .help files are copied to the target directory for ")help ...".
 #
-# "make book.pdf" does the following:
-# - Copy pictures from the ps/ directory for (documentation of HyperDoc).
-# - Copy pictures from tmp/*.VIEW/image.ps (target stamp-pics).
+# "make book" does the following:
+# - Copy pictures from the png/ directory for documentation of HyperDoc.
+# - Convert pictures from tmp/*.VIEW/image.ps to pdf format (target stamp-pics).
 # - Generate tmo/ug09.tex with the list of examples.
 # - Create tmp/*.input from htex/*.htex (target ${HTEX_FILES_INPUT}).
 #   The .input files contain the commands that should be executed.
@@ -57,8 +57,6 @@
 # - Turn the tmp/*.spool files into tmp/*.tex files (target ${HTEX_FILES_TEX}).
 # - Create tmp/info.tex with version information.
 # - LaTeX book.tex, call makeindex, and re-latex to get references right.
-# - Convert book.dvi to book.ps.
-# - Convert book.ps to book.pdf.
 #
 # "make stamp-html" does the following:
 # - Copy the source .rst files into the tmp directory.
@@ -81,10 +79,10 @@
 # ------------------------------------------------------------------
 # General notes
 #
-# Not everything is generated. There are a few .bitmap, .ps, and .ht
+# Not everything is generated. There are a few .bitmap, .png, and .ht
 # files in the sources.
-# The ps/*.ps files are pictures of HyperDoc windows and are included
-# in book.pdf (search for "\special{" in the sources). They are not
+# The png/*.png files are pictures of HyperDoc windows and are included
+# in book.pdf (search for "\includehyperdoc{" in the sources). They are not
 # used for HyperDoc.
 # The .ht and .menu files are exclusively for display in HyperDoc.
 # The actual HyperDoc datebase however is ht.db.
@@ -112,7 +110,7 @@ htexsrcdir   = ${srcdir}/htex
 htsrcdir     = ${srcdir}/ht
 bitmapssrcdir= $(srcdir)/bitmaps
 inputsrcdir  = ${fricas_src_srcdir}/input
-pssrcdir     = ${srcdir}/ps
+pngsrcdir    = ${srcdir}/png
 
 httargetdir        = $(fricas_target_datadir)/hypertex/pages
 bitmapstargetdir   = $(fricas_target_datadir)/hypertex/bitmaps
@@ -645,17 +643,6 @@ tmp/ug09.tex: tmp/examples.list
 ###################################################################
 # There are a number of pictures for sections in book.pdf that
 # demonstrate the use of HyperDoc.
-PS_FILES = \
-  exit help home up	\
-  2Dctrl 3Dctrl \
-  h-alldoms h-allrank h-atsearch h-brfront h-comsearch h-consearch	\
-  h-docsearch h-gensearch h-matargs h-matats h-matdesc h-matexamp	\
-  h-matexports h-matimp h-matinv h-matmap h-matops h-matpage		\
-  h-matrelops h-matrixops h-matsource h-matxref h-root
-
-PS_FILES_PS = ${patsubst %, %.ps, ${PS_FILES}}
-${PS_FILES_PS}: %.ps: ${pssrcdir}/%.ps
-	cp $< $@
 
 HTEX_PICS = SEGBIND ug00 ug01 ug07 ug08 ug10 ug11
 HTEX_PICS_INPUT = ${patsubst %, tmp/pics-%.input, ${HTEX_PICS}}
@@ -666,12 +653,13 @@ ${HTEX_PICS_INPUT}: tmp/pics-%.input: ${htexsrcdir}/%.htex
 	  	echo ")read $@" | FRICAS_INITFILE='' ${XVFB} \
 		  ${FRICAS}/bin/fricas -noht -noclef > /dev/null
 
-stamp-pics: ${INPUT_EXTRA_INPUT} ${HTEX_PICS_INPUT} ${PS_FILES_PS}
+stamp-pics: ${INPUT_EXTRA_INPUT} ${HTEX_PICS_INPUT}
+	cp ${pngsrcdir}/*.png tmp/
 	(unset DAASE; FRICAS=${FRICAS}; export FRICAS; \
 		echo ')read ug-pics' | FRICAS_INITFILE='' ${XVFB} \
 		${FRICAS}/bin/fricas -noht -noclef)
 	for f in tmp/*.VIEW/image.ps; do \
-		cp $$f `echo $$f | cut -d / -f 2 | cut -d . -f 1`.ps; \
+		epstopdf $$f --outfile=`echo $$f | cut -d / -f 1-2 | cut -d . -f 1`.pdf; \
 	done
 	${STAMP} $@
 
@@ -702,26 +690,20 @@ tmp/info.tex:
 	echo >> $@
 
 # Convince latex to abort on error.
-LATEX=latex -halt-on-error -file-line-error -interaction=nonstopmode
+LATEX=pdflatex -halt-on-error -file-line-error -interaction=nonstopmode
 
-book.dvi: stamp-pics tmp/ug09.tex tmp/info.tex ${HTEX_FILES_TEX}
+book-pdf: stamp-pics tmp/ug09.tex tmp/info.tex ${HTEX_FILES_TEX}
 	TEXINPUTS=$$TEXINPUTS:${srcdir}:tmp:. ${LATEX} book.tex \
 	|| (echo "==> Detected problem while running LaTeX."; \
 	    echo "==> LaTeX must be installed."; \
 	    echo "==> The following LaTeX packages must be available."; \
 	    echo "==> amsmath, breqn, tensor, mleftright, graphicx, verbatim,"; \
-	    echo "==> hyperref, color, listings, makeidx, xparse, tikz"; \
+	    echo "==> hyperref, color, listings, makeidx, xparse, tikz, epstopdf"; \
 	    exit 1)
-	if grep 'LaTeX Warning: .*Rerun' book.log; then mv $@ tmp; fi
 
-book.ps: book.dvi
+book: book-pdf
 	makeindex book
 	${MAKE} $<
-	${MAKE} $<
-	dvips $<
-
-book.pdf: book.ps
-	ps2pdf $<
 
 clean-book:
 	-rm -f info.tex *.sfort
@@ -786,7 +768,7 @@ stamp-html: stamp-api
 
 # Copy the generated html directory into the target place and include
 # book.pdf.
-stamp-doc: book.pdf stamp-html
+stamp-doc: book stamp-html
 	-rm -rf html
 	cp -R tmp/sphinx/build/html .
 	cp $< html

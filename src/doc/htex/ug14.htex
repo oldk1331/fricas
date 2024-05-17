@@ -48,14 +48,9 @@ familiarity with \Browse{}.
 To enter \Browse{}, click on {\bf Browse} on the top level page
 of \HyperName{} to get the {\it front page} of \Browse{}.
 %
-%324pt is 4.5",180pt is 2.5",432pt is 6"=textwidth,54=(432-324)/2
-%ps files are 4.5"x2.5" except source 4.5"x2.5"
-%
 \begin{texonly}
 \begin{figure}[htbp]
-\begin{picture}(324,180)%(-54,0)
-\special{psfile=h-brfront.ps}
-\end{picture}
+\includehyperdoc{h-brfront}
 \caption{The Browse front page.}
 \end{figure}
 \end{texonly}
@@ -96,9 +91,7 @@ the string ``{\tt matrix}.''
 
 \begin{texonly}
 \begin{figure}[htbp]
-\begin{picture}(324,180)%(-54,0)
-\special{psfile=h-consearch.ps}
-\end{picture}
+\includehyperdoc{h-consearch}
 \caption{Table of exposed constructors matching \texttt{*matrix*}.}
 \end{figure}
 \end{texonly}
@@ -144,9 +137,7 @@ matrix} or {\tt Matrix}.
 
 \begin{texonly}
 \begin{figure}[htbp]
-\begin{picture}(324,180)%(-54,0)
-\special{psfile=h-matrixops.ps}
-\end{picture}
+\includehyperdoc{h-matrixops}
 \caption{Table of operations matching \texttt{*matrix}.}
 \end{figure}
 \end{texonly}
@@ -171,9 +162,7 @@ matrix} as a part of their name.
 
 \begin{texonly}
 \begin{figure}[htbp]
-\begin{picture}(324,180)%(-54,0)
-\special{psfile=h-gensearch.ps}
-\end{picture}
+\includehyperdoc{h-gensearch}
 \caption{Table of all constructs matching \texttt{*matrix*}.}
 \end{figure}
 \end{texonly}
@@ -196,9 +185,7 @@ matrix}.
 
 \begin{texonly}
 \begin{figure}[htbp]
-\begin{picture}(324,180)%(-54,0)
-\special{psfile=h-docsearch.ps}
-\end{picture}
+\includehyperdoc{h-docsearch}
 \caption{Table of constructs with documentation matching \texttt{*matrix*}.}
 \end{figure}
 \end{texonly}
@@ -211,9 +198,7 @@ This search combines both {\bf General} and {\bf Documentation}.
 
 \begin{texonly}
 \begin{figure}[htbp]
-\begin{picture}(324,180)%(-54,0)
-\special{psfile=h-comsearch.ps}
-\end{picture}
+\includehyperdoc{h-comsearch}
 \caption{Table summarizing complete search for pattern \texttt{*matrix*}.}
 \end{figure}
 \end{texonly}
@@ -229,9 +214,7 @@ and click on {\bf Constructors}.
 
 \begin{texonly}
 \begin{figure}[htbp]
-\begin{picture}(324,180)%(-54,0)
-\special{psfile=h-matpage.ps}
-\end{picture}
+\includehyperdoc{h-matpage}
 \caption{Constructor page for \protect\spadtype{Matrix}.}
 \end{figure}
 \end{texonly}
@@ -248,9 +231,7 @@ of {\tt R}, or a table of \spadgloss{abelian monoids} in \Language{}.
 
 \begin{texonly}
 \begin{figure}[htbp]
-\begin{picture}(324,180)%(-54,0)
-\special{psfile=h-matargs.ps}
-\end{picture}
+\includehyperdoc{h-matargs}
 \caption{Table of acceptable domain parameters to \protect\spadtype{Matrix}.}
 \end{figure}
 \end{texonly}
@@ -271,9 +252,7 @@ of \spadtype{Matrix}.
 
 \begin{texonly}
 \begin{figure}[htbp]
-\begin{picture}(324,168)%(-54,0)
-\special{psfile=h-matsource.ps}
-\end{picture}
+\includehyperdoc{h-matsource}
 \caption{Source code for \protect\spadtype{Matrix}.}
 \end{figure}
 \end{texonly}
@@ -297,9 +276,7 @@ below.
 
 \begin{texonly}
 \begin{figure}[htbp]
-\begin{picture}(324,180)%(-54,0)
-\special{psfile=h-matops.ps}
-\end{picture}
+\includehyperdoc{h-matops}
 \caption{Table of operations from \protect\spadtype{Matrix}.}
 \end{figure}
 \end{texonly}
@@ -316,9 +293,7 @@ create and manipulate matrices.
 
 \begin{texonly}
 \begin{figure}[htbp]
-\begin{picture}(324,180)%(-54,0)
-\special{psfile=h-matexamp.ps}
-\end{picture}
+\includehyperdoc{h-matexamp}
 \caption{Example page for \protect\spadtype{Matrix}.}
 \end{figure}
 \end{texonly}
@@ -356,9 +331,7 @@ exactly as described by the source code.
 
 \begin{texonly}
 \begin{figure}[htbp]
-\begin{picture}(324,180)%(-54,0)
-\special{psfile=h-matexports.ps}
-\end{picture}
+\includehyperdoc{h-matexports}
 \caption{Exports of \protect\spadtype{Matrix}.}
 \end{figure}
 \end{texonly}
@@ -676,9 +649,7 @@ This takes you to a page showing the documentation for this operation.
 
 \begin{texonly}
 \begin{figure}[htbp]
-\begin{picture}(324,180)%(-54,0)
-\special{psfile=h-matinv.ps}
-\end{picture}
+\includehyperdoc{h-matinv}
 \caption{Operation \protect\spadfunFrom{inverse}{Matrix} from \protect\spadtype{Matrix}.}
 \end{figure}
 \end{texonly}
@@ -720,9 +691,7 @@ You find these comments in the source code for \spadtype{Matrix}.
 
 \begin{texonly}
 \begin{figure}[htbp]
-\begin{picture}(324,180)%(-54,0)
-\special{psfile=h-matmap.ps}
-\end{picture}
+\includehyperdoc{h-matmap}
 \caption{Operations \protect\spadfun{map} from \protect\spadtype{Matrix}.}
 \end{figure}
 \end{texonly}
@@ -830,9 +799,7 @@ the matrix operations, organized by the various domains and packages.
 
 \begin{texonly}
 \begin{figure}[htbp]
-\begin{picture}(324,180)%(-54,0)
-\special{psfile=h-matimp.ps}
-\end{picture}
+\includehyperdoc{h-matimp}
 \caption{Implementation domains for \protect\spadtype{Matrix}.}
 \end{figure}
 \end{texonly}
