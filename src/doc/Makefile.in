@@ -132,7 +132,7 @@ HTEX2HT       = ${AWK} -f ${srcdir}/ht.awk
 HTEX2SECMENU  = ${AWK} -f ${srcdir}/secmenu.awk
 UGSYSCMD2HELP = ${AWK} -f ${srcdir}/syscmd.awk
 HTEX2INPUT    = ${AWK} -f ${srcdir}/htex2input.awk
-SPOOL2TEX     = ${AWK} -f ${srcdir}/spool2tex.awk
+SPOOL2TEX     = ${AWK} -f ${srcdir}/spool2tex.awk | ${AWK} -f ${srcdir}/tex2tex.awk
 UGEXAMPLES    = ${AWK} -f ${srcdir}/ugexamples.awk
 
 ###################################################################

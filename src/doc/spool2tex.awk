@@ -6,6 +6,8 @@
 ## .. \end{MessageOutput}
 ## -- \begin{SysCmdOutput}
 ## .. \end{SysCmdOutput}
+## -- \begin{AlgebraOutput}
+## .. \end{AlgebraOutput}
 # Lines inside these environments are treated in a special way.
 # These environments appear inside lines that start with
 ## -- \begin{xtc}
@@ -102,6 +104,12 @@ inxtc==0 {
     next
 }
 
+/^-- \\begin{AlgebraOutput}/ {
+    printf("%s\n",substr($0,4))
+    inAlgebraOutput=1
+    next
+}
+
 /^-- \\end{MessageOutput}/ {
     if(inSysCmdOutput==1) {next}
     printf("%s\n",substr($0,4))
@@ -115,7 +123,13 @@ inxtc==0 {
     next
 }
 
-(inMessageOutput==1 || inSysCmdOutput==1) {
+/^-- \\end{AlgebraOutput}/ {
+    printf("%s\n",substr($0,4))
+    inAlgebraOutput=0
+    next
+}
+
+(inMessageOutput==1 || inSysCmdOutput==1 || inAlgebraOutput==1) {
     print $0
     next
 }
