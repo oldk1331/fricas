@@ -506,7 +506,7 @@ start_the_hypertex(void)
 static void
 start_the_graphics(void)
 {
-  spawn_of_hell(GraphicsProgram, DoItAgain);
+  spawn_of_hell(GraphicsProgram, NadaDelShitsky);
 }
 
 /* Start the FriCAS session in a separate process, */
@@ -761,9 +761,20 @@ monitor_children(void)
     }
 
     if (dead_baby == -1) {
-      fprintf(stderr, "sman: wait returned -1\n");
+      /* If all subprocesses are exited, exit sman as well. */
+      if (errno == ECHILD) {
+        exit(0);
+      } else {
+        fprintf(stderr, "sman: wait returned -1\n");
+        continue;
+      }
+    }
+
+    /* If a subprocess exits successfully, do nothing */
+    if (WIFEXITED(stat) && (WEXITSTATUS(stat) == 0)) {
       continue;
     }
+
     proc = find_child(dead_baby);
     if (proc == NULL) {
       /*      fprintf(stderr, "sman: %d is not known to be a child process\n",
@@ -813,7 +824,7 @@ main(int argc, char *argv[],char *envp[])
   if (start_graphics)         start_the_graphics();
   fricas_sleep(100);
 
-  if (fork_you(Die) != NULL) {
+  if (fork_you(NadaDelShitsky) != NULL) {
     sman_catch_signals();
     monitor_children();
     exit(0);

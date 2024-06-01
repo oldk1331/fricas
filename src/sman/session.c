@@ -173,7 +173,11 @@ static void
 read_SpadServer_command(void)
 {
   int cmd, frame, num;
-  cmd  = get_int(spad_server);
+  int ret = fricas_read(spad_server, (char *) &cmd, sizeof(int));
+  if (0 == ret) {
+    FD_CLR(spad_server->socket, &session_socket_mask);
+    return;
+  }
   switch (cmd) {
   case EndOfOutput:
     if (menu_client != (Sock *) 0) send_signal(menu_client, SIGUSR2);
@@ -259,8 +263,9 @@ static void
 read_from_spad_io(void)
 {
   int ret_code;
-  ret_code = sread(spad_io, big_bad_buf, BufSize, "session: stdout socket");
+  ret_code = fricas_read(spad_io, big_bad_buf, BufSize);
   if (ret_code == -1) return;
+  if (ret_code == 0) exit(0);
   if(active_session != (Sock *) 0) {
     ret_code = swrite(active_session, big_bad_buf, ret_code,
                       NULL);

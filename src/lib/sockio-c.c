@@ -257,7 +257,7 @@ sread(Sock *sock, char *buf, int buf_size, char *msg)
     FD_CLR(sock->socket, &socket_mask);
     purpose_table[sock->purpose] = NULL;
     fricas_close_socket(sock->socket);
-    return wait_for_client_read(sock, buf, buf_size, msg);
+    return -1;
   }
   if (ret_val == -1) {
     if (msg) {
