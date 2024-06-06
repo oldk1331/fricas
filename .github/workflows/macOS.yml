@@ -23,7 +23,7 @@ jobs:
         ##cd sbcl-${SBCL_VER}-${ARCH}-darwin && sudo ./install.sh
         brew install sbcl
         git clone https://github.com/sbcl/sbcl/
-        cd sbcl && git checkout sbcl-2.4.3~158 && sh ./make.sh --dynamic-space-size=4096 && sudo ./install.sh
+        cd sbcl && git checkout sbcl-2.4.3~159 && sh ./make.sh --dynamic-space-size=4096 && sudo ./install.sh
         brew uninstall sbcl
     - name: configure
       run: |
