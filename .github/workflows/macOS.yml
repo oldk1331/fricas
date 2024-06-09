@@ -6,8 +6,9 @@ jobs:
   build:
 
     strategy:
+      fail-fast: false
       matrix:
-        os: [macos-14]
+        os: [macos-12, macos-14]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     env:
@@ -22,9 +23,6 @@ jobs:
         ##tar xvf sbcl-${SBCL_VER}-${ARCH}-darwin-binary.tar.bz2
         ##cd sbcl-${SBCL_VER}-${ARCH}-darwin && sudo ./install.sh
         brew install sbcl
-        git clone https://github.com/sbcl/sbcl/
-        cd sbcl && sh ./make.sh --dynamic-space-size=4096 && sudo ./install.sh
-        brew uninstall sbcl
     - name: configure
       run: |
         mkdir ../build && cd ../build
