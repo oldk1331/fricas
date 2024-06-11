@@ -51,7 +51,7 @@ jobs:
         path: FriCAS-macOS-${{ env.ARCH }}-${{ github.sha }}.dmg
 
     - name: Upload to nightly release
-      if: ${{ github.event_name == 'push' && ( github.event.ref == 'refs/heads/master' || github.ref_type == 'tag' ) && github.repository == 'fricas/fricas' }}
+      if: ${{ github.event_name == 'push' && ( github.event.ref == 'refs/heads/master' || github.ref_type == 'tag' ) && github.repository == 'oldk1331/fricas' }}
       ## RELEASE_ID is:
       ## `curl https://api.github.com/${REPO_URL}/tags/nightly | jq .id`
       run: |
