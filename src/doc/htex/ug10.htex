@@ -131,7 +131,9 @@ degrees.
 Here is a different rotation.
 This turns the graph so you can view it along the \smath{y}-axis.
 }{
+\shadowspadcommand{vp := draw(x^2,x=-1..1,y=0..1,var2Steps==1)}
 \spadcommand{rotate(vp, 0, -90)\bound{d3}\free{d1}}
+\shadowspadcommand{write(vp, "tmp/ribbon2r", "postscript")}
 }{
 \includespadgraph{ribbon2r}
 }
@@ -164,10 +166,12 @@ Let's call it \spad{sp}.
 To add the second ribbon, you draw the second ribbon using the
 option \spad{space == sp}.
 
-\xtc{
+\psXtc{
 Extract the space component of \spad{vp}.
 }{
 \spadcommand{sp := subspace(vp)\bound{d5}\free{d1}}
+\shadowspadcommand{close(vp)}
+}{
 }
 
 \psXtc{
@@ -191,7 +195,9 @@ enclose the ribbons in a box.
 \psXtc{
 Show quadrilateral polygon outlines.
 }{
+\shadowspadcommand{vp := draw(x^3,x=-1..1,y=1..2,var2Steps==1, space==sp)}
 \spadcommand{drawStyle(vp,"shade");outlineRender(vp,"on")\bound{d10}\free{d6}}
+\shadowspadcommand{write(vp, "tmp/ribbons2", "postscript")}
 }{
 \includespadgraph{ribbons2}
 }
@@ -199,6 +205,7 @@ Show quadrilateral polygon outlines.
 Enclose the ribbons in a box.
 }{
 \spadcommand{rotate(vp,20,-60); showRegion(vp,"on")\bound{d11}\free{d10}}
+\shadowspadcommand{write(vp, "tmp/ribbons2b", "postscript"); close(vp)}
 }{
 \includespadgraph{ribbons2b}
 }
@@ -485,7 +492,9 @@ Create a \threedim{} viewport containing that space.
 \psXtc{
 Here is a better viewing angle.
 }{
+\shadowspadcommand{vp := makeViewport3D(sp,"Arrow")}
 \spadcommand{rotate(vp,200,-60)\bound{v5}\free{v4}}
+\shadowspadcommand{write(vp, "tmp/arrowr", "postscript"); close(vp)}
 }{
 \includespadgraph{arrowr}
 }

@@ -73,14 +73,16 @@ END {
 /^} *$/ && xtc>1 {
     xtc=0
     spadgraph=0
+    shadow=0
     print "-- \\end{" xtcname "}"
     next
 }
 
-xtc==2 && (/^\\spadcommand{/ || /^\\spadgraph{/) {
+xtc==2 && (/^\\spadcommand{/ || /^\\spadgraph{/ || /^\\shadowspadcommand/ ) {
     if (match($0, /^\\spadgraph{/)) spadgraph=1
-    print "-- \\begin{spadsrc}"
+    if (match($0, /^\\shadowspadcommand{/)) shadow=1
     gsub(/^\\spadcommand{/, "")
+    gsub(/^\\shadowspadcommand{/, "")
     gsub(/^\\spadgraph{/, "")
     gsub(/}$/, "")
     gsub(/\\\$/, "$")
@@ -89,21 +91,21 @@ xtc==2 && (/^\\spadcommand{/ || /^\\spadgraph{/) {
     gsub(/\\_/, "_")
     gsub(/\\free{.*/, "")
     gsub(/\\bound{.*/, "")
-    print "-- " $0
-    print "-- \\end{spadsrc}"
-    if (xtcname=="psXtc") {
-        print "-- \\begin{psxtcnooutput}"
-        print $0
-        print "-- \\end{psxtcnooutput}"
+    if (shadow==0) {
+        print "-- \\begin{spadsrc}"
+        print "-- " $0
+        print "-- \\end{spadsrc}"
     }
-    if (xtcname=="noOutputXtc") {
-        print "-- \\begin{xtcnooutput}"
+    if (shadow==1) print "-- \\begin{shadowOutput}"
+    if (xtcname=="psXtc" || xtcname=="noOutputXtc") {
+        print "-- \\begin{" xtcname "Output}"
         print $0
-        print "-- \\end{xtcnooutput}"
+        print "-- \\end{" xtcname "Output}"
     }
     if (xtcname=="xtc") {
         print $0
     }
+    if (shadow==1) print "-- \\end{shadowOutput}"
     next
 }
 
@@ -118,22 +120,16 @@ xtc==2 && /^\\begin{spadsrc}/ {
         getline
     }
     print "-- " $0
-    if (xtcname=="psXtc") {
-        print "-- \\begin{psxtcnooutput}"
-    }
-    if (xtcname=="noOutputXtc") {
-        print "-- \\begin{xtcnooutput}"
+    if (xtcname=="psXtc" || xtcname=="noOutputXtc") {
+        print "-- \\begin{" xtcname "Output}"
     }
     if (xtcname=="xtc" || xtcname=="noOutputXtc") {
         if (xtcname!="nullXtc") {
             for (i = 1; i < n; i++) {print arr[i]}
         }
     }
-    if (xtcname=="psXtc") {
-        print "-- \\end{psxtcnooutput}"
-    }
-    if (xtcname=="noOutputXtc") {
-        print "-- \\end{xtcnooutput}"
+    if (xtcname=="psXtc" || xtcname=="noOutputXtc") {
+        print "-- \\end{" xtcname "Output}"
     }
     next
 }
@@ -164,9 +160,9 @@ xtc==3 && /^\\includespadgraph/ {
     if (xtcname == "psXtc" && spadgraph == 1) {
         gsub(/^\\includespadgraph.*{/, "")
         gsub(/}$/, "")
-        print "-- \\begin{psxtcnooutput}"
+        print "-- \\begin{psXtcOutput}"
         print "write(%, \"tmp/" $0 "\", \"postscript\"); close(%)"
-        print "-- \\end{psxtcnooutput}"
+        print "-- \\end{psXtcOutput}"
     }
     next
 }

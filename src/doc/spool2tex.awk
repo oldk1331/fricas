@@ -37,11 +37,14 @@ BEGIN {
 # Discard \begin{inputonly} ... \end{inputonly}.
 /^-- \\begin{inputonly}/,/^-- \\end{inputonly}/ {next}
 
-# Discard \begin{xtcnooutput} ... \end{xtcnooutput}.
-/^-- \\begin{xtcnooutput}/,/^-- \\end{xtcnooutput}/ {next}
+# Discard \begin{noOutputXtcOutput} ... \end{noOutputXtcOutput}.
+/^-- \\begin{noOutputXtcOutput}/,/^-- \\end{noOutputXtcOutput}/ {next}
 
-# Discard \begin{psxtcnooutput} ... \end{psxtcnooutput}.
-/^-- \\begin{psxtcnooutput}/,/^-- \\end{psxtcnooutput}/ {next}
+# Discard \begin{psXtcOutput} ... \end{psXtcOutput}.
+/^-- \\begin{psXtcOutput}/,/^-- \\end{psXtcOutput}/ {next}
+
+# Discard \begin{shadowOutput} ... \end{shadowOutput}.
+/^-- \\begin{shadowOutput}/,/^-- \\end{shadowOutput}/ {next}
 
 # start of xtc
 /^-- \\begin{xtc}/ || /^-- \\begin{noOutputXtc}/ {
