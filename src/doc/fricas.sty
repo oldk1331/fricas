@@ -44,8 +44,9 @@
 \DeclareRobustCommand\cs[1]{\texttt{\char`\\#1}}
 
 \newenvironment{TeXOutput}%
-  {\begin{ColoredBackground}{bgmathoutput}\small}%
-  {\end{ColoredBackground}}
+  {\vspace*{-2mm}\begingroup\topsep=0pt\partopsep=0pt
+   \begin{ColoredBackground}{bgmathoutput}\small}%
+  {\end{ColoredBackground}\endgroup}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -243,7 +244,9 @@
 % ------------------------------------------------------------------------
 
 % for some reason morekeywords swallows a space, so we reintroduce it here
-\def\formatResultType#1{\begingroup
+\def\formatResultType#1{\vspace*{-5mm}\begingroup
+  \topsep=0pt
+  \partopsep=0pt
   \begin{ColoredBackground}{bgresulttype}
     \hfill
     \lstinline[%
