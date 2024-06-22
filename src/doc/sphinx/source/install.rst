@@ -167,6 +167,7 @@ LaTeX packages (available from CTAN_).
 ::
 
    amsmath
+   amssymb
    breqn
    color
    epstopdf

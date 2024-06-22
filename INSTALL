@@ -151,6 +151,7 @@ In order to build the FriCAS Book, you also need the following
 LaTeX packages (available from CTAN).
 
    amsmath
+   amssymb
    breqn
    color
    epstopdf
