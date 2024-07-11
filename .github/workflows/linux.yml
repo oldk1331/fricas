@@ -13,7 +13,7 @@ jobs:
     - name: install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install sbcl libgmp-dev libxpm-dev
+        sudo apt-get install sbcl libgmp-dev libxpm-dev texlive-font-utils
 
     - name: configure
       run: ./configure --with-lisp=sbcl --with-gmp --with-x || cat config.log
