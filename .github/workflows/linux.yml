@@ -21,6 +21,9 @@ jobs:
     - name: make
       run: make -j4 --output-sync
 
+    - name: make book
+      run: cd src/doc && make book -j4 --output-sync
+
     - name: make check
       run: make check -j4 --output-sync
 
