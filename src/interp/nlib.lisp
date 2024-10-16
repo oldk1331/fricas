@@ -265,9 +265,7 @@
            (if (eq |$UserLevel| '|development|)
                (cons cd |$library_directory_list|)
                |$library_directory_list|))
-        (t (adjoin cd
-              (adjoin (namestring (user-homedir-pathname)) |$directory_list|
-                      :test #'string=)
+        (t (adjoin cd |$directory_list|
               :test #'string=))))
 
 (defun |probe_name| (file)
