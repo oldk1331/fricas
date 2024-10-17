@@ -1,6 +1,6 @@
 name: FriCAS CI on Linux on CCL
 
-on: [push, pull_request]
+on: workflow_dispatch
 
 jobs:
   build:
