@@ -1,14 +1,12 @@
-name: FriCAS CI on Windows
+name: FriCAS CI on Windows on CCL
 
-on: [push, pull_request]
+on: workflow_dispatch
 
 jobs:
   build:
 
     runs-on: windows-2022
     timeout-minutes: 30
-    env:
-      SBCL_VER: 2.3.2
     defaults:
       run:
         shell: msys2 {0}
@@ -16,19 +14,15 @@ jobs:
     steps:
     - uses: msys2/setup-msys2@v2
       with:
-        install: make mingw-w64-x86_64-gcc mingw-w64-x86_64-gmp gmp-devel zip
-    - name: download and install SBCL
-      run: |
-        wget https://downloads.sourceforge.net/project/sbcl/sbcl/${SBCL_VER}/sbcl-${SBCL_VER}-x86-64-windows-binary.msi
-        msiexec -i sbcl-${SBCL_VER}-x86-64-windows-binary.msi -passive
+        install: make mingw-w64-x86_64-gcc mingw-w64-x86_64-gmp gmp-devel zip unzip
 
     - uses: actions/checkout@v4
     - name: configure and make
       run: |
-        export SBCL_HOME="/c/Program Files/Steel Bank Common Lisp/"
-        export PATH="$SBCL_HOME":$PATH
         mkdir ../build && cd ../build
-        ../fricas/configure --with-lisp=sbcl --enable-gmp || cat config.log
+        wget https://github.com/Clozure/ccl/releases/download/v1.13/ccl-1.13-windowsx86.zip
+        unzip ccl-1.13-windowsx86.zip
+        ../fricas/configure --with-lisp=`pwd`/ccl/wx86cl64.exe --enable-gmp || cat config.log
         make -j4 --output-sync
 
     - name: make check

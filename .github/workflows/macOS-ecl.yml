@@ -1,6 +1,6 @@
-name: FriCAS CI on macOS
+name: FriCAS CI on macOS on ECL
 
-on: [push, pull_request]
+on: workflow_dispatch
 
 jobs:
   build:
@@ -10,23 +10,20 @@ jobs:
       matrix:
         os: [macos-13, macos-15]
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
+    timeout-minutes: 60
     env:
       SBCL_VER: ${{ matrix.os == 'macos-13' && '2.2.9' || '2.4.0' }}
       ARCH: ${{ matrix.os == 'macos-13' && 'x86-64' || 'arm64' }}
 
     steps:
     - uses: actions/checkout@v4
-    - name: download and install SBCL
-      run: |
-        wget https://downloads.sourceforge.net/project/sbcl/sbcl/${SBCL_VER}/sbcl-${SBCL_VER}-${ARCH}-darwin-binary.tar.bz2
-        tar xvf sbcl-${SBCL_VER}-${ARCH}-darwin-binary.tar.bz2
-        cd sbcl-${SBCL_VER}-${ARCH}-darwin && sudo ./install.sh
+    - name: download and install ECL
+      run: brew install ecl
 
     - name: configure
       run: |
         mkdir ../build && cd ../build
-        ../fricas/configure --with-lisp=sbcl --with-gmp=`brew --prefix` || cat config.log
+        ../fricas/configure --with-lisp=ecl || cat config.log
 
     - name: make
       run: cd ../build && make -j4

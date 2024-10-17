@@ -1,25 +1,25 @@
-name: FriCAS CI on Linux
+name: FriCAS CI on Linux on GCL
 
-on: [push, pull_request]
+on: workflow_dispatch
 
 jobs:
   build:
 
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     steps:
     - uses: actions/checkout@v4
     - name: install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install sbcl libgmp-dev libxpm-dev
+        sudo apt-get install gcl libxpm-dev libreadline-dev
 
-    - name: configure
-      run: ./configure --with-lisp=sbcl --with-gmp --with-x || cat config.log
-
-    - name: make
-      run: make -j4 --output-sync
+    - name: configure and make
+      run: |
+        export GCL_ANSI=t
+        ./configure --with-lisp=gcl --with-x || cat config.log
+        make -j4 --output-sync
 
     - name: make check
       run: make check -j4 --output-sync

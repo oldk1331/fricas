@@ -1,6 +1,6 @@
-name: FriCAS CI on Linux
+name: FriCAS CI on Linux on CCL
 
-on: [push, pull_request]
+on: workflow_dispatch
 
 jobs:
   build:
@@ -13,10 +13,12 @@ jobs:
     - name: install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install sbcl libgmp-dev libxpm-dev
+        sudo apt-get install libgmp-dev libxpm-dev
+        wget https://github.com/Clozure/ccl/releases/download/v1.13/ccl-1.13-linuxx86.tar.gz
+        tar xvf ccl-1.13-linuxx86.tar.gz
 
     - name: configure
-      run: ./configure --with-lisp=sbcl --with-gmp --with-x || cat config.log
+      run: ./configure --with-lisp=`pwd`/ccl/lx86cl64 --with-gmp --with-x || cat config.log
 
     - name: make
       run: make -j4 --output-sync
