@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <signal.h>
 
 #include "fricas_c_macros.h"
@@ -54,6 +55,14 @@ inter_handler(int sig)
 int
 main(void)
 {
+  if (getenv("NEWSERVER")) {
+    sock = connect_to_local_server(SpadServer, InterpWindow, Forever);
+    printf("connect to new server successfully! You can type SPAD commands now.\n");
+    remote_stdio(sock);
+    return 0;
+
+  }
+
   sock = connect_to_local_server(SessionServer, InterpWindow, Forever);
   bsdSignal(SIGINT, inter_handler,RestartSystemCalls);
   /* wait for '$CreateFrame' in 'serverReadLine' to finish */

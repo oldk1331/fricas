@@ -244,6 +244,14 @@ wait_for_client_write(Sock *sock,char *buf,int buf_size,char *msg)
   }
 }
 
+int spad_read(int fd, char* buf, int bufsize) {
+  return recv(fd, buf, bufsize, 0);
+}
+
+int spad_write(int fd, char* buf, int bufsize) {
+  return send(fd, buf, bufsize, 0);
+}
+
 int
 sread(Sock *sock, char *buf, int buf_size, char *msg)
 {
@@ -778,12 +786,14 @@ connect_to_local_server(char *server_name, int purpose, int time_out)
   if (code == -1) {
     return NULL;
   }
+  if(!getenv("NEWSERVER")){
   send_int(sock, getpid());
   send_int(sock, sock->purpose);
   send_int(sock, sock->socket);
   sock->pid = get_int(sock);
 /*  fprintf(stderr, "Got int form socket\n"); */
   sock->remote = get_int(sock);
+  }
   return sock;
 #endif
 }
@@ -1051,6 +1061,37 @@ init_socks(void)
   init_purpose_table();
   for(i=0; i<2; i++) server[i].socket = 0;
   for(i=0; i<MaxClients; i++) clients[i].socket = 0;
+}
+
+int spad_select(){
+  fd_set rd;
+  FD_ZERO(&rd);
+  rd = server_mask;
+  int ret_val = select(FD_SETSIZE, &rd, 0, 0, 0);
+  if (ret_val == -1) {
+    return -1;
+  }
+  if (FD_ISSET(server[1].socket, &rd)) {
+    return -2;
+  }
+  for(int i = 0; i < 20; i++) {
+    // use a loop here, unitil we have linked list for client sockets
+    if (FD_ISSET(i, &rd)) {
+      return i;
+    }
+  }
+}
+
+int spad_accept() {
+  int sock = accept(server[1].socket, 0, 0); // error checking
+  FD_SET(sock, &server_mask);
+  // handle more sock
+  return sock;
+}
+
+int spad_close(int fd){
+  FD_CLR(fd, &server_mask);
+  return close(fd);
 }
 
 /* Socket I/O selection called from the BOOT serverLoop function */

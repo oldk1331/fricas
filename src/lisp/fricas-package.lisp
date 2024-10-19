@@ -48,6 +48,8 @@
           |fricas_probe_file| |run_program| |run_shell_command|
           DEFCONST |exit_with_status| MEMQ |quiet_load_alien|
           |handle_input_file| |handle_output_file| |maybe_delete_file|
+          |spadSelect| |spadAccept| |spadClose| |spadRead| |spadReadStr|
+          |spadWrite|
           |remove_directory| |writeablep| |openServer| |sockGetInt|
           |sockSendInt| |sockSendString| |sockGetFloat| |sockSendFloat|
           |serverSwitch| |sockSendSignal| |sockGetStringFrom|))

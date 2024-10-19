@@ -1539,7 +1539,7 @@ scylla(n,v) ==
   if $collectOutput then
     $outputLines := [y, :$outputLines]
   else
-    PRINTEXP(y, get_algebra_stream())
+    sprintexp(y, get_algebra_stream())
     TERPRI(get_algebra_stream())
   nil
 
@@ -2258,6 +2258,10 @@ mathPrint1(x,fg) ==
   if fg and not $collectOutput then TERPRI(get_algebra_stream())
   maPrin x
   if fg and not $collectOutput then TERPRI(get_algebra_stream())
+
+sprintexp(form, stream) ==
+  $ActiveSock => spadWrite($ActiveSock, STRCONC(PRINC_-TO_-STRING(form), STRING $charNewline))
+  PRINC(form)
 
 maPrin u ==
   null u => nil

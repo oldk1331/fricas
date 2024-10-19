@@ -611,6 +611,11 @@ with this hack and will try to convince the GCL crowd to fix this.
 (fricas-foreign-call |remove_directory| "remove_directory" int
         (dir_name c-string))
 
+(fricas-foreign-call |spadSelect| "spad_select" int)
+(fricas-foreign-call |spadAccept| "spad_accept" int)
+(fricas-foreign-call |spadClose| "spad_close" int
+        (fd int))
+
 (fricas-foreign-call |openServer| "open_server" int
         (server_name c-string))
 
@@ -648,6 +653,17 @@ with this hack and will try to convince the GCL crowd to fix this.
        (buf char-*)
        (len int))
 
+(fricas-foreign-call spadRead "spad_read" int
+                     (fd int)
+                     (buf char-*)
+                     (len int))
+
+(fricas-foreign-call spadWrite_len "spad_write" int
+                     (fd int)
+                     (buf c-string)
+                     (len int))
+(defun |spadWrite| (fd str)
+  (spadWrite_len fd str (+ 1 (length str))))
 )
 
 #+:GCL
@@ -698,6 +714,22 @@ with this hack and will try to convince the GCL crowd to fix this.
   (sb-alien:with-alien ((buf (sb-alien:array sb-alien:char 10000)))
     (sock_get_string_buf purpose (sb-alien:addr (sb-alien:deref buf 0)) 10000)
     (sb-alien:cast buf sb-alien:c-string)))
+
+#+:sbcl
+(defmacro |spadRead| (fd n)
+  `(sb-alien:with-alien ((buf (sb-alien:array sb-alien:char ,n)))
+    (let ((ret (spadRead ,fd (sb-alien:addr (sb-alien:deref buf 0)) ,n)))
+      (cons ret 123))
+    )
+  )
+
+#+:sbcl
+(defun |spadReadStr| (fd)
+  (sb-alien:with-alien ((buf (sb-alien:array sb-alien:char 1024)))
+     (let ((ret (spadRead fd (sb-alien:addr (sb-alien:deref buf 0)) 1024)))
+       (cons ret (sb-alien:cast buf sb-alien:c-string)))
+     )
+  )
 
 #+:ecl
 (defun |sockGetStringFrom| (purpose)

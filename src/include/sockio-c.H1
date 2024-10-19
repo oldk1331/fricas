@@ -60,3 +60,8 @@ extern void init_socks(void);
 extern int server_switch(void);
 extern void flush_stdout(void);
 extern void print_line(char *);
+extern int spad_select();
+extern int spad_accept();
+extern int spad_read(int, char *, int);
+extern int spad_write(int, char *, int);
+extern int spad_close(int);
