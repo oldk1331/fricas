@@ -72,6 +72,7 @@ DEFPARAMETER($NeedToSignalSessionManager, false)
 
 DEFPARAMETER($NEWSERVER, nil)
 DEFPARAMETER($ActiveSock, nil)
+DEFPARAMETER($client_sock_list, nil)
 
 serverReadLine(stream) ==
 -- used in place of read_line in a scratchpad server system.
@@ -85,17 +86,20 @@ serverReadLine(stream) ==
       sockSendInt($SessionManager, $EndOfOutput)
     $NeedToSignalSessionManager := false
     $NEWSERVER =>
-      sock := spadSelect()
-      sock = -2 => -- this is SpadSever
+      ret := spadSelect()
+      ret = -2 => -- this is SpadSever
         $ActiveSock := spadAccept()
+        $client_sock_list := CONS($ActiveSock, $client_sock_list)
         --SAY "accepted"
-      $ActiveSock := sock
+      for fd in $client_sock_list repeat
+        spad_fd_isset(fd) ~= 0 => $ActiveSock := fd
       --SAY "reading sock"
-      r := spadReadStr sock
-      CAR r = 0 =>
+      [ret, str] := spadReadStr $ActiveSock
+      ret = 0 =>
         --SAY "close sock"
-        spadClose sock
-      return STRING_-RIGHT_-TRIM([$charNewline], CDR r)
+        spadClose $ActiveSock
+        $client_sock_list := DELETE($ActiveSock, $client_sock_list)
+      return STRING_-RIGHT_-TRIM([$charNewline], str)
     action := serverSwitch()
     action = $CallInterp =>
       l := read_line(stream)

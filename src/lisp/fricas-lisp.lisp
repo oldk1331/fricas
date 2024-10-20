@@ -664,6 +664,10 @@ with this hack and will try to convince the GCL crowd to fix this.
                      (len int))
 (defun |spadWrite| (fd str)
   (spadWrite_len fd str (length str))) ;; do not write trialing '\0'
+
+(fricas-foreign-call |spad_fd_isset| "spad_fd_isset" int
+                     (fd int))
+
 )
 
 #+:GCL
@@ -727,7 +731,7 @@ with this hack and will try to convince the GCL crowd to fix this.
 (defun |spadReadStr| (fd)
   (sb-alien:with-alien ((buf (sb-alien:array sb-alien:char 1024)))
      (let ((ret (spadRead fd (sb-alien:addr (sb-alien:deref buf 0)) 1024)))
-       (cons ret (sb-alien:cast buf sb-alien:c-string)))
+       (list ret (sb-alien:cast buf sb-alien:c-string)))
      )
   )
 

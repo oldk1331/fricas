@@ -1065,23 +1065,23 @@ init_socks(void)
   for(i=0; i<MaxClients; i++) clients[i].socket = 0;
 }
 
+fd_set G_sock_mask;
+
 int spad_select(){
-  fd_set rd;
-  FD_ZERO(&rd);
-  rd = server_mask;
-  int ret_val = select(FD_SETSIZE, &rd, 0, 0, 0);
+  FD_ZERO(&G_sock_mask);
+  G_sock_mask = server_mask;
+  int ret_val = select(FD_SETSIZE, &G_sock_mask, 0, 0, 0);
   if (ret_val == -1) {
     return -1;
   }
-  if (FD_ISSET(server[1].socket, &rd)) {
+  if (FD_ISSET(server[1].socket, &G_sock_mask)) {
     return -2;
   }
-  for(int i = 0; i < 20; i++) {
-    // use a loop here, unitil we have linked list for client sockets
-    if (FD_ISSET(i, &rd)) {
-      return i;
-    }
-  }
+  return ret_val;
+}
+
+int spad_fd_isset(int fd) {
+  return FD_ISSET(fd, &G_sock_mask);
 }
 
 int spad_accept() {

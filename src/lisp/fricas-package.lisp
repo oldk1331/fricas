@@ -49,7 +49,7 @@
           DEFCONST |exit_with_status| MEMQ |quiet_load_alien|
           |handle_input_file| |handle_output_file| |maybe_delete_file|
           |spadSelect| |spadAccept| |spadClose| |spadRead| |spadReadStr|
-          |spadWrite|
+          |spadWrite| |spad_fd_isset|
           |remove_directory| |writeablep| |openServer| |sockGetInt|
           |sockSendInt| |sockSendString| |sockGetFloat| |sockSendFloat|
           |serverSwitch| |sockSendSignal| |sockGetStringFrom|))
