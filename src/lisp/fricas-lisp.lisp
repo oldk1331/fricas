@@ -663,7 +663,7 @@ with this hack and will try to convince the GCL crowd to fix this.
                      (buf c-string)
                      (len int))
 (defun |spadWrite| (fd str)
-  (spadWrite_len fd str (+ 1 (length str))))
+  (spadWrite_len fd str (length str))) ;; do not write trialing '\0'
 )
 
 #+:GCL

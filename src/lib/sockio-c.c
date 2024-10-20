@@ -245,6 +245,7 @@ wait_for_client_write(Sock *sock,char *buf,int buf_size,char *msg)
 }
 
 int spad_read(int fd, char* buf, int bufsize) {
+  memset(buf, '\0', bufsize);
   return recv(fd, buf, bufsize, 0);
 }
 
@@ -807,6 +808,7 @@ remote_stdio(Sock *sock)
   fd_set rd;
   int len;
   while (1) {
+    memset(buf, '\0', sizeof(buf));
     FD_ZERO(&rd);
     FD_SET(sock->socket,&rd);
     FD_SET(0, &rd);
