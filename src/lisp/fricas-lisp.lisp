@@ -619,27 +619,47 @@ with this hack and will try to convince the GCL crowd to fix this.
 (fricas-foreign-call |openServer| "open_server" int
         (server_name c-string))
 
-(fricas-foreign-call |sockGetInt| "sock_get_int" int
-        (purpose int))
+;; (fricas-foreign-call |sockGetInt| "sock_get_int" int
+;;         (purpose int))
 
-(fricas-foreign-call |sockSendInt| "sock_send_int" int
-        (purpose int)
-        (val int))
+;; (fricas-foreign-call sock_send_int "sock_send_int" int
+;;         (purpose int)
+;;         (val int))
 
-(fricas-foreign-call |sockGetFloat| "sock_get_float" double
-        (purpose int))
+(defun |sockSendInt| (purpose val)
+  (let ((fd (BOOT::|get_fd_from_purpose| purpose)))
+    (|spad_send_int| fd val))
+  )
 
-(fricas-foreign-call |sockSendFloat| "sock_send_float" int
-       (purpose int)
-       (num double))
+(defun |sockSendFloat| (purpose val)
+  (let ((fd (BOOT::|get_fd_from_purpose| purpose)))
+    (|spad_send_float| fd val))
+  )
+
+(defun |sockGetInt| (purpose)
+  (let ((fd (BOOT::|get_fd_from_purpose| purpose)))
+    (|spad_get_int| fd))
+  )
+
+(defun |sockGetFloat| (purpose)
+  (let ((fd (BOOT::|get_fd_from_purpose| purpose)))
+    (|spad_get_float| fd))
+  )
+
+;; (fricas-foreign-call |sockGetFloat| "sock_get_float" double
+;;         (purpose int))
+
+;; (fricas-foreign-call |sockSendFloat| "sock_send_float" int
+;;        (purpose int)
+;;        (num double))
 
 (fricas-foreign-call sock_send_string_len "sock_send_string_len" int
        (purpose int)
        (str c-string)
        (len int))
 
-(defun |sockSendString| (purpose str)
-     (sock_send_string_len purpose str (length str)))
+;; (defun |sockSendString| (purpose str)
+;;      (sock_send_string_len purpose str (length str)))
 
 (fricas-foreign-call |serverSwitch| "server_switch" int)
 
@@ -665,6 +685,13 @@ with this hack and will try to convince the GCL crowd to fix this.
 (defun |spadWrite| (fd str)
   (spadWrite_len fd str (length str))) ;; do not write trialing '\0'
 
+(defun |sockSendString| (purpose str)
+  (let ((fd (BOOT::|get_fd_from_purpose| purpose)))
+    (|spad_send_int| fd (+ 1 (length str)))
+    (spadWrite_len fd str (+ 1 (length str)))
+    )
+  )
+
 (fricas-foreign-call |spad_fd_isset| "spad_fd_isset" int
                      (fd int))
 
@@ -673,6 +700,13 @@ with this hack and will try to convince the GCL crowd to fix this.
                      (val int))
 
 (fricas-foreign-call |spad_get_int| "spad_get_int" int
+                     (fd int))
+
+(fricas-foreign-call |spad_send_float| "spad_send_float" int
+                     (fd int)
+                     (val double))
+
+(fricas-foreign-call |spad_get_float| "spad_get_float" double
                      (fd int))
 
 (fricas-foreign-call |spad_get_retval| "spad_get_retval" int)

@@ -588,6 +588,21 @@ send_float(Sock *sock, double num)
   return 0;
 }
 
+int spad_send_float(int fd, double val) {
+  return send(fd, (char*)&val, sizeof(double), MSG_NOSIGNAL);
+  // error handling
+}
+
+double spad_get_float(int fd) {
+  double val = 0;
+  int len = recv(fd, (char *)&val, sizeof(double), 0);
+  if (len != sizeof(double)) {
+    G_sock_retval = len;
+    return -1;
+  }
+  return val;
+}
+
 int
 sock_send_float(int purpose, double num)
 {

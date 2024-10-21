@@ -74,6 +74,12 @@ DEFPARAMETER($NEWSERVER, nil)
 DEFPARAMETER($ActiveSock, nil)
 DEFPARAMETER($client_sock_list, nil)
 
+get_fd_from_purpose purpose ==
+  for sock in $client_sock_list repeat
+    fd := CAR sock
+    if purpose = CADR sock then return fd
+  --SAY '"error: no purpose found"
+
 serverReadLine(stream) ==
 -- used in place of read_line in a scratchpad server system.
   FORCE_-OUTPUT()

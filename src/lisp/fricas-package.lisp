@@ -50,7 +50,7 @@
           |handle_input_file| |handle_output_file| |maybe_delete_file|
           |spadSelect| |spadAccept| |spadClose| |spadRead| |spadReadStr|
           |spadWrite| |spad_fd_isset| |spad_send_int| |spad_get_int|
-          |spad_get_retval|
+          |spad_get_retval| |spad_send_float| |spad_get_float|
           |remove_directory| |writeablep| |openServer| |sockGetInt|
           |sockSendInt| |sockSendString| |sockGetFloat| |sockSendFloat|
           |serverSwitch| |sockSendSignal| |sockGetStringFrom|))

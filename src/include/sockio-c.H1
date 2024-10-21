@@ -69,3 +69,5 @@ extern int spad_fd_isset(int);
 extern int spad_send_int(int, int);
 extern int spad_get_int(int);
 extern int spad_get_retval();
+extern int spad_send_float(int, double);
+extern double spad_get_float(int);
