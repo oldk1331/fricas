@@ -643,7 +643,7 @@ issue_server_command(HyperLink *link)
             fprintf(stderr, "No SpadBusyPage found\n");
         return page;
     }
-    switch_frames();
+    //switch_frames();
     switch (link->type) {
       case Qspadcall:
       case Qspadcallquit:

@@ -119,6 +119,13 @@ serverReadLine(stream) ==
             currentFrame := LASSOC($currentFrameNum, $frameAlist)
             changeToNamedInterpreterFrame currentFrame
           break
+      purpose := CADR ASSOC($ActiveSock, $client_sock_list)
+      purpose = $MenuServer =>
+        cmd := spad_get_int($ActiveSock)
+        cmd = $LispCommand =>
+          stringBuf := sockGetStringFrom($MenuServer)
+          form := unescapeStringsInForm READ_-FROM_-STRING stringBuf
+          protectedEVAL form
       [ret, str] := spadReadStr $ActiveSock
       ret = 0 =>
         spadClose $ActiveSock

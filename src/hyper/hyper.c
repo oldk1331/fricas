@@ -438,35 +438,35 @@ make_server_connections(void)
                 exit(-1);
             }
         }
-        else {
+        /* else { */
 
-            /*
-             * Do the same thing for the SessionServer
-             */
+        /*     /\* */
+        /*      * Do the same thing for the SessionServer */
+        /*      *\/ */
 
-            for (i = 0, session_server = NULL; i < 2 && session_server == NULL
-                 ; i++) {
-                session_server =
-                    connect_to_local_server(SessionServer, MenuServer,
-                                            wait_time);
-                if (is_fricas_server && session_server == NULL) {
-                    fprintf(stderr,
-                            "(HyperDoc) Error opening SessionServer, Retrying ...\n");
-                }
-                else
-                    i = 11;
-            }
-            if (session_server == NULL) {
-                fprintf(stderr, "(HyperDoc) Connection attempt to session manager timed out.\n");
-                if (is_fricas_server) {
-                    fprintf(stderr,
-                            "(HyperDoc) Server unable to connect to session server\n");
-                    exit(-1);
-                }
-                else {
-                    MenuServerOpened = 0;
-                }
-            }
-        }
+        /*     for (i = 0, session_server = NULL; i < 2 && session_server == NULL */
+        /*          ; i++) { */
+        /*         session_server = */
+        /*             connect_to_local_server(SessionServer, MenuServer, */
+        /*                                     wait_time); */
+        /*         if (is_fricas_server && session_server == NULL) { */
+        /*             fprintf(stderr, */
+        /*                     "(HyperDoc) Error opening SessionServer, Retrying ...\n"); */
+        /*         } */
+        /*         else */
+        /*             i = 11; */
+        /*     } */
+        /*     if (session_server == NULL) { */
+        /*         fprintf(stderr, "(HyperDoc) Connection attempt to session manager timed out.\n"); */
+        /*         if (is_fricas_server) { */
+        /*             fprintf(stderr, */
+        /*                     "(HyperDoc) Server unable to connect to session server\n"); */
+        /*             exit(-1); */
+        /*         } */
+        /*         else { */
+        /*             MenuServerOpened = 0; */
+        /*         } */
+        /*     } */
+        /* } */
     }
 }

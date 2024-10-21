@@ -762,6 +762,13 @@ with this hack and will try to convince the GCL crowd to fix this.
     (sock_get_string_buf purpose (sb-alien:addr (sb-alien:deref buf 0)) 10000)
     (sb-alien:cast buf sb-alien:c-string)))
 
+(defun |sockGetStringFrom| (purpose)
+  (let ((fd (BOOT::|get_fd_from_purpose| purpose)))
+    (|spad_get_int| fd)
+    (CADR (|spadReadStr| fd))
+    )
+  )
+
 #+:sbcl
 (defmacro |spadRead| (fd n cast-fun)
   `(sb-alien:with-alien ((buf (sb-alien:array sb-alien:char ,n)))
