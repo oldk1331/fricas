@@ -82,23 +82,41 @@ serverReadLine(stream) ==
   _*EOF_*: fluid := NIL
   line :=
    while not $EndServerSession and not _*EOF_* repeat
-    if $NeedToSignalSessionManager then
+    if $NeedToSignalSessionManager and not getEnv '"NEWSERVER" then
       sockSendInt($SessionManager, $EndOfOutput)
     $NeedToSignalSessionManager := false
-    $NEWSERVER =>
+    getEnv '"NEWSERVER" =>
       ret := spadSelect()
       ret = -2 => -- this is SpadSever
-        $ActiveSock := spadAccept()
-        $client_sock_list := CONS($ActiveSock, $client_sock_list)
-        --SAY "accepted"
-      for fd in $client_sock_list repeat
-        spad_fd_isset(fd) ~= 0 => $ActiveSock := fd
-      --SAY "reading sock"
+        $ActiveSock := sock := spadAccept()
+        spad_get_int(sock) -- pid
+        purpose := spad_get_int(sock) -- purpose
+        spad_get_int(sock) -- remote fd
+        spad_send_int(sock, 1) -- pid
+        spad_send_int(sock, sock) -- remote fd
+        if purpose = $InterpWindow then
+          frameName := GENTEMP('"frame")
+          addNewInterpreterFrame(frameName)
+          $frameAlist := [[$frameNumber,:frameName], :$frameAlist]
+          $currentFrameNum := $frameNumber
+          $client_sock_list := CONS([sock, purpose, $frameNumber], $client_sock_list)
+          $frameNumber := $frameNumber + 1
+        else
+          $client_sock_list := CONS([sock, purpose], $client_sock_list)
+      for sock in $client_sock_list repeat
+        fd := CAR sock
+        if spad_fd_isset(fd) ~= 0 then
+          $ActiveSock := fd
+          frameNum := CADDR sock
+          if $currentFrameNum ~= frameNum then
+            $currentFrameNum := frameNum
+            currentFrame := LASSOC($currentFrameNum, $frameAlist)
+            changeToNamedInterpreterFrame currentFrame
+          break
       [ret, str] := spadReadStr $ActiveSock
       ret = 0 =>
-        --SAY "close sock"
         spadClose $ActiveSock
-        $client_sock_list := DELETE($ActiveSock, $client_sock_list)
+        $client_sock_list := DELETE(ASSOC($ActiveSock, $client_sock_list), $client_sock_list)
       return STRING_-RIGHT_-TRIM([$charNewline], str)
     action := serverSwitch()
     action = $CallInterp =>

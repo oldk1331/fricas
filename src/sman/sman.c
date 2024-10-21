@@ -636,7 +636,7 @@ read_from_spad_io(int ptcNum)
     clean_up_sockets();
     exit(-1);
   }
-  if (session_io == NULL) {
+  if (session_io == NULL || getenv("NEWSERVER") != NULL) {
     if (ret_code < mes_len)
       mes_len -= ret_code;
     else {

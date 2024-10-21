@@ -668,6 +668,15 @@ with this hack and will try to convince the GCL crowd to fix this.
 (fricas-foreign-call |spad_fd_isset| "spad_fd_isset" int
                      (fd int))
 
+(fricas-foreign-call |spad_send_int| "spad_send_int" int
+                     (fd int)
+                     (val int))
+
+(fricas-foreign-call |spad_get_int| "spad_get_int" int
+                     (fd int))
+
+(fricas-foreign-call |spad_get_retval| "spad_get_retval" int)
+
 )
 
 #+:GCL
@@ -715,15 +724,15 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 #+:sbcl
 (defun |sockGetStringFrom| (purpose)
-  (sb-alien:with-alien ((buf (sb-alien:array sb-alien:char 10000)))
+  (sb-alien:with-alien ((buf (sb-alien:array sb-alien:char 10000))) ;; make-aline for dynamic array; needs free
     (sock_get_string_buf purpose (sb-alien:addr (sb-alien:deref buf 0)) 10000)
     (sb-alien:cast buf sb-alien:c-string)))
 
 #+:sbcl
-(defmacro |spadRead| (fd n)
+(defmacro |spadRead| (fd n cast-fun)
   `(sb-alien:with-alien ((buf (sb-alien:array sb-alien:char ,n)))
-    (let ((ret (spadRead ,fd (sb-alien:addr (sb-alien:deref buf 0)) ,n)))
-      (cons ret 123))
+    (let ((ret (spadRead ,fd (sb-alien:addr (sb-alien:deref buf 0)) ,n))) ;; gensym
+      (list ret (funcall ,cast-fun (sb-alien:addr (sb-alien:deref buf 0)))))
     )
   )
 

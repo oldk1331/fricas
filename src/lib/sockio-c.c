@@ -392,6 +392,27 @@ sock_send_int(int purpose,int  val)
   return -1;
 }
 
+int spad_send_int(int fd, int val) {
+  return send(fd, (char*)&val, sizeof(int), MSG_NOSIGNAL);
+  // error handling
+}
+
+int G_sock_retval = 0;
+
+int spad_get_int(int fd) {
+  int val = 0;
+  int len = recv(fd, (char *)&val, sizeof(int), 0);
+  if (len != sizeof(int)) {
+    G_sock_retval = len;
+    return -1;
+  }
+  return val;
+}
+
+int spad_get_retval () {
+  return G_sock_retval;
+}
+
 int
 send_ints(Sock *sock, int *vals, int num)
 {
@@ -787,14 +808,12 @@ connect_to_local_server(char *server_name, int purpose, int time_out)
   if (code == -1) {
     return NULL;
   }
-  if(!getenv("NEWSERVER")){
   send_int(sock, getpid());
   send_int(sock, sock->purpose);
   send_int(sock, sock->socket);
   sock->pid = get_int(sock);
 /*  fprintf(stderr, "Got int form socket\n"); */
   sock->remote = get_int(sock);
-  }
   return sock;
 #endif
 }

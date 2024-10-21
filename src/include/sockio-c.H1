@@ -65,4 +65,7 @@ extern int spad_accept();
 extern int spad_read(int, char *, int);
 extern int spad_write(int, char *, int);
 extern int spad_close(int);
-extern int spad_fd_isset(int fd);
+extern int spad_fd_isset(int);
+extern int spad_send_int(int, int);
+extern int spad_get_int(int);
+extern int spad_get_retval();
