@@ -235,9 +235,6 @@
 
 ; 22.2.1 Input from Character Streams
 
-(defvar *EOF* NIL)
-
-
 ; 22.3 Output Functions
 
 ; 22.3.1 Output to Character Streams

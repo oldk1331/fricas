@@ -75,9 +75,8 @@ serverReadLine(stream) ==
   FORCE_-OUTPUT()
   not $SpadServer =>
       read_line(stream)
-  _*EOF_*: fluid := NIL
   line :=
-   while not $EndServerSession and not _*EOF_* repeat
+   while not $EndServerSession repeat
     if $NeedToSignalSessionManager then
       sockSendInt($SessionManager, $EndOfOutput)
     $NeedToSignalSessionManager := false
