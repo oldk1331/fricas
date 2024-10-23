@@ -638,7 +638,7 @@ ${HTEX_FILES_INPUT}: tmp/%.input: ${htexsrcdir}/%.htex
 
 HTEX_FILES_SPOOL = ${patsubst %, tmp/%.spool, ${HTEX_FILES}}
 ${HTEX_FILES_SPOOL}: tmp/%.spool: tmp/%.input
-	echo ")read $<" | FRICAS_INITFILE='' ${INTERPSYS} > $@
+	echo ")read $<" | FRICAS_INITFILE='' FRICAS=${FRICAS} ${FRICAS}/bin/fricas -noht -noclef > $@
 
 HTEX_FILES_TEX = ${patsubst %, tmp/%.tex, ${HTEX_FILES}}
 ${HTEX_FILES_TEX}: tmp/%.tex: tmp/%.spool

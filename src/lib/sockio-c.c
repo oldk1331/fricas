@@ -796,6 +796,7 @@ remote_stdio(Sock *sock)
   char buf[1024];
   fd_set rd;
   int len;
+  int bytes_print;
   while (1) {
     FD_ZERO(&rd);
     FD_SET(sock->socket,&rd);
@@ -823,8 +824,14 @@ remote_stdio(Sock *sock)
         return;
       else {
         *(buf + len) = '\0';
-        fputs(buf, stdout);
+        // if buf already ends with '\0', then the expected print count should -1
+        if(buf[len-1] == '\0') {len = len-1;}
+        //fputs(buf, stdout);
+        bytes_print = printf("%s", buf);
         fflush(stdout);
+        if (len != bytes_print) {
+        printf("-- output truncation at beginning detected. expected: %d, printed: %d\n", len, bytes_print);
+	}
       }
     }
   }
