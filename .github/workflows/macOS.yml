@@ -19,5 +19,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: download and install SBCL
       run: |
+        xcode-select --install
         brew install buildapp
         brew install cafeobj
+        brew install fricas
