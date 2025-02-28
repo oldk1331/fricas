@@ -19,5 +19,4 @@ jobs:
     - uses: actions/checkout@v4
     - name: download and install SBCL
       run: |
-        brew install pgloader
-
+        brew install ppsspp
