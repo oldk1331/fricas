@@ -171,13 +171,16 @@ interpsys_restart() ==
 
   if $displayStartMsgs then spadStartUpMsgs()
   $currentLine := nil
+  fricas_init_opendb()
+  makeConstructorsAutoLoad()
+  createInitializers2()
+
+fricas_init_opendb() ==
   -- open databases
   open_interp_db(true)
   open_operation_db(true)
   open_category_db(true)
   open_browse_db(true)
-  makeConstructorsAutoLoad()
-  createInitializers2()
 
 readSpadProfileIfThere() ==
   -- reads SPADPROF INPUT if it exists

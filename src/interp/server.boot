@@ -87,6 +87,7 @@ serverReadLine(stream) ==
       $NeedToSignalSessionManager := true
       return l
     action = $CreateFrame =>
+      if $SpadSavedSystem then previousFrameNum := $currentFrameNum
       frameName := GENTEMP('"frame")
       addNewInterpreterFrame(frameName)
       $frameAlist := [[$frameNumber,:frameName], :$frameAlist]
@@ -94,6 +95,11 @@ serverReadLine(stream) ==
       sockSendInt($SessionManager, $CreateFrameAnswer)
       sockSendInt($SessionManager, $frameNumber)
       $frameNumber := $frameNumber + 1
+      if $SpadSavedSystem then
+        $currentFrameNum := previousFrameNum
+        currentFrame := LASSOC($currentFrameNum, $frameAlist)
+        changeToNamedInterpreterFrame currentFrame
+        $SpadSavedSystem := false -- run only once at startup
       princPrompt()
       FORCE_-OUTPUT()
     action = $SwitchFrames =>

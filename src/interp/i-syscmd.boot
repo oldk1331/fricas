@@ -1948,6 +1948,11 @@ read_or_compile(quiet, i_name) ==
     type = '"bbin" => LOAD(input_file)
     type = '"input" => ncINTERPFILE(input_file, not(quiet))
 
+--% )savesystem
+savesystem l ==
+  #l ~= 1 or not(SYMBOLP first l) => helpSpad2Cmd '(savesystem)
+  SPAD_-SAVESYSTEM SYMBOL_-NAME first l
+
 --% )show
 
 show l ==

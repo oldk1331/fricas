@@ -157,7 +157,7 @@ After this function is called the image is clean and can be saved.
 (defvar $openServerIfTrue t "t means try starting an open server")
 (defparameter $SpadServerName "/tmp/.d" "the name of the spad server socket")
 (defvar |$SpadServer| nil "t means Scratchpad acts as a remote server")
-
+(defvar |$SpadSavedSystem| nil "t means FriCAS is resuming from a previous )savesystem")
 
 (defun |loadExposureGroupData| ()
  (cond
@@ -204,6 +204,12 @@ After this function is called the image is clean and can be saved.
                     (FRICAS-LISP::cmu-init-foreign-calls)
                 )
                 (setf $openServerIfTrue nil))))
+  (|fricas_init_openserver|)
+  (setq *GENSYM-COUNTER* 0)
+  (|interpsys_restart|)
+)
+
+(defun |fricas_init_openserver| ()
     #+(or :GCL (and :clisp :ffi) :sbcl :cmu :openmcl :ecl :lispworks)
     (if $openServerIfTrue
         (let ((os (|openServer| $SpadServerName)))
@@ -215,8 +221,6 @@ After this function is called the image is clean and can be saved.
                       (if (fboundp 'si::readline-off)
                           (si::readline-off))
                       (setq |$SpadServer| t)))))
-  (setq *GENSYM-COUNTER* 0)
-  (|interpsys_restart|)
 )
 
 (defun |fricas_restart2| ()
@@ -238,6 +242,17 @@ After this function is called the image is clean and can be saved.
   (FRICAS-LISP::save-core-restart save-file
          (if do-restart #'boot::|fricas_restart| nil))
 )
+
+(defun spad-savesystem (save-file)
+  (setq |$SpadServer| nil)
+  (setq $openServerIfTrue t)
+  (setq |$SpadSavedSystem| t)
+  (FRICAS-LISP::save-core-restart save-file
+    (lambda ()
+      (in-package "BOOT")
+      (|fricas_init_openserver|)
+      (|fricas_init_opendb|)
+      (|fricas_restart2|))))
 
 (defun |mkAutoLoad| (cname)
    (function (lambda (&rest args)

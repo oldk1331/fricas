@@ -130,6 +130,7 @@ ncTopLevel() ==
 ++ not aware of that,  It is therefore confusing to display a prompt,
 ++ because all this horse-threading happens behind the client's back.
 printFirstPrompt?() ==
+    $SpadSavedSystem and $SpadServer => false
     $interpreterFrameName ~= "initial" or not($SpadServer)
 
 
