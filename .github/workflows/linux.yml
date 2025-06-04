@@ -46,6 +46,7 @@ jobs:
       if: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
       run: |
         sudo apt-get install xvfb texlive-font-utils texlive-latex-extra texlive-science
+        export SOURCE_DATE_EPOCH=`date -u -d "today 00:00:00" +%s`
         make -j4 book
 
     - name: Upload reference book
