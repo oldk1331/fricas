@@ -1,10 +1,11 @@
 name: FriCAS CI on Linux on CCL
 
-on: workflow_dispatch
+on: [push, pull_request, workflow_dispatch]
 permissions: {}
 
 jobs:
   build:
+    if: contains(github.event.head_commit.message, 'ccl') || contains(github.event.head_commit.message, 'clozure') || github.event_name == 'workflow_dispatch'
 
     runs-on: ubuntu-24.04
     timeout-minutes: 30
