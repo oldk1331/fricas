@@ -1,0 +1,21 @@
+name: Conditional Lisp CI
+
+on: [push, pull_request]
+permissions: {}
+
+jobs:
+  ccl:
+    if: contains(github.event.head_commit.message, 'ccl') || contains(github.event.head_commit.message, 'clozure')
+    uses: ./.github/workflows/linux-ccl.yml
+
+  clisp:
+    if: contains(github.event.head_commit.message, 'clisp')
+    uses: ./.github/workflows/linux-clisp.yml
+
+  ecl:
+    if: contains(github.event.head_commit.message, ' ecl')
+    uses: ./.github/workflows/linux-ecl.yml
+
+  gcl:
+    if: contains(github.event.head_commit.message, 'gcl')
+    uses: ./.github/workflows/linux-gcl.yml
