@@ -4,18 +4,34 @@ on: [push, pull_request]
 permissions: {}
 
 jobs:
-  ccl:
+  linux-ccl:
     if: contains(github.event.head_commit.message, 'ccl') || contains(github.event.head_commit.message, 'clozure')
     uses: ./.github/workflows/linux-ccl.yml
 
-  clisp:
+  windows-ccl:
+    if: contains(github.event.head_commit.message, 'ccl') || contains(github.event.head_commit.message, 'clozure')
+    uses: ./.github/workflows/windows-ccl.yml
+
+  macOS-ccl:
+    if: contains(github.event.head_commit.message, 'ccl') || contains(github.event.head_commit.message, 'clozure')
+    uses: ./.github/workflows/macOS-ccl.yml
+
+  linux-clisp:
     if: contains(github.event.head_commit.message, 'clisp')
     uses: ./.github/workflows/linux-clisp.yml
 
-  ecl:
+  macOS-clisp:
+    if: contains(github.event.head_commit.message, 'clisp')
+    uses: ./.github/workflows/macOS-clisp.yml
+
+  linux-ecl:
     if: contains(github.event.head_commit.message, ' ecl')
     uses: ./.github/workflows/linux-ecl.yml
 
-  gcl:
+  macOS-ecl:
+    if: contains(github.event.head_commit.message, ' ecl')
+    uses: ./.github/workflows/macOS-ecl.yml
+
+  linux-gcl:
     if: contains(github.event.head_commit.message, 'gcl')
     uses: ./.github/workflows/linux-gcl.yml
