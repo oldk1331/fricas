@@ -1,0 +1,67 @@
+name: FriCAS CI on Windows on ECL
+
+on: [workflow_dispatch, workflow_call]
+permissions: {}
+
+jobs:
+  build:
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, windows-11-arm]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 120
+    env:
+      ARCH: ${{ matrix.os == 'windows-2022' && 'x86-64' || 'arm64' }}
+      MSYSTEM: ${{ matrix.os == 'windows-2022' && 'UCRT64' || 'CLANGARM64' }}
+      INSTALL_PREFIX : ${{ matrix.os == 'windows-2022' && 'mingw-w64-ucrt-x86_64' || 'mingw-w64-clang-aarch64' }}
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+    - uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{env.MSYSTEM}}
+        install: >-
+          make ${{env.INSTALL_PREFIX}}-gcc ${{env.INSTALL_PREFIX}}-gmp gmp-devel
+          ${{env.INSTALL_PREFIX}}-libffi libffi-devel
+          ${{env.INSTALL_PREFIX}}-gc libgc-devel
+          ${{env.INSTALL_PREFIX}}-libatomic_ops libatomic_ops-devel
+          zip patch diffutils
+
+    - uses: actions/checkout@v6
+
+    - name: download and install ECL
+      run: |
+        wget https://ecl.common-lisp.dev/static/files/release/ecl-26.3.27.tgz
+        tar xf ecl-26.3.27.tgz && cd ecl-26.3.27
+        ./configure --prefix=c:/ecl/ --enable-unicode=no --with-asdf=no
+        make -j4 --output-sync
+        make install
+
+    - name: configure and make
+      run: |
+        mkdir ../build && cd ../build
+        export PATH=/c/ecl/:$PATH
+        ../fricas/configure --with-lisp=/c/ecl/ecl.exe || cat config.log
+        make -j4 --output-sync
+
+    - name: Create artifact archives
+      run: |
+        cp -rp ../build/target/*/ FriCAS-windows-${ARCH}
+        rm FriCAS-windows-${ARCH}/bin/{fricas,fricas-readline}
+        cp /c/ecl/ecl.dll /${MSYSTEM}/bin/lib{gc-1,gcc_s_seh-1,ffi-8,gmp-10,pthread-1}.dll FriCAS-windows-${ARCH}/bin/
+        zip -r FriCAS-windows-ECL-${ARCH}-${{ github.sha }}.zip FriCAS-windows-${ARCH}
+
+    - name: Upload Windows binary
+      uses: actions/upload-artifact@v7
+      with:
+        archive: false
+        path: FriCAS-windows-ECL-${{env.ARCH}}-${{ github.sha }}.zip
+
+    - name: make check
+      run: |
+        export PATH=/c/ecl/:$PATH
+        cd ../build && make check -j4 --output-sync

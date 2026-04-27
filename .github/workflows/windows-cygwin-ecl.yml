@@ -1,0 +1,51 @@
+name: FriCAS CI on Windows on Cygwin on ECL
+
+on: [workflow_dispatch, workflow_call]
+permissions: {}
+
+jobs:
+  build:
+
+    runs-on: windows-2022
+    timeout-minutes: 240
+    defaults:
+      run:
+        shell: bash --login --noprofile --norc -o igncr -eo pipefail '{0}'
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - uses: cygwin/cygwin-install-action@v6
+      with:
+        packages: |
+          gcc-core make wget tar zip
+          libgc1 libgc-devel libgmp-devel libffi-devel libatomic_ops1 libatomic_ops-devel
+
+    - name: build ECL
+      run: |
+        wget https://ecl.common-lisp.dev/static/files/release/ecl-26.3.27.tgz
+        tar xf ecl-26.3.27.tgz && cd ecl-26.3.27
+        ./configure --prefix=/usr
+        make -j4 --output-sync
+        make install
+
+    - name: configure and make
+      run: |
+        mkdir ../build && cd ../build
+        ../fricas/configure --with-lisp=ecl || cat config.log
+        make -j4 --output-sync
+
+    - name: Create artifact archives
+      run: |
+        cp -rp ../build/target/*/ FriCAS-windows-x86-64
+        rm FriCAS-windows-x86-64/bin/{fricas,fricas-readline}
+        zip -r FriCAS-cygwin-ECL-${{ github.sha }}.zip FriCAS-windows-x86-64
+
+    - name: Upload Windows binary
+      uses: actions/upload-artifact@v7
+      with:
+        archive: false
+        path: FriCAS-cygwin-ECL-${{ github.sha }}.zip
+
+    - name: make check
+      run: cd ../build && make check -j4 --output-sync
