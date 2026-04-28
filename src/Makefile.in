@@ -1,7 +1,3 @@
-
-
-SUBDIRS = @fricas_src_subdirs@
-
 subdir = src/
 
 .PHONY: all all-ax all-src all-clef all-sman

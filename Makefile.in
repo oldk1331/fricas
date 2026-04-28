@@ -8,8 +8,6 @@ COMMAND=$(COMMAND_DIR)/fricas
 
 subdir =
 
-SUBDIRS = src
-
 build_srcdir = $(builddir)/src
 
 FRICAS_SRC_TARGETS = all-algebra all-etc all-fricassys all-boot \

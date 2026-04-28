@@ -661,7 +661,6 @@ sys_ALDOR
 LDF
 CCF
 FRICAS
-BASE
 PACKAGE_YEAR
 XVFB_RUN
 XVFB
@@ -735,7 +734,6 @@ build_os
 build_vendor
 build_cpu
 build
-fricas_src_subdirs
 target_alias
 host_alias
 build_alias
@@ -2615,9 +2613,6 @@ ac_config_headers="$ac_config_headers config/fricas_c_macros.h"
 # program is not found
 
 
-
-
-fricas_src_subdirs="lib lisp boot interp algebra input etc"
 
 
 
@@ -6131,7 +6126,6 @@ if test x"$ac_cv_have_decl_fork" = xyes \
      -a x"$ac_cv_have_decl_wait" = xyes; then \
     fricas_c_runtime="$fricas_c_runtime terminal_io"
     fricas_src_all="$fricas_src_all all-sman all-clef"
-    fricas_src_subdirs="$fricas_src_subdirs clef sman"
     ac_config_files="$ac_config_files src/clef/Makefile:config/var-def.mk:src/clef/Makefile.in:config/setup-dep.mk"
 
     ac_config_files="$ac_config_files src/sman/Makefile:config/var-def.mk:src/sman/Makefile.in:config/setup-dep.mk"
@@ -6935,7 +6929,6 @@ X_PRE_LIBS="-lXpm $X_PRE_LIBS"
 if test x"$fricas_has_xpm" = xyes; then
     fricas_c_runtime="$fricas_c_runtime graphics"
     fricas_src_all="$fricas_src_all all-graph"
-    fricas_src_subdirs="$fricas_src_subdirs graph"
     ac_config_files="$ac_config_files src/graph/Makefile:config/var-def.mk:src/graph/Makefile.in:config/setup-dep.mk"
 
     ac_config_files="$ac_config_files src/graph/Gdraws/Makefile:config/var-def.mk:src/graph/Gdraws/Makefile.in:config/setup-dep.mk"
@@ -6960,7 +6953,6 @@ if test x"$fricas_has_xpm" = xyes; then
 if test "x$ac_cv_header_regex_h" = xyes
 then :
   fricas_src_all="$fricas_src_all all-hyper all-doc"
-                    fricas_src_subdirs="$fricas_src_subdirs hyper doc"
                     for ac_prog in xvfb-run
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
@@ -7030,9 +7022,7 @@ ac_config_files="$ac_config_files src/hyper/Makefile:config/var-def.mk:src/hyper
 ac_config_files="$ac_config_files src/doc/Makefile:config/var-def.mk:src/doc/Makefile.in:config/setup-dep.mk"
 
 
-BASE=""
-
-FRICAS=${BASE}${fricas_targetdir}
+FRICAS=${fricas_targetdir}
 
 
 CCF="-g -O2 -Wall -D_GNU_SOURCE"
@@ -7244,7 +7234,6 @@ fi
 if test x"$BUILD_ALDOR_INTERFACE" = xyes ; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Aldor interface will be built." >&5
 printf "%s\n" "$as_me: Aldor interface will be built." >&6;}
-  fricas_src_subdirs="$fricas_src_subdirs aldor"
   fricas_src_all="$fricas_src_all all-aldor"
   ac_config_files="$ac_config_files src/aldor/Makefile:config/var-def.mk:src/aldor/Makefile.in:config/setup-dep.mk"
 

@@ -24,9 +24,6 @@ AC_DEFUN([FRICAS_CHECK_PROG],
    [AC_CHECK_PROG([$1], [$2], [$2])
    test -n "$$1" || AC_MSG_ERROR([$3])])
 
-fricas_src_subdirs="lib lisp boot interp algebra input etc"
-AC_SUBST(fricas_src_subdirs)
-
 AC_CANONICAL_TARGET
 
 case $build in
@@ -714,7 +711,6 @@ if test x"$ac_cv_have_decl_fork" = xyes \
      -a x"$ac_cv_have_decl_wait" = xyes; then \
     fricas_c_runtime="$fricas_c_runtime terminal_io"
     fricas_src_all="$fricas_src_all all-sman all-clef"
-    fricas_src_subdirs="$fricas_src_subdirs clef sman"
     FRICAS_MAKEFILE([src/clef/Makefile])
     FRICAS_MAKEFILE([src/sman/Makefile])
 else
@@ -755,7 +751,6 @@ AC_SUBST(X_PRE_LIBS)
 if test x"$fricas_has_xpm" = xyes; then
     fricas_c_runtime="$fricas_c_runtime graphics"
     fricas_src_all="$fricas_src_all all-graph"
-    fricas_src_subdirs="$fricas_src_subdirs graph"
     FRICAS_MAKEFILE([src/graph/Makefile])
     FRICAS_MAKEFILE([src/graph/Gdraws/Makefile])
     FRICAS_MAKEFILE([src/graph/view2D/Makefile])
@@ -771,7 +766,6 @@ AC_SUBST(XVFB)
 if test x"$fricas_has_xpm" = xyes; then
    AC_CHECK_HEADER([regex.h],
                    [fricas_src_all="$fricas_src_all all-hyper all-doc"
-                    fricas_src_subdirs="$fricas_src_subdirs hyper doc"
                     AC_CHECK_PROGS([XVFB_RUN], [xvfb-run])
                     if test -n "$XVFB_RUN"; then
                         MAYBE_VIEWPORTS=viewports
@@ -788,9 +782,7 @@ AC_SUBST(PACKAGE_YEAR)
 FRICAS_MAKEFILE([src/hyper/Makefile])
 FRICAS_MAKEFILE([src/doc/Makefile])
 
-BASE=""
-AC_SUBST(BASE)
-FRICAS=${BASE}${fricas_targetdir}
+FRICAS=${fricas_targetdir}
 AC_SUBST(FRICAS)
 
 CCF="-g -O2 -Wall -D_GNU_SOURCE"
@@ -906,7 +898,6 @@ AC_SUBST(BUILD_ALDOR_INTERFACE)
 
 if test x"$BUILD_ALDOR_INTERFACE" = xyes ; then
   AC_MSG_NOTICE([Aldor interface will be built.])
-  fricas_src_subdirs="$fricas_src_subdirs aldor"
   fricas_src_all="$fricas_src_all all-aldor"
   FRICAS_MAKEFILE([src/aldor/Makefile])
   FRICAS_MAKEFILE([src/aldor/Makefile2])

@@ -1,5 +1,3 @@
-SUBDIRS = Gdraws viewman view2D view3D viewAlone
-
 subdir = src/graph/
 
 .PHONY: all all-ax all-graph
