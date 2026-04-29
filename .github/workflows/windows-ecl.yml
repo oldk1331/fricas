@@ -37,7 +37,7 @@ jobs:
       run: |
         wget https://ecl.common-lisp.dev/static/files/release/ecl-26.3.27.tgz
         tar xf ecl-26.3.27.tgz && cd ecl-26.3.27
-        ./configure --prefix=c:/ecl/ --enable-unicode=no --with-asdf=no
+        ./configure --prefix=c:/ecl/ --enable-unicode=no --with-asdf=no --with-cmp=no
         make -j4 --output-sync
         make install
 
@@ -52,7 +52,8 @@ jobs:
       run: |
         cp -rp ../build/target/*/ FriCAS-windows-${ARCH}
         rm FriCAS-windows-${ARCH}/bin/{fricas,fricas-readline}
-        cp /c/ecl/ecl.dll /${MSYSTEM}/bin/lib{gc-1,gcc_s_seh-1,ffi-8,gmp-10,pthread-1}.dll FriCAS-windows-${ARCH}/bin/
+        cp /c/ecl/ecl.dll /${MSYSTEM}/bin/lib{gc-1,gcc_s_seh-1,ffi-8,gmp-10,pthread-1}.dll FriCAS-windows-${ARCH}/bin/ || true
+        ldd FriCAS-windows-${ARCH}/bin/ecl.dll
         zip -r FriCAS-windows-ECL-${ARCH}-${{ github.sha }}.zip FriCAS-windows-${ARCH}
 
     - name: Upload Windows binary

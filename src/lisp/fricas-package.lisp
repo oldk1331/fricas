@@ -60,7 +60,7 @@
 )
 #+:ecl
 (progn
-    (require 'cmp)
+    (ignore-errors (require 'cmp))
     (eval-when (:execute :compile-toplevel :load-toplevel)
          (proclaim '(optimize (safety 0))))
 )

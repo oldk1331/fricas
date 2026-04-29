@@ -38,6 +38,8 @@ jobs:
     - name: Create artifact archives
       run: |
         cp -rp ../build/target/*/ FriCAS-windows-x86-64
+        cp /usr/lib/ecl.dll FriCAS-windows-x86-64/bin/ || true
+        ldd FriCAS-windows-x86-64/bin/ecl.dll || true
         rm FriCAS-windows-x86-64/bin/{fricas,fricas-readline}
         zip -r FriCAS-cygwin-ECL-${{ github.sha }}.zip FriCAS-windows-x86-64
 
