@@ -28,6 +28,9 @@ SortedCache(S : CachableSet) : Exports == Implementation where
   Exports ==> with
     clearCache  : () -> Void
       ++ clearCache() empties the cache.
+    getCache : () -> PrimitiveArray S
+    compactCache : () -> Void
+    setExpandCacheThreshold : PositiveInteger -> PositiveInteger
     enterInCache : (S, S -> Boolean) -> S
       ++ enterInCache(x, f) enters x in the cache, calling \spad{f(y)} to
       ++ determine whether x is equal to y. It returns x with an integer
@@ -55,11 +58,25 @@ SortedCache(S : CachableSet) : Exports == Implementation where
     cache : PrimitiveArray S := empty()$(PrimitiveArray S)
     cache_size : N := 0
     cache_use : N := 0
+    ExpandCacheThreshold : PositiveInteger := 300
+
+    getCache() == cache
+
+    setExpandCacheThreshold n ==
+        old := ExpandCacheThreshold
+        ExpandCacheThreshold :=n
+        old
+
+    compactCache() ==
+        cache_size = 0 => void()
+        cache_use := COMPACT_WEAK_ARRAY(cache, cache_use, cache.0)$Lisp
+        void()
 
     expandCache(x) ==
         if cache_size = cache_use then
+            compactCache()
             ocache := cache
-            cache_size := 2*cache_size + 10
+            cache_size := cache_use + ExpandCacheThreshold
             cache := new(cache_size, x)$(PrimitiveArray S)
             for k in 0..(cache_use - 1) repeat
                 cache(k) := ocache(k)
@@ -67,7 +84,6 @@ SortedCache(S : CachableSet) : Exports == Implementation where
 
     insertBefore(l, x) ==
         k : Integer
-        expandCache(x)
         vscan := cache
         for k in 0..(cache_use - l - 1) repeat
             vscan(cache_use - k) := vscan(cache_use - k - 1)
@@ -95,10 +111,21 @@ SortedCache(S : CachableSet) : Exports == Implementation where
         void
 
     insertAtEnd(x : S) : Void ==
-        expandCache(x)
         cache(cache_use) := x
         cache_use := cache_use + 1
         void
+
+    get_index(elem : S, array : PrimitiveArray S, index : Integer) : Integer ==
+        if index >= cache_use then index := cache_use - 1
+        current_elem : S := qelt(array, index)
+        EQ(elem, current_elem)$Lisp => index
+        position(elem) > position(current_elem) =>
+            while not EQ(elem, qelt(array, index))$Lisp repeat
+                index := index + 1
+            return index
+        while not EQ(elem, qelt(array, index))$Lisp repeat
+            index := index - 1
+        return index
 
     linearSearch(equal? : S -> Boolean) ==
         k : Integer := 0
@@ -110,13 +137,17 @@ SortedCache(S : CachableSet) : Exports == Implementation where
             equal?(y) => return y
             vscan := cache
             -- skip over elements possibly inserted by equal?
-            while not(EQ(y, vscan(k))$Lisp) repeat k := k + 1
-            k := k + 1
+            k := 1 + get_index(y, vscan, k)
         return "failed"
 
     enterInCache(x : S, equal? : S -> Boolean) ==
         (res := linearSearch(equal?)) case S => res
-        setPosition(x, 1 + cache_use)
+        expandCache(x)
+        if cache_use = 0 then
+            pos : N := DIFF
+        else
+            pos : N := DIFF + position cache(cache_use - 1)
+        setPosition(x, pos)
         insertAtEnd(x)
         x
 
@@ -140,21 +171,10 @@ SortedCache(S : CachableSet) : Exports == Implementation where
             zero?(cp) => return y
             vscan := cache
             if not(l < 0) then
-                if not(EQ(vl, qelt(vscan, l))$Lisp) then
-                    l0 := l
-                    while not(EQ(vl, qelt(vscan, l))$Lisp) repeat
-                        l := l + 1
-                    i := i + l - l0
-                    m := m + l - l0
-            if not(EQ(y, qelt(vscan, i))$Lisp) then
-                i0 := i
-                while not(EQ(y, qelt(vscan, i))$Lisp) repeat
-                    i := i + 1
-                m := m + i - i0
+                l := get_index(vl, vscan, l)
+            i := get_index(y, vscan, i)
             if has_vm then
-                if not(EQ(vm, qelt(vscan, m))$Lisp) then
-                    while not(EQ(vm, qelt(vscan, m))$Lisp) repeat
-                        m := m + 1
+                m := get_index(vm, vscan, m)
             if cp < 0 then
                 m := i
             else
@@ -166,6 +186,7 @@ SortedCache(S : CachableSet) : Exports == Implementation where
         "failed"
 
     enterInCache(x : S, triage : (S, S) -> Integer) ==
+        expandCache(x)
         zero?(cache_use) =>
             setPosition(x, DIFF)
             insertAtEnd(x)
