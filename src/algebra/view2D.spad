@@ -359,9 +359,6 @@ GraphImage () : Exports == Implementation where
       graf := plotLists(graf, llp, lpc, llc, lps)
       transform := coord(graf.optionsField, cartesian$COORDSYS
                         )$DrawOptionFunctions0
-      for aList in graf.llPoints repeat
-        for p in aList repeat
-          aPoint := transform p
       graf
 
     component (graf : %, ListOfPoints : L(P), PointColor : PAL,

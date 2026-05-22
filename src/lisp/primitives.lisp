@@ -228,9 +228,9 @@
 (defun |exquo_INT| (x y)
     (declare (type integer x y))
     (cond
-        ((= y 0) (cons 1 "failed"))
+        ((= y 0) |$spad_failure|)
         (t (multiple-value-bind (q r) (truncate x y)
-           (if (= r 0) (cons 0 q) (cons 1 "failed"))))
+           (if (= r 0) (cons 0 q) |$spad_failure|)))
     )
 )
 

@@ -78,7 +78,7 @@ extern short PTY;   /* A flag which lets me know whether or not I am
 #define CLEFCANONICAL                1
 #define CLEFCBREAK                   2
 
-extern int mode;   /** One of the above # defines *****/
+extern int MODE;   /** One of the above # defines *****/
 
 /**   Here is the structure for storing bound  pf-keys             ***/
 typedef struct Fkey

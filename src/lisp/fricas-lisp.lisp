@@ -244,7 +244,7 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 (defun |getEnv| (var-name)
   #+:GCL (system::getenv var-name)
-  #+:cmu (cdr (ext::assq (intern var-name "KEYWORD" )  ext:*environment-list*))
+  #+:cmu (cdr (assoc (intern var-name "KEYWORD") ext:*environment-list*))
   #+:sbcl (sb-ext::posix-getenv var-name)
   #+:clisp (ext::getenv var-name)
   #+:openmcl (ccl::getenv var-name)
