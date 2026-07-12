@@ -7,13 +7,13 @@ jobs:
   build:
 
     runs-on: windows-2022
-    timeout-minutes: 240
+    timeout-minutes: 360
     defaults:
       run:
         shell: bash --login --noprofile --norc -o igncr -eo pipefail '{0}'
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - uses: cygwin/cygwin-install-action@v6
       with:
@@ -23,8 +23,8 @@ jobs:
 
     - name: build ECL
       run: |
-        wget https://ecl.common-lisp.dev/static/files/release/ecl-26.3.27.tgz
-        tar xf ecl-26.3.27.tgz && cd ecl-26.3.27
+        wget https://ecl.common-lisp.dev/static/files/release/ecl-26.5.5.tgz
+        tar xf ecl-26.5.5.tgz && cd ecl-26.5.5
         ./configure --prefix=/usr
         make -j4 --output-sync
         make install
@@ -32,7 +32,7 @@ jobs:
     - name: configure and make
       run: |
         mkdir ../build && cd ../build
-        ../fricas/configure --with-lisp=ecl || cat config.log
+        ../fricas/configure --with-lisp=ecl || (cat config.log && false)
         make -j4 --output-sync
 
     - name: Create artifact archives
