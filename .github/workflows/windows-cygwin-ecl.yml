@@ -23,8 +23,8 @@ jobs:
 
     - name: build ECL
       run: |
-        wget https://ecl.common-lisp.dev/static/files/release/ecl-26.5.5.tgz
-        tar xf ecl-26.5.5.tgz && cd ecl-26.5.5
+        wget https://ecl.common-lisp.dev/static/files/release/ecl-21.2.1.tgz
+        tar xf ecl-21.2.1.tgz && cd ecl-21.2.1
         ./configure --prefix=/usr
         make -j4 --output-sync
         make install
@@ -50,4 +50,4 @@ jobs:
         path: FriCAS-cygwin-ECL-${{ github.sha }}.zip
 
     - name: make check
-      run: cd ../build && make check -j4 --output-sync
+      run: cd ../build && (make check -j4 --output-sync || (cat src/input/files.output && false))
