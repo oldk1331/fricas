@@ -65,8 +65,6 @@
     ;; but bytecode compiler works.
     #+:win32(ignore-errors (require 'cmp))
     #-:win32(require 'cmp)
-    (eval-when (:execute :compile-toplevel :load-toplevel)
-         (proclaim '(optimize (safety 0))))
 )
 #+:openmcl
 (eval-when (:execute :compile-toplevel :load-toplevel)
