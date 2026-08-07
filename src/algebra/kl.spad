@@ -72,6 +72,8 @@ SortedCache(S : CachableSet) : Exports == Implementation where
             if valid?(unref(vi)) then
                 if i ~= j then vscan.j := vi
                 j := j + 1
+        l : List String := ["from ", string cache_use, " to ", string j]
+        print(concat(l)::OutputForm)
         cache_use := j
 
     compactCache() : Void == WITHOUT_INTERRUPTS(compactCache0())$Lisp
