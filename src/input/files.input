@@ -88,8 +88,11 @@ testcase "openIfCan"
 
 testTrue("openIfCan(_"foo.bar_", _"input_")$BASFILE case _"failed_"")
 )if Unix
-)system (touch foo.out; chmod 400 foo.out)
-testTrue("openIfCan(_"foo.out_", _"output_")$BASFILE case _"failed_"")
+)system (mkdir bar; touch bar/foo.out; chmod 400 bar/foo.out)
+-- workaround for root user
+)system (chmod 500 bar/; rm bar/foo.out)
+testTrue("openIfCan(_"bar/foo.out_", _"output_")$BASFILE case _"failed_"")
+)system (chmod 700 bar/; rm -r bar/)
 )endif
 
 statistics()
