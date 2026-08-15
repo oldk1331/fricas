@@ -78,8 +78,9 @@ SortedCache(S : CachableSet) : Exports == Implementation where
 
     expandCache(x : S) : Void ==
         if cache_size = cache_use then
-            FULLGC()$Lisp
-            compactCache()
+            if SUPPORT_WEAK_POINTER()$Lisp then
+                FULLGC()$Lisp
+                compactCache()
             ncache_size := cache_use + min(max(cache_use, 1000), 10000)
             ncache_size < # cache =>
                 cache_size := ncache_size

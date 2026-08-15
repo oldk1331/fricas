@@ -904,6 +904,12 @@
     #-:sbcl progn
       ,@form))
 
+(defun SUPPORT_WEAK_POINTER ()
+    #+(or :clisp :cmu :ecl :sbcl)
+    t
+    #-(or :clisp :cmu :ecl :sbcl)
+    nil)
+
 (defun FULLGC ()
     ;; only defined for 4 lisps, the purpose is to recycle weak pointers.
     #+:cmu
