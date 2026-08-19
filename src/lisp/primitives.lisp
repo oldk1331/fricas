@@ -905,32 +905,43 @@
       ,@form))
 
 (defun SUPPORT_WEAK_POINTER ()
-    #+(or :clisp :cmu :ecl :sbcl)
+    #+(or :clisp :cmu :ecl :openmcl :sbcl)
     t
-    #-(or :clisp :cmu :ecl :sbcl)
+    #-(or :clisp :cmu :ecl :openmcl :sbcl)
     nil)
 
 (defun FULLGC ()
-    ;; only defined for 4 lisps, the purpose is to recycle weak pointers.
+    ;; only defined for 5 lisps, the purpose is to recycle weak pointers.
     #+:cmu
     (ext:gc :full t)
     #+:sbcl
     (sb-ext:gc :full t)
-    #+(or :clisp :ecl)
+    #+(or :clisp :ecl :openmcl)
     (reclaim))
+
+#+:openmcl
+(defvar *weak-pointers* (cl:make-hash-table :test 'eq :weak :value))
+#+:openmcl
+(defstruct (weak-pointer (:constructor %make-weak-pointer)))
 
 (defun MAKE_WEAK_POINTER (object)
     #+(or :clisp :cmu :ecl)
     (ext:make-weak-pointer object)
+    #+:openmcl
+    (let ((wp (%make-weak-pointer)))
+        (setf (gethash wp *weak-pointers*) object)
+        wp)
     #+:sbcl
     (sb-ext:make-weak-pointer object)
-    #-(or :clisp :cmu :ecl :sbcl)
+    #-(or :clisp :cmu :ecl :openmcl :sbcl)
     object)
 
 (defun WEAK_POINTER_VALUE (weak-pointer)
     #+(or :clisp :cmu :ecl)
     (ext:weak-pointer-value weak-pointer)
+    #+:openmcl
+    (gethash weak-pointer *weak-pointers*)
     #+:sbcl
     (sb-ext:weak-pointer-value weak-pointer)
-    #-(or :clisp :cmu :ecl :sbcl)
+    #-(or :clisp :cmu :ecl :openmcl :sbcl)
     weak-pointer)
