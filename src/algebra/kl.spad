@@ -85,7 +85,7 @@ SortedCache(S : CachableSet) : Exports == Implementation where
             ncache_size < # cache =>
                 cache_size := ncache_size
             elem := if cache_use = 0 then ref(x) else cache.0
-            ncache := new(ncache_size, elem)$(PrimitiveArray None)
+            ncache : PrimitiveArray None := MAKE_WEAK_ARRAY(ncache_size, elem)$Lisp
             for k in 0..(cache_use - 1) repeat
                 ncache(k) := cache(k)
             cache := ncache

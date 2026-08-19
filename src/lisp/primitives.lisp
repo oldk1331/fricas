@@ -905,15 +905,17 @@
       ,@form))
 
 (defun SUPPORT_WEAK_POINTER ()
-    #+(or :clisp :cmu :ecl :openmcl :sbcl)
+    #+(or :clisp :cmu :ecl :lispworks :openmcl :sbcl)
     t
-    #-(or :clisp :cmu :ecl :openmcl :sbcl)
+    #-(or :clisp :cmu :ecl :lispworks :openmcl :sbcl)
     nil)
 
 (defun FULLGC ()
-    ;; only defined for 5 lisps, the purpose is to recycle weak pointers.
+    ;; only defined for 6 lisps, the purpose is to recycle weak pointers.
     #+:cmu
     (ext:gc :full t)
+    #+:lispworks
+    (hcl:gc-generation t)
     #+:sbcl
     (sb-ext:gc :full t)
     #+(or :clisp :ecl :openmcl)
@@ -945,3 +947,9 @@
     (sb-ext:weak-pointer-value weak-pointer)
     #-(or :clisp :cmu :ecl :openmcl :sbcl)
     weak-pointer)
+
+(defun MAKE_WEAK_ARRAY (size elem)
+    #+:lispworks
+    (make-array size :initial-element elem :weak t)
+    #-:lispworks
+    (make-array size :initial-element elem))
