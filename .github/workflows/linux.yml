@@ -22,9 +22,13 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install sbcl libgmp-dev libxpm-dev
+        curl -O https://beta.quicklisp.org/quicklisp.lisp
+        sbcl --load quicklisp.lisp --eval "(quicklisp-quickstart:install)" --quit
+        echo '(load "~/quicklisp/setup.lisp") (push :hunchentoot-no-ssl *features*) (ql:quickload "hunchentoot")' > /tmp/ql.lisp
+        sbcl --load /tmp/ql.lisp --quit
 
     - name: configure
-      run: ./configure --with-lisp=sbcl --with-gmp --with-x || (cat config.log && false)
+      run: ./configure --with-lisp="sbcl --load /tmp/ql.lisp --end-toplevel-options" --with-gmp --with-x || (cat config.log && false)
 
     - name: make
       run: make -j4 --output-sync
