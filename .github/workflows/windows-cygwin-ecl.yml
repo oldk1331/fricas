@@ -6,7 +6,7 @@ permissions: {}
 jobs:
   build:
 
-    runs-on: windows-2022
+    runs-on: windows-2025
     timeout-minutes: 360
     defaults:
       run:
@@ -14,6 +14,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v7
+
+    - name: Windows Defender status
+      shell: pwsh
+      run: |
+        Get-MpPreference
+        Get-MpComputerStatus
 
     - uses: cygwin/cygwin-install-action@v6
       with:
@@ -34,7 +40,8 @@ jobs:
       run: |
         mkdir ../build && cd ../build
         ../fricas/configure --with-lisp=ecl || (cat config.log && false)
-        make -j4 --output-sync
+        time make -j4 --output-sync
+        uptime
 
     - name: Create artifact archives
       run: |
@@ -51,4 +58,7 @@ jobs:
         path: FriCAS-cygwin-ECL-${{ github.sha }}.zip
 
     - name: make check
-      run: cd ../build && (make check -j4 --output-sync || cat src/input/files.output)
+      run: |
+        cd ../build
+        time make check -j4 --output-sync
+        uptime
