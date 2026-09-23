@@ -60,7 +60,6 @@ SortedCache(S : CachableSet) : Exports == Implementation where
 
     cache : PrimitiveArray None := empty()
     cache_size : N := 0
-    cache_size_old : N := 0
     cache_use : N := 0
 
     compactCache0() : Void ==
@@ -78,7 +77,7 @@ SortedCache(S : CachableSet) : Exports == Implementation where
 
     expandCache(x : S) : Void ==
         if cache_size = cache_use then
-            if SUPPORT_WEAK_POINTER()$Lisp then
+            if cache_size > 0 and SUPPORT_WEAK_POINTER()$Lisp then
                 FULLGC()$Lisp
                 compactCache()
             ncache_size := cache_use + min(max(cache_use, 1000), 10000)
@@ -89,7 +88,6 @@ SortedCache(S : CachableSet) : Exports == Implementation where
             for k in 0..(cache_use - 1) repeat
                 ncache(k) := cache(k)
             cache := ncache
-            cache_size_old := cache_size
             cache_size := ncache_size
         void
 
