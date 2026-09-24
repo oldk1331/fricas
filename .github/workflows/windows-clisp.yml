@@ -26,6 +26,7 @@ jobs:
         # wget https://downloads.sourceforge.net/project/clisp/clisp/2.49/clisp-2.49-win32-mingw-small.zip
         wget https://github.com/fricas/fricas-nightly-builds/releases/download/build-tools/clisp-2.49-win32-mingw-small.zip
         unzip clisp-2.49-win32-mingw-small.zip
+        wget -O clisp-2.49/base/lisp.exe https://github.com/fricas/fricas-nightly-builds/releases/download/build-tools/clisp-2.49-win32-mingw-small_base_lisp_exe_patched_for_win11.exe
         ../fricas/configure --with-lisp=`pwd`/clisp-2.49/clisp.exe || (cat config.log && false)
         make -j4 --output-sync
 
