@@ -88,7 +88,8 @@ $systemCommands := [
    ['ltrace,        :'interpreter], _
    ['nopiles,       :'interpreter], ['piles,         :'interpreter], _
    ['pquit,         :'interpreter], ['quit,          :'interpreter], _
-   ['read,          :'interpreter], ['set,           :'interpreter], _
+   ['read,          :'interpreter], _
+   ['savesystem,    :'interpreter], ['set,           :'interpreter], _
    ['show,          :'interpreter], ['spool,         :'interpreter], _
    ['summary,       :'interpreter], ['synonym,       :'interpreter], _
    ['system,        :'interpreter], ['trace,         :'interpreter], _
@@ -102,7 +103,7 @@ $noParseCommands := ['boot, 'copyright, 'credits, 'fin, 'lisp, 'piles,
 
 $tokenCommands := ['abbreviations, 'cd, 'clear, 'close, 'compile,
     'depends, 'display, 'edit, 'frame, 'help, 'history, 'input, _
-    'library, 'ltrace, 'nopiles, 'read, 'set, 'spool, 'undo, _
+    'library, 'ltrace, 'nopiles, 'read, 'savesystem, 'set, 'spool, 'undo, _
     'what, 'with]
 
 --% Top level system command
@@ -2084,6 +2085,11 @@ read_or_compile(quiet, i_name) ==
         LOAD(fricas_compile_fasl(input_file, ffile))
     type = $lisp_bin_filetype => LOAD(input_file)
     type = '"input" => ncINTERPFILE(input_file, not(quiet))
+
+--% )savesystem
+savesystem l ==
+  #l ~= 1 or not(SYMBOLP first l) => helpSpad2Cmd '(savesystem)
+  SPAD_-SAVESYSTEM SYMBOL_-NAME first l
 
 --% )show
 
