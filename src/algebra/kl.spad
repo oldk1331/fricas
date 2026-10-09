@@ -355,13 +355,13 @@ Kernel(S : ComparableRepresentation) : Exports == Implementation where
                                     => error "Wrong number of arguments"
       kernelEnterInCache(mkKer(fn, x, n))
 
-    -- SPECIALDISP contains a map List S -> OutputForm
+    -- SPECIALDISP contains a map K -> OutputForm
     -- it is used when the converting the arguments first is not good,
     -- for instance with formal derivatives.
     coerce(k : %) : OutputForm ==
       (v := symbolIfCan k) case Symbol => v@Symbol::OutputForm
       (f := property(o := operator k, SPECIALDISP)) case None =>
-        ((f@None) pretend (List S -> OutputForm)) (argument k)
+        ((f@None) pretend (% -> OutputForm)) (k)
       l := [x::OutputForm for x in argument k]$List(OutputForm)
       (u := display o) case "failed" => prefix(name(o)::OutputForm, l)
       (u::(List OutputForm -> OutputForm)) l

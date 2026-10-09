@@ -556,24 +556,16 @@ FunctionSpace2(R : ComparableRepresentation, K : KernelCategory(%)
     smpderiv  : (MP, SY) -> %
     kerderiv  : (K, SY)  -> %
     kgrad     : K -> List(List % -> %)
-    opderiv   : (OP, N) -> List(List % -> %)
+    opderiv   : (OP, N, N) -> List % -> %
     smp2O     : MP -> O
     bestKernel : List K -> K
     worse?    : (K, K) -> Boolean
-    diffArg   : (List %, OP, N) -> List %
-    dispdiff  : List % -> Record(name : O, sub : O, arg : List O,
-                                 orig_op : OP, level : N)
-    ddiff     : List % -> O
-    diffEval  : List % -> %
-    dfeval    : (List %, K) -> %
     smprep    : (List SY, List N, List(List % -> %), MP) -> %
-    diffdiff  : (List %, SY) -> %
+    diffdiff  : (K, SY) -> %
     subs      : (% -> %, K) -> %
-    symsub    : (SY, Z) -> SY
     notfound  : (K -> %, List K) -> (K -> %)
 
     equaldiff : (K, K)->Boolean
-    debugA : (List % , List %, Boolean) -> Boolean
     opdiff := operator('%diff)$CommonOperators()
     opquote := operator('%quote)$CommonOperators
 
@@ -651,12 +643,11 @@ FunctionSpace2(R : ComparableRepresentation, K : KernelCategory(%)
       import from MP
       import from SparseUnivariatePolynomial(%)
 
--- cannot use new()$Symbol because of possible re-instantiation
-      gendiff := '%%0
+      DIFFOP ==> '%diffOP
+      DIFFORDER ==> '%diffOrder
 
       characteristic()    == characteristic()$R
       coerce(k : K) : %       == k::MP::%
-      symsub(sy, i) == new()$Symbol
       numerator x         == numer(x)::%
       eval(x : %, s : SY, n : N, f : % -> %)     ==
           eval(x, [s], [n], [(y : List %) : % +-> f(first(y))])
@@ -696,166 +687,69 @@ FunctionSpace2(R : ComparableRepresentation, K : KernelCategory(%)
           q  := reductum q
         a
 
-      dispdiff l ==
-        s := second(l)::O
-        t := third(l)::O
-        a := argument(k := retract(first l)@K)
-        is?(k, opdiff) =>
-          rec := dispdiff a
-          i   := position(s, rec.arg)
-          rec.arg.i := t
-          [rec.name,
-             hconcat(rec.sub, hconcat(","::SY::O, (i+1-minIndex a)::O)),
-               rec.arg, rec.orig_op, (zero?(rec.level) => 0; rec.level + 1)]
-        i   := position(second l, a)
-        m   := [x::O for x in a]$List(O)
-        m.i := t
-        d_name :=
-            (dnu := property(operator k, 'disp_name)) case None =>
-                (dnu@None) pretend O
-            name(operator k)::O
-        [d_name, hconcat(","::SY::O, (i+1-minIndex a)::O),
-            m, operator(k), (empty? rest a => 1; 0)]
+      ddiff(k : K) : OutputForm ==
+          dop := operator k
+          op := (property(dop, DIFFOP)::None) pretend OP
+          args := argument k
+          lorder := (property(dop, DIFFORDER)::None) pretend List Integer
+          d_name :=
+              (dnu := property(op, 'disp_name)) case None =>
+                  (dnu@None) pretend O
+              name(op)::O
+          prefix(sub(d_name, [x::O for x in lorder]::O), [x::O for x in args])
 
-      ddiff l ==
-        rec := dispdiff l
-        opname :=
-          zero?(rec.level) => sub(rec.name, rec.sub)
-          differentiate(rec.name, rec.level)
-        (f := property(rec.orig_op, '%diffDisp)) case None =>
-            ((f@None) pretend (List OutputForm -> OutputForm))
-               (cons(opname, rec.arg))
-        prefix(opname, rec.arg)
+      pos_diff(k : K, i : Integer) : % ==
+          dop := copy operator k
+          lorder := (property(dop, DIFFORDER)::None) pretend List Integer
+          newlorder : List Integer := [if i=j then o + 1 else o for j in 1..#lorder for o in lorder]
+          --newlorder : List Integer := copy lorder
+          --newlorder.i := 1 + lorder.i
+          setProperty(dop, DIFFORDER, newlorder pretend None)
+          kernel(dop, argument k)
 
-      Dec_Rec ==> Record(orig_k : K, sub : List(Integer),
-                  oarg : List %, arg : List %, dummies : List(%))
-
-      decode_diff : (List %) -> Dec_Rec
-
-      encode_diff(ker : K, nsub : List(Integer), args : List(%),
-                  nd : List(%)) : % ==
-          li : List(Integer) := []
-          lk : List(Integer) := []
-          i := first(nsub)
-          k : Integer := 1
-          nsub := rest(nsub)
-          while not(empty?(nsub)) repeat
-              ii := first(nsub)
-              nsub := rest(nsub)
-              ii = i => k := k + 1
-              lk := cons(k, lk)
-              li := cons(i, li)
-              i := ii
-              k := 1
-          lk := cons(k, lk)
-          li := cons(i, li)
-          nargs := copy(args)
-          pts : List % := []
-          for i in reverse(li) for dm in nd repeat
-              pts := cons(nargs(i), pts)
-              nargs(i) := dm
-          res := kernel(operator(ker), nargs)
-          for i in li for k in lk for pt in pts for dm in reverse(nd) repeat
-              for kk in 2..k repeat
-                  res := kernel(opdiff, [res, dm, dm])
-              res := kernel(opdiff, [res, dm, pt])
-          res
-
-      insert_sub(lsub : List(Integer), j : Integer) : List(Integer) ==
-          nsub : List(Integer) := []
-          to_insert : Boolean := true
-          for i in lsub repeat
-              if to_insert and not(i > j) then
-                  nsub := cons(j, nsub)
-                  to_insert := false
-              nsub := cons(i, nsub)
-          if to_insert then
-              nsub := cons(j, nsub)
-          reverse!(nsub)
-
-      pos_diff(l : List %, r1 : Dec_Rec, i : Integer) : % ==
-          nsub := insert_sub(r1.sub, i)
-          nd := r1.dummies
-          if not(member?(i, r1.sub)$List(Integer)) then
-              k : NonNegativeInteger := 0
-              ii := first(nsub)
-              for j in nsub repeat
-                  i = j => break
-                  if not(ii = j) then
-                      k := k + 1
-              nd1 := first(nd, k)$List(%)
-              nd2 := rest(nd, k)
-              dm := (new()$Symbol)::%
-              nd := concat(nd1, cons(dm, nd2))
-          encode_diff(r1.orig_k, nsub, r1.arg, nd)
-
-      diffdiff(l, x) ==
-          r1 := decode_diff(l)
-          args := r1.arg
+      -- diff on diff
+      diffdiff(k, x) ==
+          args := argument k
           res : % := 0
           for i in minIndex args .. maxIndex args for b in args repeat
               (db :=  differentiate(b, x)) = 0 => iterate
-              res := res + db*pos_diff(l, r1, i)
+              res := res + db * pos_diff(k, i)
           res
 
-      dfeval(l, g) ==
-        eval(differentiate(first l, symbolIfCan(g)::SY), g, third l)
-
-      diffEval l ==
-        k : K
-        g := retract(second l)@K
-        ((u := retractIfCan(first l)@Union(K, "failed")) case "failed")
-          or (u case K and symbolIfCan(k := u@K) case SY) => dfeval(l, g)
-        op := operator k
-        (ud := derivative op) case "failed" =>
-             -- possible trouble
-             -- make sure it is a dummy var
-             dumm : % := symsub(gendiff, 1)::%
-             ss := subst(l.1, l.2 = dumm)
-             -- output(nl::OutputForm)$OutputPackage
-             -- output("fixed"::OutputForm)$OutputPackage
-             nl := [ss, dumm, l.3]
-             kernel(opdiff, nl)
-        (n := position(second l, argument k)) < minIndex l =>
-              dfeval(l, g)
-        d := ud::List(List % -> %)
-        eval((d.n)(argument k), g, third l)
-
-      diffArg(l, op, i) ==
-        n := i - 1 + minIndex l
-        z := copy l
-        z.n := g := symsub(gendiff, n)::%
-        [kernel(op, z), g, l.n]
-
-      opderiv(op, n) ==
-        (n = 1) =>
-          g := symsub(gendiff, n)::%
-          [x +-> kernel(opdiff, [kernel(op, g), g, first x])]
-        [x +-> kernel(opdiff, diffArg(x, op, i)) for i in 1..n]
+      -- formal deriv
+      opderiv(op, i, n) ==
+        dop := copy opdiff
+        setProperty(dop, DIFFOP, op pretend None)
+        l : List Integer := [if i=j then 1 else 0 for j in 1..n]
+        setProperty(dop, DIFFORDER, l pretend None)
+        (x : List %) : % +-> kernel(dop, x)
 
       kgrad k ==
         zero?(n := #(args := argument k)) => empty()
         op := operator k
-        grad :=
-          (u := derivative op) case "failed" => opderiv(op, n)
+        grad := -- dispatch on formal operator
+          (u := derivative op) case "failed" => [opderiv(op, i, n) for i in 1..n]
           u@List(List % -> %)
-        #grad ~= n => opderiv(op, n)
+        #grad ~= n => error "impossible" -- opderiv(op, n)
         grad
 
-    -- SPECIALDIFF contains a map (List %, Symbol) -> %
+    -- SPECIALDIFF contains a map (K, Symbol) -> %
     -- it is used when the usual chain rule does not apply,
     -- for instance with implicit algebraics.
+      -- compose rule
       kerderiv(k, x) ==
         (v := symbolIfCan(k)) case SY =>
           v@SY = x => 1
           0
-        ak := argument k
+        -- specialdiff
         (fn := property(operator k, SPECIALDIFF)) case None =>
-           ((fn@None) pretend ((List %, SY) -> %)) (ak, x)
+           ((fn@None) pretend ((K, SY) -> %)) (k, x)
+       -- normal case
+        ak := argument k
         +/[g(ak)*dyx for g in kgrad k for y in ak
             | (dyx := differentiate(y, x)) ~= 0]
 
-      smpderiv(p, x) ==
+      smpderiv(p, x) == -- multi rule
         map((s : R) : R +-> retract differentiate(s::PR, x), p)::% +
          +/[differentiate(p, k)::% * kerderiv(k, x) for k in variables p]
 
@@ -931,67 +825,41 @@ FunctionSpace2(R : ComparableRepresentation, K : KernelCategory(%)
                        [n@Z, u@K]
             "failed"
 
-      evaluate(opdiff, diffEval)
+      diff_op_cmp(dop1 : OP, dop2 : OP) : Boolean ==
+          op1 := property(dop1, DIFFOP)::None pretend OP
+          op2 := property(dop2, DIFFOP)::None pretend OP
+          op1 ~= op2 => op1 < op2
+          l1 := property(dop1, DIFFORDER)::None pretend List Integer
+          l2 := property(dop2, DIFFORDER)::None pretend List Integer
+          l1 ~= l2 => l1 < l2
+          false
 
-      debugA(a1, a2, t) ==
-         -- uncomment for debugging
-         -- output(hconcat [a1::OutputForm, a2::OutputForm, t::OutputForm])$OutputPackage
-         t
-
-      decode_diff(l : List %) : Dec_Rec ==
-          da := second(l)
-          pt := third(l)
-          a := argument(k := retract(first l)@K)
-          is?(k, opdiff) =>
-              rec := decode_diff(a)
-              i := position(da, rec.arg)
-              rec.arg.i := pt
-              nd := rec.dummies
-)if false
-              -- This would work with derivatives in canonical order
-              i0 := first(rec.sub)
-              i < i0 =>
-                  print(l::OutputForm)
-                  error "Malformed formal derivative"
-              if i > i0 then
-                  nd := cons(da, nd)
-)else
-              -- For now no order
-              if not(member?(i, rec.sub)$List(Integer)) then
-                  nd := cons(da, nd)
-)endif
-              [rec.orig_k, cons(i, rec.sub), rec.oarg, rec.arg, nd]
-          i := position(da, a)
-          a1 := copy(a)
-          a1.i := pt
-          [k, [i], a, a1, [da]]
+      diff_op_eq(dop1 : OP, dop2 : OP) : Boolean ==
+          op1 := property(dop1, DIFFOP)::None pretend OP
+          op2 := property(dop2, DIFFOP)::None pretend OP
+          op1 ~= op2 => false
+          l1 := property(dop1, DIFFORDER)::None pretend List Integer
+          l2 := property(dop2, DIFFORDER)::None pretend List Integer
+          l1 ~= l2 => false
+          true
 
       equaldiff(k1, k2) ==
-        a1 := argument k1
-        a2 := argument k2
-        -- check the operator
-        res := operator k1 = operator k2
-        not res => debugA(a1, a2, res)
-        -- check the evaluation point
-        res := (a1.3 = a2.3)
-        not res => debugA(a1, a2, res)
-        a1.2 = a2.2 => a1.1 = a2.1
-        r1 := decode_diff(a1)
-        r2 := decode_diff(a2)
-        not(operator(r1.orig_k) = operator(r2.orig_k)) => false
-        not(r1.sub =$List(Integer) r2.sub) => false
-        not(r1.arg = r2.arg) => false
-        od : List K := [retract(dk)@K for dk in r1.dummies]
-        ok1 : % := (r1.orig_k)::%
-        sk1 : % := subst(ok1, od, r2.dummies)
-        sk1 = (r2.orig_k)::%
+          op1 := operator k1
+          op2 := operator k2
+          not diff_op_eq(op1, op2) => false
+          a1 := argument k1
+          a2 := argument k2
+          a1 ~= a2 => false
+          true
 
+      equality(opdiff, diff_op_eq)
+      comparison(opdiff, diff_op_cmp)
       setProperty(opdiff, SPECIALEQUAL,
                           equaldiff@((K, K) -> Boolean) pretend None)
       setProperty(opdiff, SPECIALDIFF,
-                          diffdiff@((List %, SY) -> %) pretend None)
+                          diffdiff@((K, SY) -> %) pretend None)
       setProperty(opdiff, SPECIALDISP,
-                              ddiff@(List % -> OutputForm) pretend None)
+                              ddiff@(K -> OutputForm) pretend None)
 
       if not(R has IntegralDomain) then
         mainKernel x         == mainVariable numer x
@@ -1105,7 +973,7 @@ FunctionSpace2(R : ComparableRepresentation, K : KernelCategory(%)
         eval(x : %, s : List SY, n : List N, f : List(List % -> %)) ==
           smprep(s, n, f, numer x) / smprep(s, n, f, denom x)
 
-      differentiate(f : %, x : SY) ==
+      differentiate(f : %, x : SY) == -- div rule
         (smpderiv(numer f, x) * denom(f)::% -
           numer(f)::% * smpderiv(denom f, x))
             / (denom(f)::% ^ 2)

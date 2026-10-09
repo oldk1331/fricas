@@ -365,7 +365,7 @@ CommonOperators() : Exports == Implementation where
     opbox   := operator('%box, 1)$OP
     oppren  := operator('%paren, 1)$OP
     opquote := operator('%quote)$OP
-    opdiff  := operator('%diff, 3)
+    opdiff  := operator('%diff)$OP
     opsi    := operator('Si, 1)
     opci    := operator('Ci, 1)
     opshi   := operator('Shi, 1)
@@ -555,7 +555,7 @@ CommonOperators() : Exports == Implementation where
                  opsign, opreal, opimag]
 
 -- operators whose second argument is a dummy variable
-    dummyvarop1 := [opdiff, opalg, opint, oprootsum, opsum, opprod]
+    dummyvarop1 := [opalg, opint, oprootsum, opsum, opprod]
 -- operators whose second and third arguments are dummy variables
     dummyvarop2 := [opdint, opdsum, opdprod]
 
