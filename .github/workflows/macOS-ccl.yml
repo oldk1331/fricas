@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-15-intel, macos-15]
+        os: [macos-26, macos-15]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 40
     env:
@@ -23,10 +23,10 @@ jobs:
         brew update
         brew install clozure-cl make
         mkdir ../build && cd ../build
-        ../fricas/configure --with-lisp=ccl64 --with-gmp=`brew --prefix` || (cat config.log && false)
+        ../fricas/configure --with-lisp=ccl64 || (cat config.log && false)
 
     - name: make
-      run: cd ../build && gmake -j4 --output-sync
+      run: cd ../build && gmake -j1 --output-sync
 
     - name: Create artifact archives
       run: |
